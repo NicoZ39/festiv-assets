@@ -246,9 +246,22 @@ a[href*="fillout.com/discover"]{
   display: none !important;
 }
 
-
-.notion-collection-view-type svg {
+/* ✅ Cache l'icône "type de vue" (les 4 carrés) partout dans l'entête des collections */
+.notion-collection-header .notion-collection-view-type > svg,
+.notion-collection-header .notion-collection-view-type-icon,
+.notion-collection-header .notion-collection-view-dropdown > svg:first-child {
   display: none !important;
 }
+
+/* ✅ Supprime l'espace/gap laissé par l'icône */
+.notion-collection-header .notion-collection-view-type {
+  gap: 0 !important;
+}
+
+/* (optionnel) au cas où Simple.ink force un margin sur le titre */
+.notion-collection-header .notion-collection-view-type-title {
+  margin-left: 0 !important;
+}
+
 
 
