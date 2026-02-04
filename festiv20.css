@@ -258,6 +258,8 @@ a[href*="fillout.com/discover"]{
 .notion-collection-header .notion-collection-view-type-icon > svg {
   display: none !important;
 }
-
+.lg\:flex {
+  display: none !important;
+}
 
 
