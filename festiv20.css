@@ -245,3 +245,7 @@ a[href^="https://www.fillout.com/discover"],
 a[href*="fillout.com/discover"]{
   display: none !important;
 }
+.notion-collection-view-type {
+  gap: 0 !important;
+}
+
