@@ -255,7 +255,9 @@ a[href*="fillout.com/discover"]{
 .notion-collection-header .notion-collection-view-type-wrapper-selected {
   gap: 0 !important;
 }
-
+.notion-collection-header .notion-collection-view-type-icon > svg {
+  display: none !important;
+}
 
 
 
