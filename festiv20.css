@@ -7,5 +7,5 @@
 /* Correction : gras trop fort dans les paragraphes */
 .notion-text b,
 .notion-text strong {
-  font-weight: 400 !important;   /* = comme avant visuellement */
+  font-weight: 300 !important;   /* = comme avant visuellement */
 }
