@@ -1,3 +1,25 @@
+(() => {
+  const CSS_URL = "https://cdn.jsdelivr.net/gh/NicoZ39/REPO@main/festiv2.css?v=1";
+
+  const loadCSS = () => {
+    if (document.getElementById("festiv-css-link")) return;
+    const l = document.createElement("link");
+    l.id = "festiv-css-link";
+    l.rel = "stylesheet";
+    l.href = CSS_URL;
+    document.head.appendChild(l);
+  };
+
+  // charge le CSS dès que possible
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadCSS);
+  } else {
+    loadCSS();
+  }
+
+  // ... ensuite ton code actuel (logo/dates/footer/etc) ...
+})();
+
 (()=>{const L="fr-FR";let t;
 const run=()=>{
   // Logo cliquable -> accueil
