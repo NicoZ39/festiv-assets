@@ -1,5 +1,4 @@
 @import url(https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&family=Caprasimo&display=swap);
-
-body{
-  outline:3px solid red; /* TEST visuel */
-}
+.notion-title{font-weight:900!important;background:linear-gradient(to right,#ff8a00,#e52e71)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;display:inline-block!important}
+.notion-h-title{background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;color:#882b6e!important;-webkit-text-fill-color:currentColor!important;display:inline-block!important}
+.notion-h-title b,.notion-h-title strong{background:linear-gradient(to right,#ff8a00,#e52e71)!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;font-weight:inherit!important}
