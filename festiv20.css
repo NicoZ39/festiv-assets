@@ -240,6 +240,8 @@ body .notion-page-cover-wrapper img {
   margin-top: 20px;
   padding-bottom: 20px;
 }
-a[href*="fillout.com/discover"]{
+/* Badge flottant en bas à gauche */
+body > div.fixed.bottom-6{
   display: none !important;
 }
+
