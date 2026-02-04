@@ -90,20 +90,26 @@
     }
 
     function addCopyright() {
-      const footer = document.querySelector("footer.styles_main_footer__LoNow");
-      if (footer && !footer.querySelector(".festiv-copyright")) {
-        const year = new Date().getFullYear();
-        const copyright = document.createElement("div");
-        copyright.className = "festiv-copyright";
-        copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
-        copyright.style.textAlign = "center";
-        copyright.style.fontSize = "14px";
-        copyright.style.color = "#666";
-        copyright.style.marginTop = "20px";
-        copyright.style.paddingBottom = "20px";
-        footer.appendChild(copyright);
-      }
-    }
+  const footer = document.querySelector("footer.styles_main_footer__LoNow");
+  if (footer && !footer.querySelector(".festiv-copyright")) {
+    const year = new Date().getFullYear();
+    const copyright = document.createElement("div");
+
+    copyright.className = "festiv-copyright";
+    copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
+
+    // Styles essentiels
+    copyright.style.width = "100%";
+    copyright.style.textAlign = "center";
+    copyright.style.fontSize = "14px";
+    copyright.style.color = "#666";
+    copyright.style.marginTop = "20px";
+    copyright.style.paddingBottom = "20px";
+
+    footer.appendChild(copyright);
+  }
+}
+
 
     // 4) Hauteur/fit cover
     function tweakCover() {
