@@ -265,5 +265,8 @@ a[href*="fillout.com/discover"]{
 .notion-collection-header .notion-collection-view-type-title {
   margin-left: 0 !important;
 }
+.z-\[9999\] a[href*="fillout.com/discover"] {
+  display: none !important;
+}
 
 
