@@ -246,20 +246,24 @@ a[href*="fillout.com/discover"]{
   display: none !important;
 }
 
-/* Cache tout svg direct avant le titre dans l'entête de collection */
-.notion-collection-header .notion-collection-view-type-wrapper-selected > svg {
+/* ✅ Toutes les icônes SVG des vues (onglets) */
+.notion-collection-header .notion-collection-view-type-wrapper svg,
+.notion-collection-header .notion-collection-view-type-wrapper-selected svg,
+.notion-collection-header .notion-collection-view-type-wrapper-single svg,
+.notion-collection-header .notion-collection-view-dropdown > svg:first-child {
   display: none !important;
 }
 
-/* Optionnel : enlève l’espace */
-.notion-collection-header .notion-collection-view-type-wrapper-selected {
+/* ✅ Nettoie l'espace laissé */
+.notion-collection-header .notion-collection-view-type-wrapper,
+.notion-collection-header .notion-collection-view-type-wrapper-selected,
+.notion-collection-header .notion-collection-view-type-wrapper-single {
   gap: 0 !important;
 }
-.notion-collection-header .notion-collection-view-type-icon > svg {
-  display: none !important;
-}
-.lg {
-  display: none !important;
+
+/* (optionnel) si tu vois encore un petit décalage */
+.notion-collection-header .notion-collection-view-type-title {
+  margin-left: 0 !important;
 }
 
 
