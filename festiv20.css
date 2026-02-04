@@ -244,4 +244,6 @@ body .notion-page-cover-wrapper img {
 body > div.fixed.bottom-6{
   display: none !important;
 }
-
+.lg\:flex {
+  display:none;
+ }
