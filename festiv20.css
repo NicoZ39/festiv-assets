@@ -227,7 +227,7 @@ body .notion-page-cover-wrapper img {
 }
 
 .notion-block-2fb6ae9a98f2805fb38dc1fee4758a33 {
-  font-size: 3.6em;
+  font-size: 0.6em;
 }
 .festiv-copyright{
   grid-column: 1 / -1;   /* ← PREND TOUTES LES COLONNES */
@@ -247,15 +247,7 @@ a[href*="fillout.com/discover"]{
 }
 
 
-/* Cache l'icône (4 carrés) devant le titre de la vue (Simple.ink) */
-.notion-collection-header .notion-collection-view-type-wrapper-selected > svg.notion-collection-header-1-svg {
-  display: none !important;
-}
-
-/* Supprime l’espace laissé par le SVG */
-.notion-collection-header .notion-collection-view-type-wrapper-selected {
-  display: flex !important;
-  align-items: center !important;
+.notion-collection-view-type {
   gap: 0 !important;
 }
 
