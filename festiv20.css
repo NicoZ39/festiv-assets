@@ -246,17 +246,16 @@ a[href*="fillout.com/discover"]{
   display: none !important;
 }
 
-/* Cache l'icône (4 carrés) devant le titre de la vue (Simple.ink) */
-.notion-collection-header .notion-collection-view-type-wrapper-selected > svg.notion-collection-header-1-svg {
+/* Cache tout svg direct avant le titre dans l'entête de collection */
+.notion-collection-header .notion-collection-view-type-wrapper-selected > svg {
   display: none !important;
 }
 
-/* Supprime l’espace laissé par le SVG */
+/* Optionnel : enlève l’espace */
 .notion-collection-header .notion-collection-view-type-wrapper-selected {
-  display: flex !important;
-  align-items: center !important;
   gap: 0 !important;
 }
+
 
 
 
