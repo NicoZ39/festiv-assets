@@ -88,28 +88,6 @@
         footer.appendChild(wrapper);
       }
     }
-function removeFilloutBranding() {
-  // 1) Le lien du badge
-  document.querySelectorAll('a[href*="fillout.com/discover"]').forEach(a => {
-    // supprime le parent "bloc badge" si possible, sinon le lien
-    const wrapper =
-      a.closest('div.flex.justify-center.items-center') ||
-      a.closest('div[class*="fixed"]') ||
-      a.closest('div');
-
-    (wrapper || a).remove();
-  });
-
-  // 2) La ligne "Never share passwords..." (si tu veux aussi l'enlever)
-  document.querySelectorAll('a[href*="form.fillout.com"][href*="Report"]').forEach(a => {
-    const line = a.closest('div');
-    if (line && line.textContent.includes("Never share passwords")) line.remove();
-  });
-}
-
-// run + rerun
-removeFilloutBranding();
-new MutationObserver(removeFilloutBranding).observe(document.body, { childList: true, subtree: true });
 
     function addCopyright() {
   const footer = document.querySelector("footer.styles_main_footer__LoNow");
