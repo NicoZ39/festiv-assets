@@ -9,3 +9,13 @@
 .notion-text strong {
   font-weight: 300 !important;   /* = comme avant visuellement */
 }
+/* Corrige le gras trop violent (évite que <b>/<strong> tombe en 900) */
+.notion-text{
+  font-family:Poppins,sans-serif!important;
+  font-weight:400!important;
+  font-synthesis:none!important; /* empêche le “faux gras” */
+}
+.notion-text b,.notion-text strong{
+  font-weight:600!important;      /* gras lisible */
+  font-synthesis:none!important;
+}
