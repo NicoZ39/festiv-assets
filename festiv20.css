@@ -246,26 +246,16 @@ a[href*="fillout.com/discover"]{
   display: none !important;
 }
 
-/* ✅ Cache l'icône "type de vue" (les 4 carrés) partout dans l'entête des collections */
-.notion-collection-header .notion-collection-view-type > svg,
-.notion-collection-header .notion-collection-view-type-icon,
-.notion-collection-header .notion-collection-view-dropdown > svg:first-child {
+/* Cache l'icône (4 carrés) devant le titre de la vue (Simple.ink) */
+.notion-collection-header .notion-collection-view-type-wrapper-selected > svg.notion-collection-header-1-svg {
   display: none !important;
 }
 
-/* ✅ Supprime l'espace/gap laissé par l'icône */
-.notion-collection-header .notion-collection-view-type {
+/* Supprime l’espace laissé par le SVG */
+.notion-collection-header .notion-collection-view-type-wrapper-selected {
+  display: flex !important;
+  align-items: center !important;
   gap: 0 !important;
-}
-
-/* (optionnel) au cas où Simple.ink force un margin sur le titre */
-.notion-collection-header .notion-collection-view-type-title {
-  margin-left: 0 !important;
-}
-.notion-collection-header .notion-collection-view-type::before,
-.notion-collection-header .notion-collection-view-dropdown::before {
-  content: none !important;
-  display: none !important;
 }
 
 
