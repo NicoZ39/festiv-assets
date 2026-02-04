@@ -198,14 +198,7 @@ body .notion-page-cover-wrapper img {
 
   h2.notion-h.notion-h1.notion-h-indent-0
   .notion-block-d7029277b8c843ac99308fa4128ed384[data-id=d7029277b8c843ac99308fa4128ed384]
-  a.notion-h-title b {
-    font-size: 40px !important;
-    font-family: Poppins, serif !important;
-    font-weight: 900 !important;
-    font-style: normal !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-    line-height: 1 !important;
+  height: 1 !important;
   }
 
   div.notion-block-1a46ae9a98f280498706c38fe2b95838
