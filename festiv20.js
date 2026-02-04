@@ -60,30 +60,26 @@
         const wrapper = document.createElement("div");
         wrapper.className = "festiv-footer-columns";
         wrapper.innerHTML = `
-<style>
-.festiv-footer-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center;padding:0 10px;width:100%;}
-.festiv-footer-column a{display:block;color:#555;text-decoration:none;margin-bottom:8px;transition:color 0.2s;}
-.festiv-footer-column a:hover{color:#000;}
-@media(max-width:600px){.festiv-footer-columns{grid-template-columns:1fr;}}
-</style>
-<div class="festiv-footer-column">
-  <a href="/">Accueil</a>
-  <a href="/nos-evenements-d0b436d5a1e1428d8bd76845ab0654de">Événements</a>
-  <a href="/blog-35adaa1207fd47b38b9d6b4115740b22">Articles</a>
-  <a href="https://festiv-ounans.thesimple.ink/Foire-aux-questions-1d06ae9a98f2804a838fea4211af04f1">Questions fréquentes</a>
-</div>
-<div class="festiv-footer-column">
-  <a href="https://www.facebook.com/FestivOunans/" target="_blank" rel="noopener">Facebook</a>
-  <a href="https://www.instagram.com/festiv_ounans/" target="_blank" rel="noopener">Instagram</a>
-  <a href="/press-kit-festivounans-1d16ae9a98f280a2b1fac57ddcfcf2cf">Press Kit</a>
-  <a href="/desabonnement-1046ae9a98f280d39023f3ba28cfc7c9">Désinscription</a>
-</div>
-<div class="festiv-footer-column">
-  <a href="/a-propos-19f3c0c80f76450e926ba49e49f4bceb">À propos</a>
-  <a href="/contact-7b3a8f150fff44bb972726bbd828a57f">Nous contacter</a>
-  <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
-  <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
-</div>
+  <div class="festiv-footer-column">
+    <a href="/">Accueil</a>
+    <a href="/nos-evenements-d0b436d5a1e1428d8bd76845ab0654de">Événements</a>
+    <a href="/blog-35adaa1207fd47b38b9d6b4115740b22">Articles</a>
+    <a href="https://festiv-ounans.thesimple.ink/Foire-aux-questions-1d06ae9a98f2804a838fea4211af04f1">Questions fréquentes</a>
+  </div>
+
+  <div class="festiv-footer-column">
+    <a href="https://www.facebook.com/FestivOunans/" target="_blank" rel="noopener">Facebook</a>
+    <a href="https://www.instagram.com/festiv_ounans/" target="_blank" rel="noopener">Instagram</a>
+    <a href="/press-kit-festivounans-1d16ae9a98f280a2b1fac57ddcfcf2cf">Press Kit</a>
+    <a href="/desabonnement-1046ae9a98f280d39023f3ba28cfc7c9">Désinscription</a>
+  </div>
+
+  <div class="festiv-footer-column">
+    <a href="/a-propos-19f3c0c80f76450e926ba49e49f4bceb">À propos</a>
+    <a href="/contact-7b3a8f150fff44bb972726bbd828a57f">Nous contacter</a>
+    <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
+    <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
+  </div>
 `;
         footer.appendChild(wrapper);
       }
