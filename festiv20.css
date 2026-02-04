@@ -233,3 +233,14 @@ body .notion-page-cover-wrapper img {
 .notion-block-2fb6ae9a98f2805fb38dc1fee4758a33 {
   font-size: 1.6em;
 }
+.festiv-copyright{
+  grid-column: 1 / -1;   /* ← PREND TOUTES LES COLONNES */
+  justify-self: center; /* ← centre dans la grille */
+  width: 100%;
+  text-align: center;
+
+  font-size: 14px;
+  color: #666;
+  margin-top: 20px;
+  padding-bottom: 20px;
+}
