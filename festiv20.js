@@ -3,7 +3,7 @@
 
   // ✅ CSS chargé via JS (contourne les limitations Simple.ink)
   // Remplace USER/REPO par ton GitHub (ex: nicolaslogerot/festiv-assets)
-  const CSS_URL = "https://cdn.jsdelivr.net/gh/NicoZ39/festiv-assets@main/festiv20.css?v=1";
+  const CSS_URL = "https://cdn.jsdelivr.net/gh/NicoZ39/festiv-assets@35850ba1277103b2924bcca7112dd1246776dca6/festiv20.css";
 
   const loadCSS = () => {
     if (document.getElementById("festiv-css-link")) return;
