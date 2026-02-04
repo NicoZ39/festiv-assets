@@ -247,7 +247,8 @@ a[href*="fillout.com/discover"]{
 }
 
 
-.notion-collection-view-type {
-  gap: 0 !important;
+.notion-collection-view-type svg {
+  display: none !important;
 }
+
 
