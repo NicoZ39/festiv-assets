@@ -240,3 +240,6 @@ body .notion-page-cover-wrapper img {
   margin-top: 20px;
   padding-bottom: 20px;
 }
+a[href*="fillout.com/discover"]{
+  display: none !important;
+}
