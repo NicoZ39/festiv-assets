@@ -147,7 +147,7 @@
       wrap.innerHTML = `
         <iframe
           src="${IFRAME_SRC}"
-          width="100%"
+          width="800"
           height="600"
           style="border:0;"
           allowfullscreen
