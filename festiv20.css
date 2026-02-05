@@ -456,27 +456,33 @@ a[href*="fillout.com/discover"]{
 .notion-collection-header-title {
   display: none !important;
 }
-/* ===== Indicateurs scroll horizontal (tables) ===== */
-.notion-collection > .notion-table{
+/* ===== Indicateur scroll horizontal TABLE (ultra robuste) ===== */
+
+.notion-collection .notion-table{
   position: relative;
 }
 
 /* Ombre droite */
-.notion-collection > .notion-table.festiv-can-scroll-right::after{
-  content:"";
-  pointer-events:none;
-  position:absolute;
-  top:0; right:0;
-  width:42px; height:100%;
-  background: linear-gradient(to left, rgba(255,255,255,.95), rgba(255,255,255,0));
+.notion-collection .notion-table.festiv-can-scroll-right{
+  box-shadow: inset -24px 0 24px -24px rgba(0,0,0,.35);
 }
 
-/* (Optionnel) Ombre gauche */
-.notion-collection > .notion-table.festiv-can-scroll-left::before{
-  content:"";
-  pointer-events:none;
-  position:absolute;
-  top:0; left:0;
-  width:42px; height:100%;
-  background: linear-gradient(to right, rgba(255,255,255,.95), rgba(255,255,255,0));
+/* Ombre gauche */
+.notion-collection .notion-table.festiv-can-scroll-left{
+  box-shadow: inset 24px 0 24px -24px rgba(0,0,0,.35);
+}
+
+/* Ombre des deux côtés */
+.notion-collection .notion-table.festiv-can-scroll-left.festiv-can-scroll-right{
+  box-shadow:
+    inset 24px 0 24px -24px rgba(0,0,0,.35),
+    inset -24px 0 24px -24px rgba(0,0,0,.35);
+}
+
+/* Petit hint texte (injecté par JS) */
+.festiv-table-hint{
+  font-size: 14px;
+  color: #666;
+  margin: 6px 0 10px;
+  font-style: italic;
 }
