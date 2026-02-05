@@ -359,4 +359,23 @@ a[href*="fillout.com/discover"]{
   padding: 12px !important;
 }
 
+/* Alignement parfait icône + titre */
+.notion-gallery .notion-property-title .notion-page-title{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+}
 
+/* Icône (emoji) : alignement & taille cohérents */
+.notion-gallery .notion-page-title-icon{
+  display:flex !important;
+  align-items:center !important;
+  line-height:1 !important;
+  font-size:1.1em !important;
+}
+
+/* Texte du titre */
+.notion-gallery .notion-page-title-text{
+  line-height:1.15 !important;
+  display:block !important;
+}
