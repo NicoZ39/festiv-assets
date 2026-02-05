@@ -121,43 +121,6 @@
       }
     }
 
-    // 5) EMBED IFRAME EBD (sur pages qui contiennent le marqueur [embed-ebd])
-    const IFRAME_SRC =
-      "https://nicolaslogerot.notion.site/ebd//2fe6ae9a98f280a4afb2e4081a9f60c8";
-    const MARKER_TEXT = "[embed-ebd]";
-
-    function injectIframe() {
-      const container =
-        document.querySelector(".notion-page-content") ||
-        document.querySelector(".notion-page");
-
-      if (!container) return;
-      if (container.querySelector('[data-fo-iframe="ebd"]')) return;
-
-      const markerEl = Array.from(
-        container.querySelectorAll(".notion-text, .notion-callout, p, div")
-      ).find((el) => (el.textContent || "").includes(MARKER_TEXT));
-
-      if (!markerEl) return;
-
-      const wrap = document.createElement("div");
-      wrap.setAttribute("data-fo-iframe", "ebd");
-      wrap.className = "fo-embed-iframe";
-
-      wrap.innerHTML = `
-        <iframe
-          src="${IFRAME_SRC}"
-          width="800"
-          height="600"
-          style="border:0;"
-          allowfullscreen
-          loading="lazy"
-        ></iframe>
-      `;
-
-      markerEl.replaceWith(wrap);
-    }
-
     // Init
     makeLogoClickable();
     formatDates();
