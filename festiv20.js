@@ -65,6 +65,8 @@
 .festiv-footer-column a{display:block;color:#555;text-decoration:none;margin-bottom:8px;transition:color 0.2s;}
 .festiv-footer-column a:hover{color:#000;}
 @media(max-width:600px){.festiv-footer-columns{grid-template-columns:1fr;}}
+.fo-embed-iframe{margin-top:32px;border-radius:16px;overflow:hidden;}
+.fo-embed-iframe iframe{display:block;width:100%;border:0;}
 </style>
 <div class="festiv-footer-column">
   <a href="/">Accueil</a>
@@ -90,26 +92,24 @@
     }
 
     function addCopyright() {
-  const footer = document.querySelector("footer.styles_main_footer__LoNow");
-  if (footer && !footer.querySelector(".festiv-copyright")) {
-    const year = new Date().getFullYear();
-    const copyright = document.createElement("div");
+      const footer = document.querySelector("footer.styles_main_footer__LoNow");
+      if (footer && !footer.querySelector(".festiv-copyright")) {
+        const year = new Date().getFullYear();
+        const copyright = document.createElement("div");
 
-    copyright.className = "festiv-copyright";
-    copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
+        copyright.className = "festiv-copyright";
+        copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
 
-    // Styles essentiels
-    copyright.style.width = "100%";
-    copyright.style.textAlign = "center";
-    copyright.style.fontSize = "14px";
-    copyright.style.color = "#666";
-    copyright.style.marginTop = "20px";
-    copyright.style.paddingBottom = "20px";
+        copyright.style.width = "100%";
+        copyright.style.textAlign = "center";
+        copyright.style.fontSize = "14px";
+        copyright.style.color = "#666";
+        copyright.style.marginTop = "20px";
+        copyright.style.paddingBottom = "20px";
 
-    footer.appendChild(copyright);
-  }
-}
-
+        footer.appendChild(copyright);
+      }
+    }
 
     // 4) Hauteur/fit cover
     function tweakCover() {
@@ -121,12 +121,50 @@
       }
     }
 
+    // 5) EMBED IFRAME EBD (sur pages qui contiennent le marqueur [embed-ebd])
+    const IFRAME_SRC =
+      "https://nicolaslogerot.notion.site/ebd//2fe6ae9a98f280a4afb2e4081a9f60c8";
+    const MARKER_TEXT = "[embed-ebd]";
+
+    function injectIframe() {
+      const container =
+        document.querySelector(".notion-page-content") ||
+        document.querySelector(".notion-page");
+
+      if (!container) return;
+      if (container.querySelector('[data-fo-iframe="ebd"]')) return;
+
+      const markerEl = Array.from(
+        container.querySelectorAll(".notion-text, .notion-callout, p, div")
+      ).find((el) => (el.textContent || "").includes(MARKER_TEXT));
+
+      if (!markerEl) return;
+
+      const wrap = document.createElement("div");
+      wrap.setAttribute("data-fo-iframe", "ebd");
+      wrap.className = "fo-embed-iframe";
+
+      wrap.innerHTML = `
+        <iframe
+          src="${IFRAME_SRC}"
+          width="100%"
+          height="600"
+          style="border:0;"
+          allowfullscreen
+          loading="lazy"
+        ></iframe>
+      `;
+
+      markerEl.replaceWith(wrap);
+    }
+
     // Init
     makeLogoClickable();
     formatDates();
     createFooterColumns();
     addCopyright();
     tweakCover();
+    injectIframe();
 
     // Observer global (Simple.ink / Notion change souvent le DOM)
     const observer = new MutationObserver(() => {
@@ -135,6 +173,7 @@
       createFooterColumns();
       addCopyright();
       tweakCover();
+      injectIframe();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
