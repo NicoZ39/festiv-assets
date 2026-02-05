@@ -191,6 +191,46 @@
       console.error("[festiv20] tweakCover error:", e);
     }
   }
+  // 5) Indicateurs scroll horizontal pour les tables
+  function setupTableScrollShadows() {
+    try {
+      const tables = document.querySelectorAll(".notion-collection > .notion-table");
+      if (!tables.length) return;
+
+      tables.forEach((table) => {
+        const scroller = table.querySelector(".notion-table-view");
+        if (!scroller) return;
+
+        // évite de re-binder 50 fois à cause du MutationObserver
+        if (scroller.dataset.festivShadowBound === "1") return;
+        scroller.dataset.festivShadowBound = "1";
+
+        const update = () => {
+          const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+
+          // petite tolérance pour éviter les clignotements (arrondis)
+          const EPS = 2;
+
+          const canLeft = scroller.scrollLeft > EPS;
+          const canRight = scroller.scrollLeft < (maxScrollLeft - EPS);
+
+          table.classList.toggle("festiv-can-scroll-left", canLeft);
+          table.classList.toggle("festiv-can-scroll-right", canRight);
+        };
+
+        // update initial + listeners
+        update();
+        scroller.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update, { passive: true });
+
+        // au cas où le contenu arrive après (lazy render)
+        setTimeout(update, 200);
+        setTimeout(update, 800);
+      });
+    } catch (e) {
+      console.error("[festiv20] setupTableScrollShadows error:", e);
+    }
+  }
 
   function runAll() {
     makeLogoClickable();
@@ -198,6 +238,7 @@
     createFooterColumns();
     addCopyright();
     tweakCover();
+    setupTableScrollShadows();
   }
 
   onReady(() => {
