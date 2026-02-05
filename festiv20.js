@@ -191,24 +191,37 @@
       console.error("[festiv20] tweakCover error:", e);
     }
   }
-  // 5) Indicateurs scroll horizontal pour les tables
-  function setupTableScrollShadows() {
+  // 5) Indicateurs scroll horizontal pour les tables (robuste)
+  function setupTableScrollUX() {
     try {
-      const tables = document.querySelectorAll(".notion-collection > .notion-table");
+      const tables = document.querySelectorAll(".notion-collection .notion-table");
       if (!tables.length) return;
 
       tables.forEach((table) => {
-        const scroller = table.querySelector(".notion-table-view");
-        if (!scroller) return;
+        // évite les doublons avec ton MutationObserver
+        if (table.dataset.festivUxBound === "1") return;
+        table.dataset.festivUxBound = "1";
 
-        // évite de re-binder 50 fois à cause du MutationObserver
-        if (scroller.dataset.festivShadowBound === "1") return;
-        scroller.dataset.festivShadowBound = "1";
+        // 1) Ajout du hint texte (vrai DOM, pas ::before)
+        if (!table.previousElementSibling || !table.previousElementSibling.classList.contains("festiv-table-hint")) {
+          const hint = document.createElement("div");
+          hint.className = "festiv-table-hint";
+          hint.textContent = "👉 Faites glisser le tableau horizontalement";
+          table.parentNode.insertBefore(hint, table);
+        }
+
+        // 2) Trouver le vrai élément qui scrolle (parfois .notion-table, parfois .notion-table-view)
+        const candidates = [
+          table,
+          table.querySelector(".notion-table-view"),
+          table.querySelector(".notion-table-body"),
+        ].filter(Boolean);
+
+        const scroller =
+          candidates.find((el) => el.scrollWidth > el.clientWidth + 2) || candidates[0];
 
         const update = () => {
           const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
-
-          // petite tolérance pour éviter les clignotements (arrondis)
           const EPS = 2;
 
           const canLeft = scroller.scrollLeft > EPS;
@@ -216,21 +229,28 @@
 
           table.classList.toggle("festiv-can-scroll-left", canLeft);
           table.classList.toggle("festiv-can-scroll-right", canRight);
+
+          // si pas de débordement, on enlève tout
+          if (maxScrollLeft <= EPS) {
+            table.classList.remove("festiv-can-scroll-left", "festiv-can-scroll-right");
+          }
         };
 
-        // update initial + listeners
-        update();
+        // listeners
         scroller.addEventListener("scroll", update, { passive: true });
         window.addEventListener("resize", update, { passive: true });
 
-        // au cas où le contenu arrive après (lazy render)
+        // update initial + après rendu
+        update();
         setTimeout(update, 200);
         setTimeout(update, 800);
+        setTimeout(update, 1500);
       });
     } catch (e) {
-      console.error("[festiv20] setupTableScrollShadows error:", e);
+      console.error("[festiv20] setupTableScrollUX error:", e);
     }
   }
+
 
   function runAll() {
     makeLogoClickable();
@@ -238,7 +258,7 @@
     createFooterColumns();
     addCopyright();
     tweakCover();
-    setupTableScrollShadows();
+    setupTableScrollUX();
   }
 
   onReady(() => {
