@@ -410,3 +410,44 @@ a[href*="fillout.com/discover"]{
 .notion-collection-view-table {
   touch-action: pan-x pan-y !important;
 }
+/* ---------------------------------------------------------
+   H1 (titre de page) : dégradé OK sur tout
+--------------------------------------------------------- */
+.notion-title {
+  font-weight: 900 !important;
+  background: linear-gradient(to right, #ff8a00, #e52e71) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block !important;
+}
+
+/* ---------------------------------------------------------
+   Titres H2/H3/H4 : on ne met PAS le dégradé sur tout le <a>
+   (sinon les emojis partent en vrille)
+--------------------------------------------------------- */
+.notion-h-title {
+  background: none !important;
+  -webkit-background-clip: border-box !important;
+  background-clip: border-box !important;
+
+  /* couleur "normale" du titre quand ce n'est pas en gras */
+  color: #882b6e !important;
+  -webkit-text-fill-color: currentColor !important;
+
+  display: inline-block !important;
+}
+
+/* Dégradé uniquement sur les portions en gras */
+.notion-h-title b,
+.notion-h-title strong {
+  background: linear-gradient(to right, #ff8a00, #e52e71) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+
+  /* option : ne pas épaissir visuellement */
+  font-weight: inherit !important;
+}
