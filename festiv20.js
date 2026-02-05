@@ -1,4 +1,11 @@
 (function () {
+  const locale = "fr-FR";
+  const DEBUG = true;
+
+  function log(...args) {
+    if (DEBUG) console.log("[festiv20]", ...args);
+  }
+
   function onReady(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -7,140 +14,123 @@
     }
   }
 
-  const locale = "fr-FR";
-
-  // --- Utils ---
   function pad2(n) {
     return String(n).padStart(2, "0");
   }
 
-  function safeQueryAll(selector) {
+  // 1) Logo cliquable
+  function makeLogoClickable() {
     try {
-      return Array.from(document.querySelectorAll(selector));
-    } catch {
-      return [];
+      const logoDiv = document.querySelector(".styles_logo__JgM3o");
+      if (!logoDiv || logoDiv.querySelector("a")) return;
+
+      const img = logoDiv.querySelector("img");
+      if (!img) return;
+
+      const link = document.createElement("a");
+      link.href = "/";
+      link.appendChild(img.cloneNode(true));
+
+      logoDiv.innerHTML = "";
+      logoDiv.appendChild(link);
+      logoDiv.style.marginBottom = "20px";
+    } catch (e) {
+      console.error("[festiv20] makeLogoClickable error:", e);
     }
   }
 
-  // --- 1) Logo cliquable ---
-  function makeLogoClickable() {
-    const logoDiv = document.querySelector(".styles_logo__JgM3o");
-    if (!logoDiv) return;
+  // Parse date depuis texte (EN / FR / ISO) + support "dès 06h00"
+  function parseDateFromText(text) {
+    const t = (text || "").trim();
 
-    // déjà fait ?
-    if (logoDiv.querySelector("a")) return;
+    // ISO: 2026-05-14, 2026-05-14T06:00
+    const iso = t.match(/\b(\d{4}-\d{2}-\d{2})(?:[T\s](\d{2}:\d{2}))?\b/);
+    if (iso) {
+      const d = new Date(iso[0].replace(" ", "T"));
+      if (!isNaN(d)) return d;
+    }
 
-    const img = logoDiv.querySelector("img");
-    if (!img) return;
+    // EN: "May 14, 2026" + optional time "06:00"
+    const en = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
+    if (en) {
+      const d = new Date(en[0]);
+      if (!isNaN(d)) return d;
+    }
 
-    const link = document.createElement("a");
-    link.href = "/";
-    link.appendChild(img.cloneNode(true));
+    // FR: "14 mai 2026" + optional "dès 06h00" / "à 6h00"
+    const fr = t
+      .replace(/^⏰\s*/g, "")
+      .match(/\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i);
 
-    logoDiv.innerHTML = "";
-    logoDiv.appendChild(link);
-    logoDiv.style.marginBottom = "20px";
+    if (fr) {
+      const day = Number(fr[1]);
+      const month = fr[2].toLowerCase();
+      const year = Number(fr[3]);
+
+      const months = {
+        janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
+        juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11
+      };
+
+      const time = t.match(/\b(?:dès|à)\s*(\d{1,2})h(\d{2})\b/i);
+      const hh = time ? Number(time[1]) : 0;
+      const mm = time ? Number(time[2]) : 0;
+
+      const d = new Date(year, months[month], day, hh, mm);
+      if (!isNaN(d)) return d;
+    }
+
+    return null;
   }
 
-  // --- 2) Format dates FR ---
-  // Gère :
-  // - "May 14, 2026 06:00" / "May 14, 2026"
-  // - "⏰ jeudi 14 mai 2026 dès 06h00"
-  // - "jeudi 14 mai 2026 dès 06h00"
-  // - "14 mai 2026" etc.
+  // 2) Format dates
   function formatDates() {
-    const nodes = safeQueryAll(".notion-property-date, .notion-callout-text .notion-text");
-    nodes.forEach((el) => {
-      const raw = (el.textContent || "").trim();
-      if (!raw) return;
+    try {
+      const els = document.querySelectorAll(".notion-property-date, .notion-callout-text .notion-text");
 
-      // Évite de reformater en boucle si déjà au bon format "⏰ <weekday> <date> dès <hh>h<mm>"
-      // On laisse quand même passer si c'est une date simple.
-      // (Si tu veux forcer le reformat, supprime ce guard)
-      if (/^⏰\s+\p{L}+/u.test(raw) && /dès\s+\d{2}h\d{2}/.test(raw)) return;
+      els.forEach((el) => {
+        const raw = (el.textContent || "").trim();
+        if (!raw) return;
 
-      // 1) Détection format anglais type "May 14, 2026 06:00" / "May 14, 2026"
-      const enMatch = raw.match(/([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?/);
-      if (enMatch) {
-        const d = new Date(enMatch[0]); // inclut l'heure si présente
-        if (!isNaN(d)) {
-          const dateStr = d.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
-          const weekday = d.toLocaleDateString(locale, { weekday: "long" });
+        const d = parseDateFromText(raw);
+        if (!d) return;
 
-          if (enMatch[2]) {
-            const hh = pad2(d.getHours());
-            const mm = pad2(d.getMinutes());
-            el.textContent = `⏰ ${weekday} ${dateStr} dès ${hh}h${mm}`;
-          } else {
-            el.textContent = dateStr;
-          }
-          return;
-        }
-      }
+        const dateStr = d.toLocaleDateString(locale, {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
 
-      // 2) Détection format FR déjà humain (ex: "jeudi 14 mai 2026 dès 06h00")
-      // On le normalise (emoji + espaces + hh:mm)
-      const frMatch = raw.match(
-        /^(?:⏰\s*)?(?:(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+)?(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})(?:\s*(?:dès|à)\s*(\d{1,2})h(\d{2}))?/i
-      );
-      if (frMatch) {
-        const weekdayText = frMatch[1]; // peut être undefined
-        const day = Number(frMatch[2]);
-        const monthName = frMatch[3].toLowerCase();
-        const year = Number(frMatch[4]);
-        const hh = frMatch[5] != null ? Number(frMatch[5]) : null;
-        const mm = frMatch[6] != null ? Number(frMatch[6]) : null;
+        // Si le texte original contient une heure (dès/à ou hh:mm), on l’affiche
+        const hasTime =
+          /\b(\d{2}:\d{2})\b/.test(raw) || /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
 
-        const months = {
-          janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
-          juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11
-        };
-
-        if (!(monthName in months)) return;
-
-        // Construit une date locale (sans timezone surprises)
-        const d = new Date(year, months[monthName], day, hh ?? 0, mm ?? 0);
-        if (isNaN(d)) return;
-
-        const dateStr = d.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
-        const weekday = weekdayText
-          ? weekdayText.toLowerCase()
-          : d.toLocaleDateString(locale, { weekday: "long" });
-
-        if (hh != null && mm != null) {
-          el.textContent = `⏰ ${weekday} ${dateStr} dès ${pad2(hh)}h${pad2(mm)}`;
+        if (hasTime) {
+          el.textContent = `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`;
         } else {
-          el.textContent = dateStr;
+          el.textContent = dateStr.replace(/^\p{L}+/u, (w) => w); // noop mais safe
         }
-        return;
-      }
-
-      // 3) Dernier recours : tentative new Date sur ce qu'on trouve
-      // (utile si Simple.ink change encore le format)
-      const fallbackDate = new Date(raw);
-      if (!isNaN(fallbackDate)) {
-        const dateStr = fallbackDate.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
-        el.textContent = dateStr;
-      }
-    });
+      });
+    } catch (e) {
+      console.error("[festiv20] formatDates error:", e);
+    }
   }
 
-  // --- 3) Footer colonnes ---
+  // 3) Footer colonnes + copyright
   function createFooterColumns() {
-    const footer = document.querySelector("footer.styles_main_footer__LoNow");
-    if (!footer) return;
-    if (footer.querySelector(".festiv-footer-columns")) return;
+    try {
+      const footer = document.querySelector("footer.styles_main_footer__LoNow");
+      if (!footer || footer.querySelector(".festiv-footer-columns")) return;
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "festiv-footer-columns";
-    wrapper.innerHTML = `
+      const wrapper = document.createElement("div");
+      wrapper.className = "festiv-footer-columns";
+      wrapper.innerHTML = `
 <style>
 .festiv-footer-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center;padding:0 10px;width:100%;}
 .festiv-footer-column a{display:block;color:#555;text-decoration:none;margin-bottom:8px;transition:color 0.2s;}
 .festiv-footer-column a:hover{color:#000;}
 @media(max-width:600px){.festiv-footer-columns{grid-template-columns:1fr;}}
-.fo-embed-iframe{margin-top:32px;border-radius:16px;overflow:hidden;}
-.fo-embed-iframe iframe{display:block;width:100%;border:0;}
 </style>
 <div class="festiv-footer-column">
   <a href="/">Accueil</a>
@@ -159,45 +149,49 @@
   <a href="/contact-7b3a8f150fff44bb972726bbd828a57f">Nous contacter</a>
   <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
   <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
-</div>
-`;
-
-    footer.appendChild(wrapper);
+</div>`;
+      footer.appendChild(wrapper);
+    } catch (e) {
+      console.error("[festiv20] createFooterColumns error:", e);
+    }
   }
 
   function addCopyright() {
-    const footer = document.querySelector("footer.styles_main_footer__LoNow");
-    if (!footer) return;
-    if (footer.querySelector(".festiv-copyright")) return;
+    try {
+      const footer = document.querySelector("footer.styles_main_footer__LoNow");
+      if (!footer || footer.querySelector(".festiv-copyright")) return;
 
-    const year = new Date().getFullYear();
-    const copyright = document.createElement("div");
-    copyright.className = "festiv-copyright";
-    copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
-
-    Object.assign(copyright.style, {
-      width: "100%",
-      textAlign: "center",
-      fontSize: "14px",
-      color: "#666",
-      marginTop: "20px",
-      paddingBottom: "20px",
-    });
-
-    footer.appendChild(copyright);
+      const year = new Date().getFullYear();
+      const div = document.createElement("div");
+      div.className = "festiv-copyright";
+      div.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
+      Object.assign(div.style, {
+        width: "100%",
+        textAlign: "center",
+        fontSize: "14px",
+        color: "#666",
+        marginTop: "20px",
+        paddingBottom: "20px",
+      });
+      footer.appendChild(div);
+    } catch (e) {
+      console.error("[festiv20] addCopyright error:", e);
+    }
   }
 
-  // --- 4) Cover ---
+  // 4) Cover
   function tweakCover() {
-    const coverImage = document.querySelector(".notion-page-cover-wrapper img");
-    if (!coverImage) return;
-
-    coverImage.style.height = "500px";
-    coverImage.style.objectFit = "cover";
-    coverImage.style.objectPosition = "center 50%";
+    try {
+      const img = document.querySelector(".notion-page-cover-wrapper img");
+      if (!img) return;
+      img.style.height = "500px";
+      img.style.objectFit = "cover";
+      img.style.objectPosition = "center 50%";
+    } catch (e) {
+      console.error("[festiv20] tweakCover error:", e);
+    }
   }
 
-  // --- Init & Observer ---
   function runAll() {
     makeLogoClickable();
     formatDates();
@@ -207,11 +201,14 @@
   }
 
   onReady(() => {
+    log("loaded ✅");
     runAll();
 
-    // Simple.ink / Notion : DOM dynamique -> on ré-applique
+    let t = null;
     const observer = new MutationObserver(() => {
-      runAll();
+      // debounce pour éviter 200 appels
+      clearTimeout(t);
+      t = setTimeout(runAll, 60);
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
