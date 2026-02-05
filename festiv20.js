@@ -7,59 +7,133 @@
     }
   }
 
-  onReady(() => {
-    // 1) Rendre le logo cliquable
-    function makeLogoClickable() {
-      const logoDiv = document.querySelector(".styles_logo__JgM3o");
-      if (logoDiv && !logoDiv.querySelector("a")) {
-        const img = logoDiv.querySelector("img");
-        if (img) {
-          const link = document.createElement("a");
-          link.href = "/";
-          link.appendChild(img.cloneNode(true));
-          logoDiv.innerHTML = "";
-          logoDiv.appendChild(link);
-          logoDiv.style.marginBottom = "20px";
+  const locale = "fr-FR";
+
+  // --- Utils ---
+  function pad2(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  function safeQueryAll(selector) {
+    try {
+      return Array.from(document.querySelectorAll(selector));
+    } catch {
+      return [];
+    }
+  }
+
+  // --- 1) Logo cliquable ---
+  function makeLogoClickable() {
+    const logoDiv = document.querySelector(".styles_logo__JgM3o");
+    if (!logoDiv) return;
+
+    // déjà fait ?
+    if (logoDiv.querySelector("a")) return;
+
+    const img = logoDiv.querySelector("img");
+    if (!img) return;
+
+    const link = document.createElement("a");
+    link.href = "/";
+    link.appendChild(img.cloneNode(true));
+
+    logoDiv.innerHTML = "";
+    logoDiv.appendChild(link);
+    logoDiv.style.marginBottom = "20px";
+  }
+
+  // --- 2) Format dates FR ---
+  // Gère :
+  // - "May 14, 2026 06:00" / "May 14, 2026"
+  // - "⏰ jeudi 14 mai 2026 dès 06h00"
+  // - "jeudi 14 mai 2026 dès 06h00"
+  // - "14 mai 2026" etc.
+  function formatDates() {
+    const nodes = safeQueryAll(".notion-property-date, .notion-callout-text .notion-text");
+    nodes.forEach((el) => {
+      const raw = (el.textContent || "").trim();
+      if (!raw) return;
+
+      // Évite de reformater en boucle si déjà au bon format "⏰ <weekday> <date> dès <hh>h<mm>"
+      // On laisse quand même passer si c'est une date simple.
+      // (Si tu veux forcer le reformat, supprime ce guard)
+      if (/^⏰\s+\p{L}+/u.test(raw) && /dès\s+\d{2}h\d{2}/.test(raw)) return;
+
+      // 1) Détection format anglais type "May 14, 2026 06:00" / "May 14, 2026"
+      const enMatch = raw.match(/([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?/);
+      if (enMatch) {
+        const d = new Date(enMatch[0]); // inclut l'heure si présente
+        if (!isNaN(d)) {
+          const dateStr = d.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
+          const weekday = d.toLocaleDateString(locale, { weekday: "long" });
+
+          if (enMatch[2]) {
+            const hh = pad2(d.getHours());
+            const mm = pad2(d.getMinutes());
+            el.textContent = `⏰ ${weekday} ${dateStr} dès ${hh}h${mm}`;
+          } else {
+            el.textContent = dateStr;
+          }
+          return;
         }
       }
-    }
 
-    // 2) Formater les dates FR
-    const locale = "fr-FR";
-    function formatDates() {
-      document
-        .querySelectorAll(".notion-property-date, .notion-callout-text .notion-text")
-        .forEach((el) => {
-          const match = el.textContent.match(/([A-Za-z]+ \d{1,2}, \d{4}( \d{2}:\d{2})?)/);
-          if (!match) return;
+      // 2) Détection format FR déjà humain (ex: "jeudi 14 mai 2026 dès 06h00")
+      // On le normalise (emoji + espaces + hh:mm)
+      const frMatch = raw.match(
+        /^(?:⏰\s*)?(?:(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s+)?(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})(?:\s*(?:dès|à)\s*(\d{1,2})h(\d{2}))?/i
+      );
+      if (frMatch) {
+        const weekdayText = frMatch[1]; // peut être undefined
+        const day = Number(frMatch[2]);
+        const monthName = frMatch[3].toLowerCase();
+        const year = Number(frMatch[4]);
+        const hh = frMatch[5] != null ? Number(frMatch[5]) : null;
+        const mm = frMatch[6] != null ? Number(frMatch[6]) : null;
 
-          const date = new Date(match[1]);
-          if (isNaN(date)) return;
+        const months = {
+          janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
+          juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11
+        };
 
-          const formattedDate = date.toLocaleDateString(locale, {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          });
+        if (!(monthName in months)) return;
 
-          const hasTime = !!match[2];
-          if (hasTime) {
-            const hh = date.getHours().toString().padStart(2, "0");
-            const mm = date.getMinutes().toString().padStart(2, "0");
-            el.textContent = `⏰ ${date.toLocaleDateString(locale, { weekday: "long" })} ${formattedDate} dès ${hh}h${mm}`;
-          } else {
-            el.textContent = formattedDate;
-          }
-        });
-    }
+        // Construit une date locale (sans timezone surprises)
+        const d = new Date(year, months[monthName], day, hh ?? 0, mm ?? 0);
+        if (isNaN(d)) return;
 
-    // 3) Colonnes de footer + copyright
-    function createFooterColumns() {
-      const footer = document.querySelector("footer.styles_main_footer__LoNow");
-      if (footer && !footer.querySelector(".festiv-footer-columns")) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "festiv-footer-columns";
-        wrapper.innerHTML = `
+        const dateStr = d.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
+        const weekday = weekdayText
+          ? weekdayText.toLowerCase()
+          : d.toLocaleDateString(locale, { weekday: "long" });
+
+        if (hh != null && mm != null) {
+          el.textContent = `⏰ ${weekday} ${dateStr} dès ${pad2(hh)}h${pad2(mm)}`;
+        } else {
+          el.textContent = dateStr;
+        }
+        return;
+      }
+
+      // 3) Dernier recours : tentative new Date sur ce qu'on trouve
+      // (utile si Simple.ink change encore le format)
+      const fallbackDate = new Date(raw);
+      if (!isNaN(fallbackDate)) {
+        const dateStr = fallbackDate.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" });
+        el.textContent = dateStr;
+      }
+    });
+  }
+
+  // --- 3) Footer colonnes ---
+  function createFooterColumns() {
+    const footer = document.querySelector("footer.styles_main_footer__LoNow");
+    if (!footer) return;
+    if (footer.querySelector(".festiv-footer-columns")) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "festiv-footer-columns";
+    wrapper.innerHTML = `
 <style>
 .festiv-footer-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center;padding:0 10px;width:100%;}
 .festiv-footer-column a{display:block;color:#555;text-decoration:none;margin-bottom:8px;transition:color 0.2s;}
@@ -87,56 +161,57 @@
   <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
 </div>
 `;
-        footer.appendChild(wrapper);
-      }
-    }
 
-    function addCopyright() {
-      const footer = document.querySelector("footer.styles_main_footer__LoNow");
-      if (footer && !footer.querySelector(".festiv-copyright")) {
-        const year = new Date().getFullYear();
-        const copyright = document.createElement("div");
+    footer.appendChild(wrapper);
+  }
 
-        copyright.className = "festiv-copyright";
-        copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
+  function addCopyright() {
+    const footer = document.querySelector("footer.styles_main_footer__LoNow");
+    if (!footer) return;
+    if (footer.querySelector(".festiv-copyright")) return;
 
-        copyright.style.width = "100%";
-        copyright.style.textAlign = "center";
-        copyright.style.fontSize = "14px";
-        copyright.style.color = "#666";
-        copyright.style.marginTop = "20px";
-        copyright.style.paddingBottom = "20px";
+    const year = new Date().getFullYear();
+    const copyright = document.createElement("div");
+    copyright.className = "festiv-copyright";
+    copyright.textContent = `Copyright © ${year} - Festiv'Ounans - Tous droits réservés`;
 
-        footer.appendChild(copyright);
-      }
-    }
+    Object.assign(copyright.style, {
+      width: "100%",
+      textAlign: "center",
+      fontSize: "14px",
+      color: "#666",
+      marginTop: "20px",
+      paddingBottom: "20px",
+    });
 
-    // 4) Hauteur/fit cover
-    function tweakCover() {
-      const coverImage = document.querySelector(".notion-page-cover-wrapper img");
-      if (coverImage) {
-        coverImage.style.height = "500px";
-        coverImage.style.objectFit = "cover";
-        coverImage.style.objectPosition = "center 50%";
-      }
-    }
+    footer.appendChild(copyright);
+  }
 
-    // Init
+  // --- 4) Cover ---
+  function tweakCover() {
+    const coverImage = document.querySelector(".notion-page-cover-wrapper img");
+    if (!coverImage) return;
+
+    coverImage.style.height = "500px";
+    coverImage.style.objectFit = "cover";
+    coverImage.style.objectPosition = "center 50%";
+  }
+
+  // --- Init & Observer ---
+  function runAll() {
     makeLogoClickable();
     formatDates();
     createFooterColumns();
     addCopyright();
     tweakCover();
-    injectIframe();
+  }
 
-    // Observer global (Simple.ink / Notion change souvent le DOM)
+  onReady(() => {
+    runAll();
+
+    // Simple.ink / Notion : DOM dynamique -> on ré-applique
     const observer = new MutationObserver(() => {
-      makeLogoClickable();
-      formatDates();
-      createFooterColumns();
-      addCopyright();
-      tweakCover();
-      injectIframe();
+      runAll();
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
