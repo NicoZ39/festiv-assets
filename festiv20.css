@@ -379,3 +379,34 @@ a[href*="fillout.com/discover"]{
   line-height:1.15 !important;
   display:block !important;
 }
+/* ================================
+   FIX SCROLL HORIZONTAL TABLES
+   (Notion / Simple.ink)
+================================ */
+
+/* Le conteneur de la vue table doit scroller horizontalement */
+.notion-table,
+.notion-table-view,
+.notion-collection-view-table,
+.notion-collection-view-table > div,
+.notion-collection-content,
+.notion-collection-body {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Forcer la table à pouvoir dépasser la largeur sans être “compressée” */
+.notion-table table,
+.notion-table-view table,
+.notion-collection-view-table table {
+  width: max-content !important;
+  min-width: 100% !important;
+}
+
+/* iOS : le geste horizontal doit être pris comme du scroll, pas du zoom */
+.notion-table,
+.notion-table-view,
+.notion-collection-view-table {
+  touch-action: pan-x pan-y !important;
+}
