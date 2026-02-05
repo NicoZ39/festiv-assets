@@ -456,3 +456,27 @@ a[href*="fillout.com/discover"]{
 .notion-collection-header-title {
   display: none !important;
 }
+/* Hint UX au-dessus des tables */
+.notion-collection-view-table::before {
+  content: "👉 Faites glisser le tableau horizontalement";
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+/* Indicateur visuel scroll horizontal */
+.notion-collection-view-table {
+  position: relative;
+}
+
+.notion-collection-view-table::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 100%;
+  background: linear-gradient(to left, rgba(255,255,255,.9), transparent);
+}
