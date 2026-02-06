@@ -503,3 +503,24 @@ a[href*="fillout.com/discover"]{
 .festiv-back-btn:hover{
   background:#ff7034;
 }
+/* Cible uniquement le logo DANS le footer */
+footer.styles_main_footer__LoNow .styles_logo__JgM3o img{
+  transform-origin: 50% 80%;
+  transition: transform .2s ease;
+  will-change: transform;
+}
+
+footer.styles_main_footer__LoNow .styles_logo__JgM3o:hover img{
+  animation: festiv-wiggle .55s ease-in-out;
+}
+
+@keyframes festiv-wiggle{
+  0%   { transform: rotate(0) scale(1); }
+  15%  { transform: rotate(-8deg) scale(1.03); }
+  30%  { transform: rotate(8deg)  scale(1.03); }
+  45%  { transform: rotate(-6deg) scale(1.02); }
+  60%  { transform: rotate(6deg)  scale(1.02); }
+  75%  { transform: rotate(-3deg) scale(1.01); }
+  100% { transform: rotate(0) scale(1); }
+}
+
