@@ -511,6 +511,14 @@ a[href*="fillout.com/discover"]{
 .festiv-back-btn:hover{
   background:#ff7034;
 }
+.festiv-back-btn:focus{
+  outline:none;
+}
+
+.festiv-back-btn:focus-visible{
+  box-shadow:0 0 0 3px rgba(0,177,172,.35);
+}
+
 /* Cible uniquement le logo DANS le footer */
 footer.styles_main_footer__LoNow .styles_logo__JgM3o img{
   transform-origin: 50% 80%;
