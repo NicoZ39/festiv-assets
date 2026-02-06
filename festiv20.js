@@ -250,6 +250,80 @@
       console.error("[festiv20] setupTableScrollUX error:", e);
     }
   }
+  // 6) Shortcode [retour] => bouton retour (type WordPress)
+  function shortcodeRetour() {
+    try {
+      // On cible les blocs de texte Notion (texte normal + callout)
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+      );
+
+      nodes.forEach((node) => {
+        // anti-doublon
+        if (node.dataset.festivRetourDone === "1") return;
+
+        const txt = (node.textContent || "").trim();
+        if (!txt.includes("[retour]")) return;
+
+        node.dataset.festivRetourDone = "1";
+
+        // Remplacement : on garde le texte autour et on injecte un bouton
+        // Version simple: si le bloc ne contient QUE "[retour]"
+        if (txt === "[retour]") {
+          const btn = document.createElement("a");
+          btn.href = "#";
+          btn.className = "festiv-back-btn";
+          btn.textContent = "← Retour";
+
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            // Si on a un vrai historique interne, on revient, sinon accueil
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = "/";
+            }
+          });
+
+          node.textContent = "";
+          node.appendChild(btn);
+          return;
+        }
+
+        // Si [retour] est au milieu d'une phrase, on remplace juste le token
+        // (on reconstruit en HTML)
+        const safe = node.textContent; // on évite de garder d'HTML Notion
+        const parts = safe.split("[retour]");
+
+        node.textContent = "";
+
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+
+          if (i < parts.length - 1) {
+            const btn = document.createElement("a");
+            btn.href = "#";
+            btn.className = "festiv-back-btn";
+            btn.textContent = "← Retour";
+
+            btn.addEventListener("click", (e) => {
+              e.preventDefault();
+              if (window.history.length > 1) {
+                window.history.back();
+              } else {
+                window.location.href = "/";
+              }
+            });
+
+            node.appendChild(btn);
+          }
+        });
+      });
+    } catch (e) {
+      console.error("[festiv20] shortcodeRetour error:", e);
+    }
+  }
 
 
   function runAll() {
@@ -259,6 +333,7 @@
     addCopyright();
     tweakCover();
     setupTableScrollUX();
+    shortcodeRetour();
   }
 
   onReady(() => {
