@@ -523,4 +523,18 @@ footer.styles_main_footer__LoNow .styles_logo__JgM3o:hover img{
   75%  { transform: rotate(-3deg) scale(1.01); }
   100% { transform: rotate(0) scale(1); }
 }
+/* Wiggle sur le "logo" d'entête (le titre Festiv’Ounans) */
+.custom-header-container a.title-link .title,
+.custom-header-container a.title-link span.title {
+  display: inline-block;           /* indispensable pour transformer/animer */
+  transform-origin: 50% 80%;
+  will-change: transform;
+}
+
+/* Animation au survol */
+.custom-header-container a.title-link .title:hover,
+.custom-header-container a.title-link span.title:hover {
+  animation: festiv-wiggle .55s ease-in-out;
+}
+
 
