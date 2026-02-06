@@ -452,7 +452,7 @@ a[href*="fillout.com/discover"]{
   /* option : ne pas épaissir visuellement */
   font-weight: inherit !important;
 }
-.notion-text a:hover{background:#ff7034!important}
+
 /* Masquer le titre + icône de la base de commentaires */
 .notion-collection-header-title {
   display: none !important;
