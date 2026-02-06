@@ -50,6 +50,15 @@
       const d = new Date(iso[0].replace(" ", "T"));
       if (!isNaN(d)) return d;
     }
+    // Slash: 2026/01/30 ou 2025/05/8
+const slash = t.match(/\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b/);
+if (slash) {
+  const year = Number(slash[1]);
+  const month = Number(slash[2]) - 1; // 0-11
+  const day = Number(slash[3]);
+  const d = new Date(year, month, day);
+  if (!isNaN(d)) return d;
+}
 
     // EN: "May 14, 2026" + optional time "06:00"
     const en = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
