@@ -97,31 +97,40 @@ if (en2) {
 function formatDates() {
   try {
     const els = document.querySelectorAll([
-      ".notion-property-date",                 // propriétés Notion
-      ".notion-callout-text .notion-text",     // encadrés (OK)
-      ".notion-simple-table-cell",             // ✅ tables Notion (Simple Table)
-      ".notion-page-content-inner > .notion-text" // ✅ texte “tel quel” sur la page
+      // Dates “prop” (page + DB)
+      ".notion-property-date",
+      // Dates dans les cartes (vignettes / gallery / list)
+      ".notion-collection-card .notion-property-date",
+      ".notion-collection-card .notion-property .notion-text",
+      // Dates en vue table (DB table view)
+      ".notion-collection .notion-table-cell .notion-property-date",
+      ".notion-collection .notion-table-cell .notion-text",
+      // Simple Table Notion (ton cas “Jan 30, 2026” en tableau)
+      ".notion-simple-table-cell"
     ].join(","));
 
     els.forEach((el) => {
-      // uniquement des feuilles
-      if (el.children && el.children.length > 0) return;
-
       if (el.dataset.festivDateDone === "1") return;
+
+      // on ne modifie que les feuilles
+      if (el.children && el.children.length > 0) return;
 
       const raw = (el.textContent || "").replace(/\u00A0/g, " ").trim();
       if (!raw) return;
 
-      // filtre : on évite de toucher des paragraphes
-      if (raw.length > 30) return;
-
-      // déjà formaté
-      if (raw.startsWith("⏰ ")) return;
-
-      // petit pré-filtre : ça doit ressembler à une date
-      if (!/(\d{4}-\d{2}-\d{2})|([A-Za-z]{3,9}\s+\d{1,2})|(\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre))/i.test(raw)) {
+      // évite de retoucher un texte déjà FR (ex: “vendredi 30 janvier 2026”)
+      if (/^\s*(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/i.test(raw)) {
+        el.dataset.festivDateDone = "1";
         return;
       }
+
+      // pré-filtre très léger : doit ressembler à une date
+      const looksLikeDate =
+        /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||                   // ISO
+        /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||   // Jan 30, 2026 / Jan 30 2026
+        /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw);
+
+      if (!looksLikeDate) return;
 
       const d = parseDateFromText(raw);
       if (!d) return;
@@ -147,6 +156,7 @@ function formatDates() {
     console.error("[festiv20] formatDates error:", e);
   }
 }
+
 
 
 
