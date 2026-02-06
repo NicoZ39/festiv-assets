@@ -58,6 +58,13 @@
       if (!isNaN(d)) return d;
     }
 
+    // EN sans virgule: "Jan 30 2026" + optional time "06:00"
+const en2 = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2}\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
+if (en2) {
+  const d = new Date(en2[1] + (en2[2] ? " " + en2[2] : ""));
+  if (!isNaN(d)) return d;
+}
+
     // FR: "14 mai 2026" + optional "dès 06h00" / "à 6h00"
     const fr = t
       .replace(/^⏰\s*/g, "")
@@ -85,30 +92,32 @@
   }
 
   // 2) Format dates
-  function formatDates() {
+  // 2) Format dates (robuste : callout + tables + pages)
+function formatDates() {
   try {
-    const selectors = [
-      ".notion-property-date",                         // propriétés date (souvent OK)
-      ".notion-collection .notion-table-cell .notion-text",  // cellules en vue table
+    const els = document.querySelectorAll([
+      ".notion-property-date",                          // dates Notion (propriété)
+      ".notion-callout-text .notion-text",              // encadrés (ce qui marchait déjà)
+      ".notion-collection .notion-table-cell .notion-text",  // cellules tableaux
       ".notion-collection .notion-collection-card .notion-text", // cartes (gallery/board)
-      ".notion-page-content .notion-property .notion-text"   // propriétés sur une page
-    ].join(",");
-
-    const els = document.querySelectorAll(selectors);
+      ".notion-page-content .notion-property .notion-text"    // propriétés affichées sur une page
+    ].join(","));
 
     els.forEach((el) => {
+      // ✅ très important : ne modifier que des "feuilles" (sinon Notion rerend et écrase)
+      if (el.children && el.children.length > 0) return;
+
       // anti-doublon
       if (el.dataset.festivDateDone === "1") return;
 
       const raw = (el.textContent || "").trim();
       if (!raw) return;
 
-      // garde-fou: on évite de toucher des textes longs
+      // ne touche pas aux textes longs / phrases
       if (raw.length > 40) return;
 
-      // garde-fou: si c'est déjà au format FR avec notre horloge ou un jour FR
+      // déjà formaté par toi
       if (raw.startsWith("⏰ ")) return;
-      if (/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/i.test(raw)) return;
 
       const d = parseDateFromText(raw);
       if (!d) return;
@@ -121,7 +130,8 @@
       });
 
       const hasTime =
-        /\b(\d{2}:\d{2})\b/.test(raw) || /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
+        /\b(\d{2}:\d{2})\b/.test(raw) ||
+        /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
 
       el.textContent = hasTime
         ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
@@ -133,6 +143,7 @@
     console.error("[festiv20] formatDates error:", e);
   }
 }
+
 
 
   // 3) Footer colonnes + copyright
