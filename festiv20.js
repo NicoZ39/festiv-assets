@@ -135,9 +135,11 @@ function formatDates() {
 
       // pré-filtre très léger : doit ressembler à une date
       const looksLikeDate =
-        /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||                   // ISO
-        /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||   // Jan 30, 2026 / Jan 30 2026
-        /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw);
+  /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||                    // ISO
+  /\b\d{4}\/\d{1,2}\/\d{1,2}\b/.test(raw) ||              // ✅ Slash (blog)
+  /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||    // EN
+  /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw); // FR
+
 
       if (!looksLikeDate) return;
 
