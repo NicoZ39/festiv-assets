@@ -486,3 +486,20 @@ a[href*="fillout.com/discover"]{
   margin: 6px 0 10px;
   font-style: italic;
 }
+.festiv-back-btn{
+  display:inline-block;
+  padding:8px 24px;
+  border-radius:9999px;
+  background:#00b1ac;
+  color:#fff !important;
+  text-decoration:none !important;
+  font-family:Poppins, sans-serif;
+  font-size:14px;
+  line-height:1.4;
+  transition:.3s;
+  cursor:pointer;
+}
+
+.festiv-back-btn:hover{
+  background:#ff7034;
+}
