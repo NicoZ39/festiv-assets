@@ -554,4 +554,46 @@ footer.styles_main_footer__LoNow .styles_logo__JgM3o:hover img{
   animation: festiv-wiggle .55s ease-in-out;
 }
 
+/* =========================
+   LIENS TEXTE (propres)
+   - seulement dans le contenu
+   - pas de rouge, pas d'effet sur les logos/images
+   ========================= */
 
+/* 1) On limite aux liens du contenu (Notion) */
+.notion-text a,
+.notion-callout-text a,
+.notion-list a {
+  color: #00b1ac !important;         /* vert Festiv'Ounans */
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  transition: color .2s ease, box-shadow .2s ease !important;
+}
+
+/* 2) Hover moderne : soulignement "propre" (pas le underline basique) */
+.notion-text a:hover,
+.notion-callout-text a:hover,
+.notion-list a:hover {
+  color: #ff7034 !important;         /* orange Festiv'Ounans */
+  box-shadow: inset 0 -2px 0 0 currentColor !important;
+}
+
+/* 3) IMPORTANT : si le lien contient une image (logo), on ne stylise pas */
+.notion-text a img,
+.notion-callout-text a img,
+.notion-list a img {
+  box-shadow: none !important;
+}
+
+.notion-text a:has(img),
+.notion-callout-text a:has(img),
+.notion-list a:has(img) {
+  box-shadow: none !important;
+  color: inherit !important;
+}
+
+/* 4) On ne touche pas aux boutons / liens de header déjà stylés */
+.notion-button,
+.custom-header__links__link {
+  box-shadow: none !important;
+}
