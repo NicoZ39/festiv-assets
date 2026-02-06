@@ -93,31 +93,35 @@ if (en2) {
 
   // 2) Format dates
   // 2) Format dates (robuste : callout + tables + pages)
+// 2) Format dates (callout + simple table + texte simple)
 function formatDates() {
   try {
     const els = document.querySelectorAll([
-      ".notion-property-date",                          // dates Notion (propriété)
-      ".notion-callout-text .notion-text",              // encadrés (ce qui marchait déjà)
-      ".notion-collection .notion-table-cell .notion-text",  // cellules tableaux
-      ".notion-collection .notion-collection-card .notion-text", // cartes (gallery/board)
-      ".notion-page-content .notion-property .notion-text"    // propriétés affichées sur une page
+      ".notion-property-date",                 // propriétés Notion
+      ".notion-callout-text .notion-text",     // encadrés (OK)
+      ".notion-simple-table-cell",             // ✅ tables Notion (Simple Table)
+      ".notion-page-content-inner > .notion-text" // ✅ texte “tel quel” sur la page
     ].join(","));
 
     els.forEach((el) => {
-      // ✅ très important : ne modifier que des "feuilles" (sinon Notion rerend et écrase)
+      // uniquement des feuilles
       if (el.children && el.children.length > 0) return;
 
-      // anti-doublon
       if (el.dataset.festivDateDone === "1") return;
 
-      const raw = (el.textContent || "").trim();
+      const raw = (el.textContent || "").replace(/\u00A0/g, " ").trim();
       if (!raw) return;
 
-      // ne touche pas aux textes longs / phrases
-      if (raw.length > 40) return;
+      // filtre : on évite de toucher des paragraphes
+      if (raw.length > 30) return;
 
-      // déjà formaté par toi
+      // déjà formaté
       if (raw.startsWith("⏰ ")) return;
+
+      // petit pré-filtre : ça doit ressembler à une date
+      if (!/(\d{4}-\d{2}-\d{2})|([A-Za-z]{3,9}\s+\d{1,2})|(\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre))/i.test(raw)) {
+        return;
+      }
 
       const d = parseDateFromText(raw);
       if (!d) return;
@@ -143,6 +147,7 @@ function formatDates() {
     console.error("[festiv20] formatDates error:", e);
   }
 }
+
 
 
 
