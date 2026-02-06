@@ -86,37 +86,54 @@
 
   // 2) Format dates
   function formatDates() {
-    try {
-      const els = document.querySelectorAll(".notion-property-date, .notion-callout-text .notion-text");
+  try {
+    const selectors = [
+      ".notion-property-date",                         // propriétés date (souvent OK)
+      ".notion-collection .notion-table-cell .notion-text",  // cellules en vue table
+      ".notion-collection .notion-collection-card .notion-text", // cartes (gallery/board)
+      ".notion-page-content .notion-property .notion-text"   // propriétés sur une page
+    ].join(",");
 
-      els.forEach((el) => {
-        const raw = (el.textContent || "").trim();
-        if (!raw) return;
+    const els = document.querySelectorAll(selectors);
 
-        const d = parseDateFromText(raw);
-        if (!d) return;
+    els.forEach((el) => {
+      // anti-doublon
+      if (el.dataset.festivDateDone === "1") return;
 
-        const dateStr = d.toLocaleDateString(locale, {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        });
+      const raw = (el.textContent || "").trim();
+      if (!raw) return;
 
-        // Si le texte original contient une heure (dès/à ou hh:mm), on l’affiche
-        const hasTime =
-          /\b(\d{2}:\d{2})\b/.test(raw) || /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
+      // garde-fou: on évite de toucher des textes longs
+      if (raw.length > 40) return;
 
-        if (hasTime) {
-          el.textContent = `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`;
-        } else {
-          el.textContent = dateStr.replace(/^\p{L}+/u, (w) => w); // noop mais safe
-        }
+      // garde-fou: si c'est déjà au format FR avec notre horloge ou un jour FR
+      if (raw.startsWith("⏰ ")) return;
+      if (/\b(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/i.test(raw)) return;
+
+      const d = parseDateFromText(raw);
+      if (!d) return;
+
+      const dateStr = d.toLocaleDateString(locale, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       });
-    } catch (e) {
-      console.error("[festiv20] formatDates error:", e);
-    }
+
+      const hasTime =
+        /\b(\d{2}:\d{2})\b/.test(raw) || /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
+
+      el.textContent = hasTime
+        ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
+        : dateStr;
+
+      el.dataset.festivDateDone = "1";
+    });
+  } catch (e) {
+    console.error("[festiv20] formatDates error:", e);
   }
+}
+
 
   // 3) Footer colonnes + copyright
   function createFooterColumns() {
