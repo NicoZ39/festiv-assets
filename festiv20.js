@@ -22,7 +22,8 @@
   function makeLogoClickable() {
     try {
       const logoDiv = document.querySelector(".styles_logo__JgM3o");
-      if (!logoDiv || logoDiv.querySelector("a")) return;
+      if (!logoDiv) return;
+      if (logoDiv.closest("a") || logoDiv.querySelector("a")) return;
 
       const img = logoDiv.querySelector("img");
       if (!img) return;
@@ -250,80 +251,65 @@
       console.error("[festiv20] setupTableScrollUX error:", e);
     }
   }
-  // 6) Shortcode [retour] => bouton retour (type WordPress)
-  function shortcodeRetour() {
-    try {
-      // On cible les blocs de texte Notion (texte normal + callout)
-      const nodes = document.querySelectorAll(
-        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
-      );
+  // 6) Shortcode [retour] => bouton retour (anti "clic fantôme")
+function shortcodeRetour() {
+  try {
+    const pageBornAt = (window.__FESTIV_PAGE_BORN_AT ||= Date.now());
 
-      nodes.forEach((node) => {
-        // anti-doublon
-        if (node.dataset.festivRetourDone === "1") return;
+    const nodes = document.querySelectorAll(
+      ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+    );
 
-        const txt = (node.textContent || "").trim();
-        if (!txt.includes("[retour]")) return;
+    nodes.forEach((node) => {
+      if (node.dataset.festivRetourDone === "1") return;
 
-        node.dataset.festivRetourDone = "1";
+      const txt = (node.textContent || "").trim();
+      if (!txt.includes("[retour]")) return;
 
-        // Remplacement : on garde le texte autour et on injecte un bouton
-        // Version simple: si le bloc ne contient QUE "[retour]"
-        if (txt === "[retour]") {
-          const btn = document.createElement("a");
-          btn.href = "#";
-          btn.className = "festiv-back-btn";
-          btn.textContent = "← Retour";
+      node.dataset.festivRetourDone = "1";
 
-          btn.addEventListener("click", (e) => {
-            e.preventDefault();
+      const makeBtn = () => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "festiv-back-btn";
+        btn.textContent = "← Retour";
 
-            // Si on a un vrai historique interne, on revient, sinon accueil
-            if (window.history.length > 1) {
-              window.history.back();
-            } else {
-              window.location.href = "/";
-            }
-          });
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
 
-          node.textContent = "";
-          node.appendChild(btn);
-          return;
-        }
+          // Anti clic "hérité" du clic qui a ouvert la page
+          if (Date.now() - pageBornAt < 900) return;
 
-        // Si [retour] est au milieu d'une phrase, on remplace juste le token
-        // (on reconstruit en HTML)
-        const safe = node.textContent; // on évite de garder d'HTML Notion
-        const parts = safe.split("[retour]");
-
-        node.textContent = "";
-
-        parts.forEach((part, i) => {
-          if (part) node.appendChild(document.createTextNode(part));
-
-          if (i < parts.length - 1) {
-            const btn = document.createElement("a");
-            btn.href = "#";
-            btn.className = "festiv-back-btn";
-            btn.textContent = "← Retour";
-
-            btn.addEventListener("click", (e) => {
-              e.preventDefault();
-              if (window.history.length > 1) {
-                window.history.back();
-              } else {
-                window.location.href = "/";
-              }
-            });
-
-            node.appendChild(btn);
-          }
+          if (window.history.length > 1) window.history.back();
+          else window.location.href = "/";
         });
+
+        return btn;
+      };
+
+      // Cas 1 : bloc uniquement "[retour]"
+      if (txt === "[retour]") {
+        node.textContent = "";
+        node.appendChild(makeBtn());
+        return;
+      }
+
+      // Cas 2 : [retour] au milieu du texte
+      const safe = node.textContent;
+      const parts = safe.split("[retour]");
+
+      node.textContent = "";
+      parts.forEach((part, i) => {
+        if (part) node.appendChild(document.createTextNode(part));
+        if (i < parts.length - 1) node.appendChild(makeBtn());
       });
-    } catch (e) {
-      console.error("[festiv20] shortcodeRetour error:", e);
-    }
+    });
+  } catch (e) {
+    console.error("[festiv20] shortcodeRetour error:", e);
   }
+}
+
 
 
   function runAll() {
