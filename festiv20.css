@@ -597,3 +597,35 @@ footer.styles_main_footer__LoNow .styles_logo__JgM3o:hover img{
 .custom-header__links__link {
   box-shadow: none !important;
 }
+/* =========================================
+   Footer custom (injecté par festiv20.js)
+   Liens = #00b1ac, hover = #ff7034
+========================================= */
+
+footer.styles_main_footer__LoNow .festiv-footer-columns{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  text-align: center;
+  padding: 0 10px;
+  width: 100%;
+}
+
+@media (max-width: 600px){
+  footer.styles_main_footer__LoNow .festiv-footer-columns{
+    grid-template-columns: 1fr;
+  }
+}
+
+footer.styles_main_footer__LoNow .festiv-footer-column a{
+  display: block;
+  color: #00b1ac !important;
+  text-decoration: none !important;
+  margin-bottom: 8px;
+  font-weight: 600;
+  transition: color .2s ease !important;
+}
+
+footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
+  color: #ff7034 !important;
+}
