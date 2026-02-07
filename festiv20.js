@@ -181,12 +181,6 @@ function formatDates() {
       const wrapper = document.createElement("div");
       wrapper.className = "festiv-footer-columns";
       wrapper.innerHTML = `
-<style>
-.festiv-footer-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;text-align:center;padding:0 10px;width:100%;}
-.festiv-footer-column a{display:block;color:#555;text-decoration:none;margin-bottom:8px;transition:color 0.2s;}
-.festiv-footer-column a:hover{color:#000;}
-@media(max-width:600px){.festiv-footer-columns{grid-template-columns:1fr;}}
-</style>
 <div class="festiv-footer-column">
   <a href="/">Accueil</a>
   <a href="/nos-evenements-d0b436d5a1e1428d8bd76845ab0654de">Événements</a>
@@ -205,6 +199,7 @@ function formatDates() {
   <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
   <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
 </div>`;
+
       footer.appendChild(wrapper);
     } catch (e) {
       console.error("[festiv20] createFooterColumns error:", e);
