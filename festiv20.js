@@ -358,10 +358,11 @@ function shortcodeRetour() {
     console.error("[festiv20] shortcodeRetour error:", e);
   }
 }
-// 7) Liens : interne = même onglet / externe = nouvel onglet
+// 7) Liens : interne = même onglet / externe = nouvel onglet (robuste Simple.ink)
 function fixLinkTargets() {
   try {
-    const anchors = document.querySelectorAll('a[href]');
+    if (window.__FESTIV_LINKS_BOUND) return;
+    window.__FESTIV_LINKS_BOUND = true;
 
     const isSpecial = (href) =>
       !href ||
@@ -370,55 +371,80 @@ function fixLinkTargets() {
       href.startsWith("tel:") ||
       href.startsWith("javascript:");
 
-    const isInternalHref = (href) => {
+    const classify = (href) => {
       // relatif => interne
-      if (href.startsWith("/")) return true;
+      if (href.startsWith("/")) return { type: "internal", url: href };
 
-      // URL absolue => comparer host
       try {
         const url = new URL(href, window.location.href);
 
         // même origin => interne
-        if (url.origin === window.location.origin) return true;
+        if (url.origin === window.location.origin) return { type: "internal", url: url.href };
 
-        // liens vers *.thesimple.ink => interne (y compris autre sous-domaine)
-        if (url.hostname.endsWith(".thesimple.ink")) return true;
+        // tout ce qui est *.thesimple.ink => interne (y compris liens absolus)
+        if (url.hostname.endsWith(".thesimple.ink")) return { type: "internal", url: url.href };
 
-        return false;
+        return { type: "external", url: url.href };
       } catch {
-        // href chelou => on ne touche pas
-        return false;
+        return { type: "unknown", url: href };
       }
     };
 
+    // 1) Petit fix "attributs" (quand ça marche)
+    const anchors = document.querySelectorAll("a[href]");
     anchors.forEach((a) => {
-      if (a.dataset.festivTargetDone === "1") return;
-
       const href = (a.getAttribute("href") || "").trim();
-      if (isSpecial(href)) {
-        a.dataset.festivTargetDone = "1";
-        return;
-      }
+      if (isSpecial(href)) return;
 
-      const internal = isInternalHref(href);
-
-      if (internal) {
-        // ✅ même onglet
+      const { type } = classify(href);
+      if (type === "internal") {
         a.removeAttribute("target");
-        // on nettoie rel (souvent ajouté avec _blank)
         a.removeAttribute("rel");
-      } else {
-        // ✅ nouvel onglet
+      } else if (type === "external") {
         a.setAttribute("target", "_blank");
         a.setAttribute("rel", "noopener noreferrer");
       }
-
-      a.dataset.festivTargetDone = "1";
     });
+
+    // 2) Fix "au clic" (quand Simple.ink réécrit target / gère le click)
+    document.addEventListener(
+      "click",
+      (e) => {
+        // seulement clic gauche normal, sans ctrl/cmd/shift/alt
+        if (e.defaultPrevented) return;
+        if (e.button !== 0) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+        const a = e.target.closest && e.target.closest("a[href]");
+        if (!a) return;
+
+        const href = (a.getAttribute("href") || "").trim();
+        if (isSpecial(href)) return;
+
+        const { type, url } = classify(href);
+
+        if (type === "internal") {
+          // ✅ force même onglet
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.assign(url);
+        } else if (type === "external") {
+          // ✅ force nouvel onglet si besoin (sans casser le reste)
+          // si Simple.ink n'ouvre pas en _blank, on le fait
+          if (a.getAttribute("target") !== "_blank") {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open(url, "_blank", "noopener,noreferrer");
+          }
+        }
+      },
+      true // capture: on passe avant les handlers de Simple.ink
+    );
   } catch (e) {
     console.error("[festiv20] fixLinkTargets error:", e);
   }
 }
+
 
 
 
