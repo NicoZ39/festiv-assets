@@ -28,12 +28,13 @@
 }
 
 /* Centre UNIQUEMENT les blocks qui contiennent un bouton
-   (évite de mettre display:flex sur tous les .notion-block) */
+   (évite de mettre display:flex sur tous les .notion-block) 
 .notion-block:has(.notion-button){
   max-width: 100% !important;
   display: flex !important;
   justify-content: center !important;
-}
+} 
+*/
 
 /* Fallback si :has() n'est pas supporté (rare) */
 .notion-block .notion-button{
