@@ -758,7 +758,7 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 /* Le plus important : autoriser le bloc texte à rétrécir */
 .notion-callout-text{
   flex: 1 1 auto !important;
-  min-width: 0 !important;       /* ✅ empêche le chevauchement en colonnes */
+ max-width: calc(100% - 24px - 16px) !important;       /* ✅ empêche le chevauchement en colonnes */
 }
 
 /* URLs / liens longs : wrap agressif pour éviter de déborder */
