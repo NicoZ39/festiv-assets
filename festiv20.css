@@ -699,49 +699,59 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 
 
 /* =========================================
-   FIX SIMPLE.INK : Callout "plat"
-   (arrondi + ombre peuvent être sur le wrapper)
-   À COLLER TOUT EN BAS DU CSS
+   SIMPLE.INK — CALL0UTS "PLATS"
+   Cible large : les classes notion-*_background_co
+   (ombre/radius souvent sur wrappers Simple.ink)
+   À COLLER TOUT EN BAS
 ========================================= */
 
-/* 1) Si l'ombre/radius est sur le wrapper du bloc */
-.notion-block:has(> .notion-callout),
-.notion-block:has(.notion-callout){
-  border-radius: 6px !important;
-  box-shadow: none !important;
-  filter: none !important;
-  background-clip: padding-box !important;
-}
-
-/* 2) Le callout lui-même */
-.notion-callout{
+/* 1) Le callout lui-même + ses variantes de couleur */
+.notion-callout,
+.notion-callout.notion-blue_background_co,
+.notion-callout.notion-red_background_co{
   border-radius: 6px !important;
   box-shadow: none !important;
   filter: none !important;
   border: 1px solid rgba(0,0,0,.08) !important;
 }
 
-/* 3) Parfois le visuel "carte" est sur le contenu */
-.notion-callout > .notion-callout-text,
-.notion-callout-text{
-  border-radius: 0 !important; /* évite un double arrondi interne */
+/* 2) Tout élément "carte" que Simple.ink peut ajouter AUTOUR / DANS le callout
+      (on vise les wrappers qui portent la couleur aussi) */
+[class*="notion-"][class*="_background_co"]{
   box-shadow: none !important;
   filter: none !important;
 }
 
-/* 4) Pseudo-éléments (certains thèmes mettent l'ombre ici) */
-.notion-callout::before,
-.notion-callout::after,
-.notion-block:has(.notion-callout)::before,
-.notion-block:has(.notion-callout)::after{
-  box-shadow: none !important;
-  filter: none !important;
-}
-
-/* 5) Le callout imbriqué (ton encadré rouge "👉") */
-.notion-callout .notion-callout{
+/* 3) Parent immédiat le plus fréquent (wrapper de bloc / carte) */
+.notion-block[class*="notion-block-"]:has(.notion-callout.notion-blue_background_co),
+.notion-block[class*="notion-block-"]:has(.notion-callout.notion-red_background_co){
   border-radius: 6px !important;
   box-shadow: none !important;
   filter: none !important;
-  border: 1px solid rgba(0,0,0,.10) !important;
 }
+
+/* 4) Cas où l’ombre est posée sur un div interne “générique” */
+.notion-callout.notion-blue_background_co * ,
+.notion-callout.notion-red_background_co *{
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* 5) Cas drop-shadow (très utilisé pour simuler l’ombre) */
+.notion-callout.notion-blue_background_co,
+.notion-callout.notion-red_background_co,
+.notion-callout.notion-blue_background_co * ,
+.notion-callout.notion-red_background_co *{
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+/* 6) Désactive aussi les pseudo-éléments (ombre parfois ici) */
+.notion-callout.notion-blue_background_co::before,
+.notion-callout.notion-blue_background_co::after,
+.notion-callout.notion-red_background_co::before,
+.notion-callout.notion-red_background_co::after{
+  box-shadow: none !important;
+  filter: none !important;
+}
+
