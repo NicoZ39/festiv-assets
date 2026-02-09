@@ -394,6 +394,40 @@ function bindNotionButtons() {
     console.error("[festiv20] bindNotionButtons error:", e);
   }
 }
+// 8) Corrige les <a target="_blank"> internes => même onglet
+function fixInternalAnchors() {
+  try {
+    const anchors = document.querySelectorAll('a[href]');
+    anchors.forEach((a) => {
+      const href = (a.getAttribute("href") || "").trim();
+      if (!href) return;
+      if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+
+      let url;
+      try {
+        url = new URL(href, window.location.href);
+      } catch {
+        return;
+      }
+
+      const isInternal =
+        url.origin === window.location.origin ||
+        url.hostname.endsWith(".thesimple.ink"); // tes pages internes en absolu
+
+      if (isInternal) {
+        // ✅ même onglet
+        a.removeAttribute("target");          // le plus fiable
+        a.removeAttribute("rel");
+      } else {
+        // ✅ externe => nouvel onglet
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+      }
+    });
+  } catch (e) {
+    console.error("[festiv20] fixInternalAnchors error:", e);
+  }
+}
 
   function runAll() {
     makeLogoClickable();
@@ -404,7 +438,10 @@ function bindNotionButtons() {
     setupTableScrollUX();
     shortcodeRetour();
     bindNotionButtons();
+    fixInternalAnchors();
   }
+setTimeout(fixInternalAnchors, 500);
+setTimeout(fixInternalAnchors, 1500);
 
   onReady(() => {
     log("loaded ✅");
