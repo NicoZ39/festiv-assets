@@ -768,36 +768,3 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
 }
-/* =========================================
-   FIX BOOKMARK / LIENS en colonnes
-   (empêche le chevauchement + casse les URLs longues)
-========================================= */
-
-/* Les colonnes doivent autoriser leurs enfants à rétrécir */
-.notion-column,
-.notion-column > div,
-.notion-column .notion-callout,
-.notion-column .notion-callout-text{
-  min-width: 0 !important;
-}
-
-/* Bookmarks / embeds (cartes de lien Notion) : autoriser le shrink */
-.notion-bookmark,
-.notion-bookmark > a,
-.notion-bookmark > div,
-.notion-bookmark > a > div{
-  min-width: 0 !important;
-  max-width: 100% !important;
-}
-
-/* Le texte/URL dans les bookmarks : wrap agressif */
-.notion-bookmark *,
-.notion-bookmark a{
-  overflow-wrap: anywhere !important;
-  word-break: break-word !important;
-}
-
-/* Si Simple.ink force une ligne unique quelque part */
-.notion-bookmark *{
-  white-space: normal !important;
-}
