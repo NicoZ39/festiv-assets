@@ -824,3 +824,5 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   box-shadow: none !important;
   filter: none !important;
 }
+/* TEST: si tu vois PAS de gros contour rouge, Simple.ink n'utilise pas .notion-callout pour la "carte" */
+.notion-callout { outline: 6px solid red !important; }
