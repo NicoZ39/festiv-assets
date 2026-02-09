@@ -721,3 +721,50 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-callout .notion-hr {
   opacity: 0.25 !important;
 }
+/* =========================================
+   FIX SIMPLE.INK : Callout "plat"
+   (arrondi + ombre peuvent être sur le wrapper)
+   À COLLER TOUT EN BAS DU CSS
+========================================= */
+
+/* 1) Si l'ombre/radius est sur le wrapper du bloc */
+.notion-block:has(> .notion-callout),
+.notion-block:has(.notion-callout){
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+  background-clip: padding-box !important;
+}
+
+/* 2) Le callout lui-même */
+.notion-callout{
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+  border: 1px solid rgba(0,0,0,.08) !important;
+}
+
+/* 3) Parfois le visuel "carte" est sur le contenu */
+.notion-callout > .notion-callout-text,
+.notion-callout-text{
+  border-radius: 0 !important; /* évite un double arrondi interne */
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* 4) Pseudo-éléments (certains thèmes mettent l'ombre ici) */
+.notion-callout::before,
+.notion-callout::after,
+.notion-block:has(.notion-callout)::before,
+.notion-block:has(.notion-callout)::after{
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* 5) Le callout imbriqué (ton encadré rouge "👉") */
+.notion-callout .notion-callout{
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+}
