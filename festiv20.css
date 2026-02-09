@@ -746,3 +746,25 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-callout{
   overflow: visible !important;
 }
+/* =========================================
+   FIX 2 colonnes : callouts qui se chevauchent
+========================================= */
+
+/* Le callout en flex, OK, mais avec un vrai comportement responsive */
+.notion-callout{
+  gap: 12px !important;          /* espace propre entre icône et texte */
+}
+
+/* Le plus important : autoriser le bloc texte à rétrécir */
+.notion-callout-text{
+  flex: 1 1 auto !important;
+  min-width: 0 !important;       /* ✅ empêche le chevauchement en colonnes */
+}
+
+/* URLs / liens longs : wrap agressif pour éviter de déborder */
+.notion-callout-text a,
+.notion-callout-text,
+.notion-text a{
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
