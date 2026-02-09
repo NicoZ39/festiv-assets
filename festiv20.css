@@ -693,3 +693,31 @@ footer.styles_main_footer__LoNow .festiv-footer-column a{
 footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   color: #ff7034 !important;
 }
+/* ===== Encadrés Notion (Callout) : rendu "plat" comme sur la 1ère capture ===== */
+
+/* Tous les callouts */
+.notion-callout {
+  border-radius: 6px !important;        /* moins arrondi */
+  box-shadow: none !important;          /* supprime l'ombre */
+  filter: none !important;
+  padding: 18px 22px !important;        /* padding plus "serré" */
+  border: 1px solid rgba(0,0,0,.08) !important;  /* fin liseré */
+}
+
+/* Si Simple.ink ajoute une ombre via un wrapper interne */
+.notion-callout * {
+  box-shadow: none !important;
+}
+
+/* Optionnel : le petit encadré callout à l'intérieur (ton callout rouge "👉") */
+.notion-callout .notion-callout {
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  padding: 14px 18px !important;
+}
+
+/* Optionnel : la ligne de séparation dans le callout (si tu veux plus discret) */
+.notion-callout .notion-hr {
+  opacity: 0.25 !important;
+}
