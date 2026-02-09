@@ -1,43 +1,112 @@
 @import url(https://fonts.googleapis.com/css2?family=Poppins:wght@900&display=swap);
 @import url(https://fonts.googleapis.com/css2?family=Caprasimo:wght@400&display=swap);
 
-/* Boutons & liens header */
-.custom-header__links__link,
-.notion-button {
+/* =========================================
+   BOUTONS (style "link-in-bio") + liens header
+   Remplace l'ancien bloc "Boutons & liens header"
+========================================= */
+
+/* Liens du header (inchangé) */
+.custom-header__links__link{
   padding: 8px 24px !important;
   font-family: Poppins, sans-serif !important;
   font-size: 16px !important;
   line-height: 1.4 !important;
   color: #fff !important;
   font-weight: 400 !important;
-}
 
-.notion-button {
-  opacity: 1 !important;
-  cursor: pointer;
-  background-color: #00b1ac !important;
-  border-radius: 9999px !important;
-  border: none !important;
-  transition: .3s;
-}
-
-.notion-button:hover {
-  background-color: #ff7034 !important;
-  opacity: 1 !important;
-}
-
-.custom-header__links__link {
   background-color: #00b1ac !important;
   border: none !important;
   border-radius: 9999px !important;
   text-decoration: none !important;
-  transition: background-color .3s;
+  transition: background-color .3s, transform .15s ease, opacity .2s ease !important;
 }
 
-.custom-header__links__link:hover {
+.custom-header__links__link:hover{
   background-color: #ff7034 !important;
   color: #fff !important;
 }
+
+/* Conteneur centré (effet "link in bio") */
+.notion-page-content{
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* Centre UNIQUEMENT les blocks qui contiennent un bouton
+   (évite de mettre display:flex sur tous les .notion-block) */
+.notion-block:has(.notion-button){
+  max-width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+/* Fallback si :has() n'est pas supporté (rare) */
+.notion-block .notion-button{
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Le composant bouton */
+.notion-button{
+  width: auto !important;
+  min-width: 260px !important;
+  max-width: 420px !important;
+
+  display: flex !important;
+  box-sizing: border-box !important;
+  opacity: 0.7 !important;
+
+  margin: 12px auto !important;
+  padding: 14px 24px !important;
+  border-radius: 9999px !important;
+
+  font-family: Poppins, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+
+  background-color: #00b1ac !important;
+  color: #ffffff !important;
+
+  text-align: center !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+
+  transition: transform .15s ease, background-color .2s ease, opacity .2s ease !important;
+}
+
+/* Contenu interne centré */
+.notion-button a,
+.notion-button > div,
+.notion-button > *{
+  width: auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Texte centré */
+.notion-button span{
+  text-align: center !important;
+  white-space: nowrap;
+}
+
+/* Hover */
+.notion-button:hover{
+  background-color: #ff7034 !important;
+  opacity: 1 !important;
+  transform: scale(1.04) !important;
+}
+
+/* Retire déco éventuelle */
+.notion-button::before{
+  display: none !important;
+}
+
 
 /* Masquages */
 .notion-block-fd1e69b90e7e43e0a4a94f0f1cb0f724 .notion-title-container,
