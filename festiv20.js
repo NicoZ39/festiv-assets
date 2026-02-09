@@ -2,6 +2,65 @@
   const locale = "fr-FR";
   const DEBUG = true;
 
+
+
+  
+  // ✅ ICI : colle ce bloc
+  (function patchWindowOpen() {
+    if (window.__FESTIV_OPEN_PATCHED) return;
+    window.__FESTIV_OPEN_PATCHED = true;
+
+    const originalOpen = window.open.bind(window);
+
+    function isInternalUrl(urlLike) {
+      try {
+        if (!urlLike) return false;
+
+        // URLs relatives => interne
+        if (typeof urlLike === "string" && urlLike.startsWith("/")) return true;
+
+        const url = new URL(urlLike, window.location.href);
+
+        // même origin => interne
+        if (url.origin === window.location.origin) return true;
+
+        // *.thesimple.ink => interne
+        if (url.hostname.endsWith(".thesimple.ink")) return true;
+
+        return false;
+      } catch {
+        return false;
+      }
+    }
+
+    window.open = function (url, target, features) {
+      // ✅ interne => même onglet
+      if (isInternalUrl(url)) {
+        window.location.assign(new URL(url, window.location.href).href);
+        return window;
+      }
+
+      // ✅ externe => comportement normal
+      return originalOpen(url, target, features);
+    };
+
+    if (DEBUG) console.log("[festiv20] window.open patched ✅");
+  })();
+  // ✅ FIN du bloc à coller
+
+  function log(...args) {
+    if (DEBUG) console.log("[festiv20]", ...args);
+  }
+
+  function onReady(fn) { ... }
+  ...
+})();
+
+
+
+
+
+
   function log(...args) {
     if (DEBUG) console.log("[festiv20]", ...args);
   }
