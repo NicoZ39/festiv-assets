@@ -358,7 +358,8 @@ function shortcodeRetour() {
     console.error("[festiv20] shortcodeRetour error:", e);
   }
 }
-// 7) Liens : interne = même onglet / externe = nouvel onglet (robuste Simple.ink)
+// 7) Interne = même onglet / Externe = nouvel onglet
+// Version robuste pour Notion/Simple.ink (gère aussi les .notion-button)
 function fixLinkTargets() {
   try {
     if (window.__FESTIV_LINKS_BOUND) return;
@@ -372,27 +373,20 @@ function fixLinkTargets() {
       href.startsWith("javascript:");
 
     const classify = (href) => {
-      // relatif => interne
       if (href.startsWith("/")) return { type: "internal", url: href };
 
       try {
         const url = new URL(href, window.location.href);
-
-        // même origin => interne
         if (url.origin === window.location.origin) return { type: "internal", url: url.href };
-
-        // tout ce qui est *.thesimple.ink => interne (y compris liens absolus)
         if (url.hostname.endsWith(".thesimple.ink")) return { type: "internal", url: url.href };
-
         return { type: "external", url: url.href };
       } catch {
         return { type: "unknown", url: href };
       }
     };
 
-    // 1) Petit fix "attributs" (quand ça marche)
-    const anchors = document.querySelectorAll("a[href]");
-    anchors.forEach((a) => {
+    // 1) Patch attributs quand il y a des <a>
+    document.querySelectorAll("a[href]").forEach((a) => {
       const href = (a.getAttribute("href") || "").trim();
       if (isSpecial(href)) return;
 
@@ -406,44 +400,74 @@ function fixLinkTargets() {
       }
     });
 
-    // 2) Fix "au clic" (quand Simple.ink réécrit target / gère le click)
+    // 2) Intercepter le clic sur les "boutons" Notion
     document.addEventListener(
       "click",
       (e) => {
-        // seulement clic gauche normal, sans ctrl/cmd/shift/alt
         if (e.defaultPrevented) return;
         if (e.button !== 0) return;
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
-        const a = e.target.closest && e.target.closest("a[href]");
-        if (!a) return;
+        // a) si on clique un lien normal
+        const a = e.target.closest?.("a[href]");
+        if (a) {
+          const href = (a.getAttribute("href") || "").trim();
+          if (isSpecial(href)) return;
 
-        const href = (a.getAttribute("href") || "").trim();
+          const { type, url } = classify(href);
+
+          if (type === "internal") {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.assign(url);
+          } else if (type === "external") {
+            // force _blank si jamais le site l'ignore
+            e.preventDefault();
+            e.stopPropagation();
+            window.open(url, "_blank", "noopener,noreferrer");
+          }
+          return;
+        }
+
+        // b) si on clique un "bouton" Notion (souvent pas un <a> direct)
+        const btn = e.target.closest?.(".notion-button");
+        if (!btn) return;
+
+        // chercher un lien à l'intérieur du bouton ou à proximité
+        const link =
+          btn.querySelector("a[href]") ||
+          btn.closest?.("a[href]") ||
+          btn.parentElement?.querySelector?.("a[href]");
+
+        if (!link) return;
+
+        const href = (link.getAttribute("href") || "").trim();
         if (isSpecial(href)) return;
 
         const { type, url } = classify(href);
 
         if (type === "internal") {
-          // ✅ force même onglet
           e.preventDefault();
           e.stopPropagation();
           window.location.assign(url);
         } else if (type === "external") {
-          // ✅ force nouvel onglet si besoin (sans casser le reste)
-          // si Simple.ink n'ouvre pas en _blank, on le fait
-          if (a.getAttribute("target") !== "_blank") {
-            e.preventDefault();
-            e.stopPropagation();
-            window.open(url, "_blank", "noopener,noreferrer");
-          }
+          e.preventDefault();
+          e.stopPropagation();
+          window.open(url, "_blank", "noopener,noreferrer");
         }
       },
-      true // capture: on passe avant les handlers de Simple.ink
+      true // capture : passe avant les handlers Simple.ink
     );
+
+    // Debug utile
+    if (typeof DEBUG !== "undefined" && DEBUG) {
+      console.log("[festiv20] fixLinkTargets bound ✅");
+    }
   } catch (e) {
     console.error("[festiv20] fixLinkTargets error:", e);
   }
 }
+
 
 
 
