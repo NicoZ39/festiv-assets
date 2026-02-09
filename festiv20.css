@@ -726,3 +726,23 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   max-width: none !important;
   width: 100% !important;
 }
+/* =========================================
+   FIX OMBRE COUPÉE — Callout style Super.so
+   (le parent empêche l’ombre de dépasser)
+========================================= */
+
+/* Le bloc Notion qui contient le callout */
+.notion-block{
+  overflow: visible !important;
+}
+
+/* Les rangées et colonnes Notion autour */
+.notion-row,
+.notion-column{
+  overflow: visible !important;
+}
+
+/* Sécurité : wrapper du callout */
+.notion-callout{
+  overflow: visible !important;
+}
