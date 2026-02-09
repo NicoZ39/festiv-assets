@@ -693,3 +693,36 @@ footer.styles_main_footer__LoNow .festiv-footer-column a{
 footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   color: #ff7034 !important;
 }
+/* =========================================
+   CALL0UTS — style proche Super.so (boîte uniquement)
+   (ne touche pas typo/couleurs)
+========================================= */
+
+.notion-callout{
+  display: flex !important;               /* évite l'effet "badge" inline-flex */
+  align-items: flex-start !important;     /* contenu en haut */
+  width: 100% !important;
+
+  padding: 20px 22px !important;          /* plus d’air */
+  border-radius: 14px !important;         /* coins plus doux (super.so-like) */
+
+  /* garde la bordure existante de Simple.ink (var(--callout-border)) */
+  /* optionnel : bordure un poil plus visible */
+  border-width: 1px !important;
+
+  /* optionnel : légère "card shadow" (mets à none si tu n’en veux pas) */
+  box-shadow: 0 10px 30px rgba(0,0,0,.08) !important;
+}
+
+/* Icône en haut comme sur super.so */
+.notion-callout .notion-page-icon{
+  align-self: flex-start !important;
+  margin-top: 2px !important;
+}
+
+/* Texte : juste de l'espacement, pas de typo */
+.notion-callout-text{
+  margin-left: 12px !important;
+  max-width: none !important;
+  width: 100% !important;
+}
