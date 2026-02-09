@@ -27,12 +27,6 @@
   color: #fff !important;
 }
 
-/* Conteneur centré (effet "link in bio") */
-.notion-page-content{
-  max-width: 520px;
-  margin: 0 auto;
-}
-
 /* Centre UNIQUEMENT les blocks qui contiennent un bouton
    (évite de mettre display:flex sur tous les .notion-block) */
 .notion-block:has(.notion-button){
