@@ -824,5 +824,46 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   box-shadow: none !important;
   filter: none !important;
 }
-/* TEST: si tu vois PAS de gros contour rouge, Simple.ink n'utilise pas .notion-callout pour la "carte" */
-.notion-callout { outline: 6px solid red !important; }
+/* =========================================
+   SIMPLE.INK — Callouts : enlever look "carte"
+   (sans :has, donc on cible aussi les wrappers internes)
+========================================= */
+
+/* 1) Callout */
+.notion-callout{
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  padding: 0 !important;                 /* on remet le padding sur l'intérieur */
+  border: 1px solid rgba(0,0,0,.08) !important;
+  overflow: visible !important;
+}
+
+/* 2) Wrappers internes (c’est souvent ICI que Simple.ink met l’ombre/radius/padding) */
+.notion-callout > div,
+.notion-callout > div > div,
+.notion-callout > div > div > div{
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* 3) Le contenu : padding propre (sans changer typo/couleurs) */
+.notion-callout-text{
+  padding: 18px 22px !important;
+  border-radius: 0 !important;           /* évite un double arrondi interne */
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* 4) Callout imbriqué (ton encadré rouge "👉") */
+.notion-callout .notion-callout{
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+}
