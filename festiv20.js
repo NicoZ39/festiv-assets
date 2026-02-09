@@ -358,6 +358,67 @@ function shortcodeRetour() {
     console.error("[festiv20] shortcodeRetour error:", e);
   }
 }
+// 7) Liens : interne = même onglet / externe = nouvel onglet
+function fixLinkTargets() {
+  try {
+    const anchors = document.querySelectorAll('a[href]');
+
+    const isSpecial = (href) =>
+      !href ||
+      href.startsWith("#") ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:") ||
+      href.startsWith("javascript:");
+
+    const isInternalHref = (href) => {
+      // relatif => interne
+      if (href.startsWith("/")) return true;
+
+      // URL absolue => comparer host
+      try {
+        const url = new URL(href, window.location.href);
+
+        // même origin => interne
+        if (url.origin === window.location.origin) return true;
+
+        // liens vers *.thesimple.ink => interne (y compris autre sous-domaine)
+        if (url.hostname.endsWith(".thesimple.ink")) return true;
+
+        return false;
+      } catch {
+        // href chelou => on ne touche pas
+        return false;
+      }
+    };
+
+    anchors.forEach((a) => {
+      if (a.dataset.festivTargetDone === "1") return;
+
+      const href = (a.getAttribute("href") || "").trim();
+      if (isSpecial(href)) {
+        a.dataset.festivTargetDone = "1";
+        return;
+      }
+
+      const internal = isInternalHref(href);
+
+      if (internal) {
+        // ✅ même onglet
+        a.removeAttribute("target");
+        // on nettoie rel (souvent ajouté avec _blank)
+        a.removeAttribute("rel");
+      } else {
+        // ✅ nouvel onglet
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener noreferrer");
+      }
+
+      a.dataset.festivTargetDone = "1";
+    });
+  } catch (e) {
+    console.error("[festiv20] fixLinkTargets error:", e);
+  }
+}
 
 
 
@@ -369,6 +430,7 @@ function shortcodeRetour() {
     tweakCover();
     setupTableScrollUX();
     shortcodeRetour();
+    fixLinkTargets();
   }
 
   onReady(() => {
