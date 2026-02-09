@@ -2,65 +2,6 @@
   const locale = "fr-FR";
   const DEBUG = true;
 
-
-
-  
-  // ✅ ICI : colle ce bloc
-  (function patchWindowOpen() {
-    if (window.__FESTIV_OPEN_PATCHED) return;
-    window.__FESTIV_OPEN_PATCHED = true;
-
-    const originalOpen = window.open.bind(window);
-
-    function isInternalUrl(urlLike) {
-      try {
-        if (!urlLike) return false;
-
-        // URLs relatives => interne
-        if (typeof urlLike === "string" && urlLike.startsWith("/")) return true;
-
-        const url = new URL(urlLike, window.location.href);
-
-        // même origin => interne
-        if (url.origin === window.location.origin) return true;
-
-        // *.thesimple.ink => interne
-        if (url.hostname.endsWith(".thesimple.ink")) return true;
-
-        return false;
-      } catch {
-        return false;
-      }
-    }
-
-    window.open = function (url, target, features) {
-      // ✅ interne => même onglet
-      if (isInternalUrl(url)) {
-        window.location.assign(new URL(url, window.location.href).href);
-        return window;
-      }
-
-      // ✅ externe => comportement normal
-      return originalOpen(url, target, features);
-    };
-
-    if (DEBUG) console.log("[festiv20] window.open patched ✅");
-  })();
-  // ✅ FIN du bloc à coller
-
-  function log(...args) {
-    if (DEBUG) console.log("[festiv20]", ...args);
-  }
-
-  function onReady(fn) { ... }
-  ...
-})();
-
-
-
-
-
-
   function log(...args) {
     if (DEBUG) console.log("[festiv20]", ...args);
   }
@@ -418,83 +359,6 @@ function shortcodeRetour() {
   }
 }
 
-
-function fixLinkTargets() {
-  try {
-    if (window.__FESTIV_BTNS_BOUND) return;
-    window.__FESTIV_BTNS_BOUND = true;
-
-    const isSpecial = (href) =>
-      !href ||
-      href.startsWith("#") ||
-      href.startsWith("mailto:") ||
-      href.startsWith("tel:") ||
-      href.startsWith("javascript:");
-
-    const classify = (href) => {
-      if (href.startsWith("/")) return { type: "internal", url: href };
-
-      try {
-        const url = new URL(href, window.location.href);
-
-        // Interne = même origin ou *.thesimple.ink
-        if (url.origin === window.location.origin) return { type: "internal", url: url.href };
-        if (url.hostname.endsWith(".thesimple.ink")) return { type: "internal", url: url.href };
-
-        return { type: "external", url: url.href };
-      } catch {
-        return { type: "unknown", url: href };
-      }
-    };
-
-    // Capture : on passe avant Simple.ink
-    document.addEventListener(
-      "click",
-      (e) => {
-        if (e.defaultPrevented) return;
-        if (e.button !== 0) return;
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-        const btn = e.target.closest?.("button.notion-button");
-        if (!btn) return;
-
-        // 🔎 Remonte au "bloc" Notion le plus proche, et cherche un lien dedans
-        const block =
-          btn.closest?.(".notion-block") ||
-          btn.closest?.(".notion-button-container")?.closest?.("div");
-
-        const a = block?.querySelector?.("a[href]") || btn.closest?.("a[href]");
-        const href = (a?.getAttribute("href") || "").trim();
-
-        if (!href || isSpecial(href)) return;
-
-        const { type, url } = classify(href);
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        if (type === "internal") {
-          // ✅ même onglet
-          window.location.assign(url);
-        } else if (type === "external") {
-          // ✅ nouvel onglet
-          window.open(url, "_blank", "noopener,noreferrer");
-        } else {
-          // unknown => on laisse Simple.ink faire (par prudence)
-        }
-      },
-      true
-    );
-  } catch (e) {
-    console.error("[festiv20] fixLinkTargets error:", e);
-  }
-}
-
-
-
-
-
-
   function runAll() {
     makeLogoClickable();
     formatDates();
@@ -503,7 +367,6 @@ function fixLinkTargets() {
     tweakCover();
     setupTableScrollUX();
     shortcodeRetour();
-    fixLinkTargets();
   }
 
   onReady(() => {
