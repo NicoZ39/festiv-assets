@@ -358,6 +358,42 @@ function shortcodeRetour() {
     console.error("[festiv20] shortcodeRetour error:", e);
   }
 }
+// 7) Mapping des boutons Notion -> navigation contrôlée
+function bindNotionButtons() {
+  try {
+    if (window.__FESTIV_NOTION_BTNS_BOUND) return;
+    window.__FESTIV_NOTION_BTNS_BOUND = true;
+
+    // 🔗 Mapping texte du bouton -> URL
+    const BUTTON_LINKS = {
+      "👉 Inscription Exposants":
+        "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a",
+    };
+
+    document.addEventListener(
+      "click",
+      (e) => {
+        const btn = e.target.closest?.("button.notion-button");
+        if (!btn) return;
+
+        const label = (btn.textContent || "").trim();
+        const url = BUTTON_LINKS[label];
+        if (!url) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 👉 toujours même onglet (interne Festiv'Ounans)
+        window.location.assign(url);
+      },
+      true // capture : passe avant Simple.ink
+    );
+
+    if (DEBUG) console.log("[festiv20] Notion buttons bound ✅");
+  } catch (e) {
+    console.error("[festiv20] bindNotionButtons error:", e);
+  }
+}
 
   function runAll() {
     makeLogoClickable();
@@ -367,6 +403,7 @@ function shortcodeRetour() {
     tweakCover();
     setupTableScrollUX();
     shortcodeRetour();
+    bindNotionButtons();
   }
 
   onReady(() => {
