@@ -538,7 +538,7 @@ function localizeSearchUI() {
       buttonLabel: "Recherche",
       modalAriaLabel: "Recherche",
       inputPlaceholder: "Rechercher",
-      toggleLabel: "Rechercher dans la page aussi",
+      toggleLabel: "Rechercher dans cette page",
     };
 
     // 1) Traduction du bouton dans le header (safe)
