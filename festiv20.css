@@ -875,11 +875,13 @@ details.notion-toggle > div {
   height: 0;
   opacity: 0;
   transform: translateY(-4px);
+  padding-top: 0;
 
   transition:
     height 350ms cubic-bezier(.4,0,.2,1),
     opacity 200ms ease,
-    transform 200ms ease;
+    transform 200ms ease,
+    padding-top 350ms cubic-bezier(.4,0,.2,1);
 
   font-size: 17px;
   line-height: 1.65;
@@ -890,6 +892,7 @@ details.notion-toggle[open] > div {
   opacity: 1;
   transform: translateY(0);
 }
+
 
 /* Espace animé au-dessus du texte (option B) */
 details.notion-toggle > div::before {
