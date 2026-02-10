@@ -828,3 +828,65 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-callout.festiv-callout-noicon{
   gap: 0 !important;
 }
+/* Masque le triangle Notion */
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details > summary::marker {
+  display: none;
+}
+
+/* Ligne FAQ */
+details.notion-toggle {
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding: 18px 0;
+}
+
+/* Titre FAQ (équivalent H2) */
+details.notion-toggle > summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  font-size: 20px;      /* ajuste : 18 / 20 / 22 */
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Flèche custom */
+details.notion-toggle > summary::after {
+  content: "▾";
+  font-size: 22px;
+  color: #999;
+  transition: transform 0.2s ease;
+}
+
+/* Rotation quand ouvert */
+details.notion-toggle[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+/* Contenu FAQ – base */
+details.notion-toggle > div {
+  overflow: hidden;
+  height: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+
+  transition:
+    height 350ms cubic-bezier(.4,0,.2,1),
+    opacity 200ms ease,
+    transform 200ms ease;
+
+  font-size: 17px;
+  line-height: 1.65;
+  color: #666;
+}
+
+details.notion-toggle[open] > div {
+  opacity: 1;
+  transform: translateY(0);
+}
