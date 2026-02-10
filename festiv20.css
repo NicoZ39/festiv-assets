@@ -768,3 +768,38 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
 }
+/* =========================================
+   FIX : surlignage gris au hover sur les liens
+   (Notion / Simple.ink)
+========================================= */
+
+/* Enlève tout background que Notion/Simple.ink met sur les liens */
+.notion-text a,
+.notion-callout-text a,
+.notion-list a {
+  background: transparent !important;
+  -webkit-tap-highlight-color: transparent; /* mobile */
+}
+
+/* Hover / focus / active : pas de “highlight” gris */
+.notion-text a:hover,
+.notion-callout-text a:hover,
+.notion-list a:hover,
+.notion-text a:focus,
+.notion-callout-text a:focus,
+.notion-list a:focus,
+.notion-text a:active,
+.notion-callout-text a:active,
+.notion-list a:active {
+  background: transparent !important;
+}
+
+/* Certains thèmes appliquent le fond sur un span interne */
+.notion-text a > span,
+.notion-callout-text a > span,
+.notion-list a > span,
+.notion-text a:hover > span,
+.notion-callout-text a:hover > span,
+.notion-list a:hover > span {
+  background: transparent !important;
+}
