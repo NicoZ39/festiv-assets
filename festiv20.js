@@ -431,24 +431,6 @@ function fixInternalAnchors() {
     console.error("[festiv20] fixInternalAnchors error:", e);
   }
 }
-// 9) Aligne à gauche le bouton "Inscription Exposants" (robuste)
-function alignInscriptionExposantsLeft() {
-  try {
-    const targets = document.querySelectorAll("button.notion-button, a.notion-button");
-
-    targets.forEach((el) => {
-      const label = (el.textContent || "").replace(/\s+/g, " ").trim();
-      if (label.includes("Inscription Exposants")) {
-        el.classList.add("festiv-align-left");
-        el.setAttribute("data-festiv-align", "left");
-      }
-    });
-  } catch (e) {
-    console.error("[festiv20] alignInscriptionExposantsLeft error:", e);
-  }
-}
-
-
   function runAll() {
     makeLogoClickable();
     formatDates();
@@ -459,7 +441,6 @@ function alignInscriptionExposantsLeft() {
     shortcodeRetour();
     bindNotionButtons();
     fixInternalAnchors();
-    alignInscriptionExposantsLeft();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
