@@ -822,3 +822,9 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-callout:has(> svg.notion-page-icon[alt="Page"]){
   gap: 0 !important;
 }
+.notion-callout.festiv-callout-noicon .notion-callout-text{
+  margin-left: 0 !important;
+}
+.notion-callout.festiv-callout-noicon{
+  gap: 0 !important;
+}
