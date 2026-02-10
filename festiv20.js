@@ -530,7 +530,7 @@ function setupFaqAnimation() {
   }
 }
 // ==============================
-// i18n "Search" simple.ink -> FR
+// i18n "Search" simple.ink -> FR (sans MutationObserver)
 // ==============================
 function localizeSearchUI() {
   try {
@@ -541,55 +541,72 @@ function localizeSearchUI() {
       toggleLabel: "Rechercher dans la page aussi",
     };
 
-    function setText(el, text) {
-      if (el && el.textContent !== text) el.textContent = text;
-    }
+    // 1) Traduction du bouton dans le header (safe)
+    document.querySelectorAll(".notion-search-button .search-title").forEach((el) => {
+      if (el.textContent !== FR.buttonLabel) el.textContent = FR.buttonLabel;
+    });
 
-    function applyHeaderButtonTranslation() {
-      document.querySelectorAll(".notion-search-button .search-title").forEach((el) => {
-        setText(el, FR.buttonLabel);
-        el.classList.add("is-fr");
-      });
-    }
+    // 2) Traduction de la modale (quand elle existe)
+    function translateModal() {
+      const modal = document.querySelector(".ReactModal__Content.notion-search");
+      if (modal && modal.getAttribute("aria-label") !== FR.modalAriaLabel) {
+        modal.setAttribute("aria-label", FR.modalAriaLabel);
+      }
 
-    function applyModalTranslation(root = document) {
-      root.querySelectorAll(".ReactModal__Content.notion-search").forEach((modal) => {
-        if (modal.getAttribute("aria-label") !== FR.modalAriaLabel) {
-          modal.setAttribute("aria-label", FR.modalAriaLabel);
-        }
-      });
+      const inp = document.querySelector("input.searchInput");
+      if (inp && inp.getAttribute("placeholder") !== FR.inputPlaceholder) {
+        inp.setAttribute("placeholder", FR.inputPlaceholder);
+      }
 
-      root.querySelectorAll("input.searchInput").forEach((inp) => {
-        if (inp.getAttribute("placeholder") !== FR.inputPlaceholder) {
-          inp.setAttribute("placeholder", FR.inputPlaceholder);
-        }
-      });
+      // Label "Search page content as well" (sans innerHTML pour éviter les boucles)
+      document.querySelectorAll(".searchmode-label").forEach((label) => {
+        if (label.dataset.festivI18nDone === "1") return;
 
-      root.querySelectorAll(".searchmode-label").forEach((label) => {
+        // On garde le SVG, on remplace seulement le texte après
         const svg = label.querySelector("svg");
         if (!svg) return;
 
-        // Garde le SVG et remplace le texte à côté
-        label.innerHTML = "";
-        label.appendChild(svg);
-        label.append(" " + FR.toggleLabel);
+        // Supprime les text nodes existants
+        Array.from(label.childNodes).forEach((n) => {
+          if (n.nodeType === Node.TEXT_NODE) n.remove();
+        });
+
+        label.append(document.createTextNode(" " + FR.toggleLabel));
+        label.dataset.festivI18nDone = "1";
       });
     }
 
-    // Applique tout de suite
-    applyHeaderButtonTranslation();
-    applyModalTranslation(document);
+    // 3) Bind click une seule fois : au clic, la modale s'ouvre puis on traduit
+    if (!window.__FESTIV_SEARCH_I18N_BOUND) {
+      window.__FESTIV_SEARCH_I18N_BOUND = true;
 
-    // Observer unique (évite d’en créer 50)
-    if (window.__FESTIV_SEARCH_I18N_OBS) return;
-    window.__FESTIV_SEARCH_I18N_OBS = true;
+      document.addEventListener(
+        "click",
+        (e) => {
+          const btn = e.target.closest?.(".notion-search-button");
+          if (!btn) return;
 
-    const obs = new MutationObserver(() => {
-      applyHeaderButtonTranslation();
-      applyModalTranslation(document);
-    });
+          // La modale est injectée juste après le clic -> on traduit plusieurs fois (safe)
+          setTimeout(translateModal, 0);
+          setTimeout(translateModal, 50);
+          setTimeout(translateModal, 200);
+        },
+        true
+      );
 
-    obs.observe(document.documentElement, { childList: true, subtree: true });
+      // Bonus : si ouverture au clavier (⌘K / Ctrl+K) ou autre, on tente aussi au keydown
+      document.addEventListener(
+        "keydown",
+        (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+            setTimeout(translateModal, 0);
+            setTimeout(translateModal, 50);
+            setTimeout(translateModal, 200);
+          }
+        },
+        false
+      );
+    }
   } catch (e) {
     console.error("[festiv20] localizeSearchUI error:", e);
   }
