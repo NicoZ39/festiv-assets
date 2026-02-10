@@ -896,7 +896,7 @@ details.notion-toggle > div::before {
   content: "";
   display: block;
   height: 0;
-  transition: height 350ms cubic-bezier(.4,0,.2,1);
+  transition: height 3350ms cubic-bezier(.4,0,.2,1);
 }
 
 details.notion-toggle[open] > div::before {
