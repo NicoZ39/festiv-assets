@@ -471,6 +471,45 @@ function setupFaqAccordion() {
     console.error("[festiv20] setupFaqAccordion error:", e);
   }
 }
+// 10) Animation fluide des FAQ (slide réel)
+function setupFaqAnimation() {
+  try {
+    if (window.__FESTIV_FAQ_ANIM_BOUND) return;
+    window.__FESTIV_FAQ_ANIM_BOUND = true;
+
+    document.addEventListener("toggle", (e) => {
+      const d = e.target;
+      if (!(d instanceof HTMLDetailsElement)) return;
+      if (!d.matches("details.notion-toggle")) return;
+
+      const content = d.querySelector(":scope > div");
+      if (!content) return;
+
+      // ouverture
+      if (d.open) {
+        const h = content.scrollHeight;
+        content.style.height = "0px";
+        content.getBoundingClientRect(); // force reflow
+        content.style.height = h + "px";
+
+        const cleanup = () => {
+          content.style.height = "auto";
+          content.removeEventListener("transitionend", cleanup);
+        };
+        content.addEventListener("transitionend", cleanup);
+      } 
+      // fermeture
+      else {
+        const h = content.scrollHeight;
+        content.style.height = h + "px";
+        content.getBoundingClientRect();
+        content.style.height = "0px";
+      }
+    }, true);
+  } catch (e) {
+    console.error("[festiv20] setupFaqAnimation error:", e);
+  }
+}
 
   
   function runAll() {
@@ -485,6 +524,7 @@ function setupFaqAccordion() {
     fixInternalAnchors();
     hideGenericCalloutIcons();
     setupFaqAccordion();
+    setupFaqAnimation();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
