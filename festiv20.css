@@ -803,11 +803,13 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-list a:hover > span {
   background: transparent !important;
 }
-/* ✅ FIX BÉTON : aligner à gauche un bouton ciblé, malgré margin:auto !important */
-.notion-block:has(> .notion-button.festiv-align-left){
+/* ✅ Bouton aligné à gauche (override du centrage global) */
+.notion-block:has(> .notion-button.festiv-align-left),
+.notion-block:has(> a.notion-button.festiv-align-left){
   justify-content: flex-start !important;
 }
 
-.notion-block > .notion-button.festiv-align-left{
-  margin: 12px 0 !important;      /* écrase le "12px auto" */
+.notion-block > .notion-button.festiv-align-left,
+.notion-block > a.notion-button.festiv-align-left{
+  margin: 12px 0 !important;  /* écrase le 12px auto !important */
 }
