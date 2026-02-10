@@ -803,12 +803,11 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-list a:hover > span {
   background: transparent !important;
 }
-/* ✅ Forcer UN bouton à être aligné à gauche */
-.notion-block:has(.notion-button.festiv-align-left){
+/* ✅ FIX BÉTON : aligner à gauche un bouton ciblé, malgré margin:auto !important */
+.notion-block:has(> .notion-button.festiv-align-left){
   justify-content: flex-start !important;
 }
 
-.notion-button.festiv-align-left{
-  margin-left: 0 !important;
-  margin-right: auto !important;
+.notion-block > .notion-button.festiv-align-left{
+  margin: 12px 0 !important;      /* écrase le "12px auto" */
 }
