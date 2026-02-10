@@ -445,6 +445,32 @@ function fixInternalAnchors() {
     console.error("[festiv20] hideGenericCalloutIcons error:", e);
   }
 }
+// 9) FAQ : un seul toggle ouvert à la fois (accordion)
+function setupFaqAccordion() {
+  try {
+    // anti-doublon global (important avec ton MutationObserver)
+    if (window.__FESTIV_FAQ_ACCORDION_BOUND) return;
+    window.__FESTIV_FAQ_ACCORDION_BOUND = true;
+
+    // delegation : fonctionne même si la page se rerend / ajoute des toggles
+    document.addEventListener("toggle", (e) => {
+      const current = e.target;
+      if (!(current instanceof HTMLDetailsElement)) return;
+      if (!current.matches("details.notion-toggle")) return;
+
+      // on ne ferme les autres que si celui-ci vient d'être ouvert
+      if (!current.open) return;
+
+      document.querySelectorAll("details.notion-toggle[open]").forEach((other) => {
+        if (other !== current) other.removeAttribute("open");
+      });
+    }, true);
+
+    if (DEBUG) console.log("[festiv20] FAQ accordion bound ✅");
+  } catch (e) {
+    console.error("[festiv20] setupFaqAccordion error:", e);
+  }
+}
 
   
   function runAll() {
@@ -458,6 +484,7 @@ function fixInternalAnchors() {
     bindNotionButtons();
     fixInternalAnchors();
     hideGenericCalloutIcons();
+    setupFaqAccordion();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
