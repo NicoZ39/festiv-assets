@@ -445,98 +445,91 @@ function fixInternalAnchors() {
     console.error("[festiv20] hideGenericCalloutIcons error:", e);
   }
 }
-// 9) FAQ : un seul toggle ouvert à la fois (accordion)
-function setupFaqAccordion() {
-  try {
-    // anti-doublon global (important avec ton MutationObserver)
-    if (window.__FESTIV_FAQ_ACCORDION_BOUND) return;
-    window.__FESTIV_FAQ_ACCORDION_BOUND = true;
-
-    // delegation : fonctionne même si la page se rerend / ajoute des toggles
-    document.addEventListener("toggle", (e) => {
-      const current = e.target;
-      if (!(current instanceof HTMLDetailsElement)) return;
-      if (!current.matches("details.notion-toggle")) return;
-
-      // on ne ferme les autres que si celui-ci vient d'être ouvert
-      if (!current.open) return;
-
-      document.querySelectorAll("details.notion-toggle[open]").forEach((other) => {
-        if (other !== current) other.removeAttribute("open");
-      });
-    }, true);
-
-    if (DEBUG) console.log("[festiv20] FAQ accordion bound ✅");
-  } catch (e) {
-    console.error("[festiv20] setupFaqAccordion error:", e);
-  }
-}
-// 10) Animation FAQ ouverture + fermeture fluide
+// 9) FAQ : accordion + animation ouverture/fermeture
 function setupFaqAnimation() {
   try {
     if (window.__FESTIV_FAQ_ANIM_BOUND) return;
     window.__FESTIV_FAQ_ANIM_BOUND = true;
 
-    document.addEventListener("click", (e) => {
-      const summary = e.target.closest("summary");
-      if (!summary) return;
+    const closeWithAnim = (details) => {
+      const content = details.querySelector(":scope > div");
+      if (!content) {
+        details.removeAttribute("open");
+        return;
+      }
 
-      const details = summary.parentElement;
-      if (!details || !details.matches("details.notion-toggle")) return;
+      // si déjà fermé, rien
+      if (!details.hasAttribute("open")) return;
 
-      e.preventDefault(); // ⛔ stop comportement natif
+      // hauteur actuelle
+      const h = content.scrollHeight;
+      content.style.height = h + "px";
+      content.getBoundingClientRect(); // reflow
+      content.style.height = "0px";
 
+      const onEnd = (ev) => {
+        if (ev.propertyName !== "height") return;
+        details.removeAttribute("open");
+        content.removeEventListener("transitionend", onEnd);
+      };
+      content.addEventListener("transitionend", onEnd);
+    };
+
+    const openWithAnim = (details) => {
       const content = details.querySelector(":scope > div");
       if (!content) return;
 
-      const isOpen = details.hasAttribute("open");
+      details.setAttribute("open", "");
+      const h = content.scrollHeight;
 
-      // ---- FERMETURE ----
-      if (isOpen) {
-        const h = content.scrollHeight;
-        content.style.height = h + "px";
-        content.getBoundingClientRect(); // force reflow
-        content.style.height = "0px";
+      content.style.height = "0px";
+      content.getBoundingClientRect(); // reflow
+      content.style.height = h + "px";
 
-        const onEnd = () => {
-          details.removeAttribute("open");
-          content.removeEventListener("transitionend", onEnd);
-        };
-        content.addEventListener("transitionend", onEnd);
-      }
+      const onEnd = (ev) => {
+        if (ev.propertyName !== "height") return;
+        content.style.height = "auto";
+        content.removeEventListener("transitionend", onEnd);
+      };
+      content.addEventListener("transitionend", onEnd);
+    };
 
-      // ---- OUVERTURE ----
-      else {
-        // ferme les autres (accordion)
+    document.addEventListener(
+      "click",
+      (e) => {
+        const summary = e.target.closest("summary");
+        if (!summary) return;
+
+        const details = summary.parentElement;
+        if (!details || !details.matches("details.notion-toggle")) return;
+
+        e.preventDefault(); // stop toggle natif
+
+        const isOpen = details.hasAttribute("open");
+
+        if (isOpen) {
+          // fermeture animée
+          closeWithAnim(details);
+          return;
+        }
+
+        // accordion : fermer les autres AVEC animation
         document.querySelectorAll("details.notion-toggle[open]").forEach((d) => {
-          if (d !== details) {
-            const c = d.querySelector(":scope > div");
-            if (!c) return;
-            const h2 = c.scrollHeight;
-            c.style.height = h2 + "px";
-            c.getBoundingClientRect();
-            c.style.height = "0px";
-            d.removeAttribute("open");
-          }
+          if (d !== details) closeWithAnim(d);
         });
 
-        details.setAttribute("open", "");
-        const h = content.scrollHeight;
-        content.style.height = "0px";
-        content.getBoundingClientRect();
-        content.style.height = h + "px";
+        // ouverture animée
+        openWithAnim(details);
+      },
+      true
+    );
 
-        const onEnd = () => {
-          content.style.height = "auto";
-          content.removeEventListener("transitionend", onEnd);
-        };
-        content.addEventListener("transitionend", onEnd);
-      }
-    });
+    if (DEBUG) console.log("[festiv20] FAQ accordion+anim bound ✅");
   } catch (e) {
     console.error("[festiv20] setupFaqAnimation error:", e);
   }
 }
+
 
 
   
@@ -551,7 +544,6 @@ function setupFaqAnimation() {
     bindNotionButtons();
     fixInternalAnchors();
     hideGenericCalloutIcons();
-    setupFaqAccordion();
     setupFaqAnimation();
   }
 setTimeout(fixInternalAnchors, 500);
