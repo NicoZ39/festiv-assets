@@ -803,3 +803,22 @@ footer.styles_main_footer__LoNow .festiv-footer-column a:hover{
 .notion-list a:hover > span {
   background: transparent !important;
 }
+/* =========================================
+   CALLOUT — masquer l’icône générique Simple.ink
+   (garde les vraies icônes Notion: emoji / image)
+========================================= */
+
+/* Simple.ink met une icône par défaut en <svg ... alt="Page"> */
+.notion-callout > svg.notion-page-icon[alt="Page"]{
+  display: none !important;
+}
+
+/* Quand l’icône est masquée, on supprime l’espace à gauche */
+.notion-callout:has(> svg.notion-page-icon[alt="Page"]) .notion-callout-text{
+  margin-left: 0 !important;
+}
+
+/* Et on évite un “gap” inutile */
+.notion-callout:has(> svg.notion-page-icon[alt="Page"]){
+  gap: 0 !important;
+}
