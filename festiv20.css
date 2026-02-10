@@ -894,15 +894,3 @@ details.notion-toggle[open] > div {
 }
 
 
-/* Espace animé au-dessus du texte (option B) */
-details.notion-toggle > div::before {
-  content: "";
-  display: block;
-  height: 0;
-  transition: height 3350ms cubic-bezier(.4,0,.2,1);
-}
-
-details.notion-toggle[open] > div::before {
-  height: 14px; /* espace visible entre question et réponse */
-}
-
