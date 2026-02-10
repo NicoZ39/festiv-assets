@@ -471,45 +471,73 @@ function setupFaqAccordion() {
     console.error("[festiv20] setupFaqAccordion error:", e);
   }
 }
-// 10) Animation fluide des FAQ (slide réel)
+// 10) Animation FAQ ouverture + fermeture fluide
 function setupFaqAnimation() {
   try {
     if (window.__FESTIV_FAQ_ANIM_BOUND) return;
     window.__FESTIV_FAQ_ANIM_BOUND = true;
 
-    document.addEventListener("toggle", (e) => {
-      const d = e.target;
-      if (!(d instanceof HTMLDetailsElement)) return;
-      if (!d.matches("details.notion-toggle")) return;
+    document.addEventListener("click", (e) => {
+      const summary = e.target.closest("summary");
+      if (!summary) return;
 
-      const content = d.querySelector(":scope > div");
+      const details = summary.parentElement;
+      if (!details || !details.matches("details.notion-toggle")) return;
+
+      e.preventDefault(); // ⛔ stop comportement natif
+
+      const content = details.querySelector(":scope > div");
       if (!content) return;
 
-      // ouverture
-      if (d.open) {
+      const isOpen = details.hasAttribute("open");
+
+      // ---- FERMETURE ----
+      if (isOpen) {
+        const h = content.scrollHeight;
+        content.style.height = h + "px";
+        content.getBoundingClientRect(); // force reflow
+        content.style.height = "0px";
+
+        const onEnd = () => {
+          details.removeAttribute("open");
+          content.removeEventListener("transitionend", onEnd);
+        };
+        content.addEventListener("transitionend", onEnd);
+      }
+
+      // ---- OUVERTURE ----
+      else {
+        // ferme les autres (accordion)
+        document.querySelectorAll("details.notion-toggle[open]").forEach((d) => {
+          if (d !== details) {
+            const c = d.querySelector(":scope > div");
+            if (!c) return;
+            const h2 = c.scrollHeight;
+            c.style.height = h2 + "px";
+            c.getBoundingClientRect();
+            c.style.height = "0px";
+            d.removeAttribute("open");
+          }
+        });
+
+        details.setAttribute("open", "");
         const h = content.scrollHeight;
         content.style.height = "0px";
-        content.getBoundingClientRect(); // force reflow
+        content.getBoundingClientRect();
         content.style.height = h + "px";
 
-        const cleanup = () => {
+        const onEnd = () => {
           content.style.height = "auto";
-          content.removeEventListener("transitionend", cleanup);
+          content.removeEventListener("transitionend", onEnd);
         };
-        content.addEventListener("transitionend", cleanup);
-      } 
-      // fermeture
-      else {
-        const h = content.scrollHeight;
-        content.style.height = h + "px";
-        content.getBoundingClientRect();
-        content.style.height = "0px";
+        content.addEventListener("transitionend", onEnd);
       }
-    }, true);
+    });
   } catch (e) {
     console.error("[festiv20] setupFaqAnimation error:", e);
   }
 }
+
 
   
   function runAll() {
