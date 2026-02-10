@@ -871,6 +871,7 @@ details.notion-toggle[open] > summary::after {
 
 /* Contenu FAQ – base */
 details.notion-toggle > div {
+   padding-top: 0;
   overflow: hidden;
   height: 0;
   opacity: 0;
@@ -889,4 +890,5 @@ details.notion-toggle > div {
 details.notion-toggle[open] > div {
   opacity: 1;
   transform: translateY(0);
+   padding-top: 14px;
 }
