@@ -529,6 +529,71 @@ function setupFaqAnimation() {
     console.error("[festiv20] setupFaqAnimation error:", e);
   }
 }
+// ==============================
+// i18n "Search" simple.ink -> FR
+// ==============================
+function localizeSearchUI() {
+  try {
+    const FR = {
+      buttonLabel: "Recherche",
+      modalAriaLabel: "Recherche",
+      inputPlaceholder: "Rechercher",
+      toggleLabel: "Rechercher dans la page aussi",
+    };
+
+    function setText(el, text) {
+      if (el && el.textContent !== text) el.textContent = text;
+    }
+
+    function applyHeaderButtonTranslation() {
+      document.querySelectorAll(".notion-search-button .search-title").forEach((el) => {
+        setText(el, FR.buttonLabel);
+        el.classList.add("is-fr");
+      });
+    }
+
+    function applyModalTranslation(root = document) {
+      root.querySelectorAll(".ReactModal__Content.notion-search").forEach((modal) => {
+        if (modal.getAttribute("aria-label") !== FR.modalAriaLabel) {
+          modal.setAttribute("aria-label", FR.modalAriaLabel);
+        }
+      });
+
+      root.querySelectorAll("input.searchInput").forEach((inp) => {
+        if (inp.getAttribute("placeholder") !== FR.inputPlaceholder) {
+          inp.setAttribute("placeholder", FR.inputPlaceholder);
+        }
+      });
+
+      root.querySelectorAll(".searchmode-label").forEach((label) => {
+        const svg = label.querySelector("svg");
+        if (!svg) return;
+
+        // Garde le SVG et remplace le texte à côté
+        label.innerHTML = "";
+        label.appendChild(svg);
+        label.append(" " + FR.toggleLabel);
+      });
+    }
+
+    // Applique tout de suite
+    applyHeaderButtonTranslation();
+    applyModalTranslation(document);
+
+    // Observer unique (évite d’en créer 50)
+    if (window.__FESTIV_SEARCH_I18N_OBS) return;
+    window.__FESTIV_SEARCH_I18N_OBS = true;
+
+    const obs = new MutationObserver(() => {
+      applyHeaderButtonTranslation();
+      applyModalTranslation(document);
+    });
+
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {
+    console.error("[festiv20] localizeSearchUI error:", e);
+  }
+}
 
 
 
@@ -545,6 +610,7 @@ function setupFaqAnimation() {
     fixInternalAnchors();
     hideGenericCalloutIcons();
     setupFaqAnimation();
+    localizeSearchUI();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
