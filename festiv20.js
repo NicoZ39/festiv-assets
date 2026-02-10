@@ -431,22 +431,23 @@ function fixInternalAnchors() {
     console.error("[festiv20] fixInternalAnchors error:", e);
   }
 }
-// 9) Aligner à gauche un bouton précis (par son texte)
-function alignOneButtonLeft() {
+// 9) Aligne à gauche le bouton "Inscription Exposants" (robuste)
+function alignInscriptionExposantsLeft() {
   try {
-    const buttons = document.querySelectorAll("button.notion-button");
-    buttons.forEach((btn) => {
-      const label = (btn.textContent || "").replace(/\s+/g, " ").trim();
+    const targets = document.querySelectorAll("button.notion-button, a.notion-button");
 
-      // Tolérant : avec ou sans ":" à la fin
-      if (label.startsWith("👉 Inscription Exposants")) {
-        btn.classList.add("festiv-align-left");
+    targets.forEach((el) => {
+      const label = (el.textContent || "").replace(/\s+/g, " ").trim();
+      if (label.includes("Inscription Exposants")) {
+        el.classList.add("festiv-align-left");
+        el.setAttribute("data-festiv-align", "left");
       }
     });
   } catch (e) {
-    console.error("[festiv20] alignOneButtonLeft error:", e);
+    console.error("[festiv20] alignInscriptionExposantsLeft error:", e);
   }
 }
+
 
   function runAll() {
     makeLogoClickable();
@@ -458,7 +459,7 @@ function alignOneButtonLeft() {
     shortcodeRetour();
     bindNotionButtons();
     fixInternalAnchors();
-    alignOneButtonLeft();
+    alignInscriptionExposantsLeft();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
