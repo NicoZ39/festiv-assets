@@ -431,6 +431,22 @@ function fixInternalAnchors() {
     console.error("[festiv20] fixInternalAnchors error:", e);
   }
 }
+
+  function hideGenericCalloutIcons() {
+  try {
+    document
+      .querySelectorAll('.notion-callout > svg.notion-page-icon[alt="Page"]')
+      .forEach((svg) => {
+        const callout = svg.closest(".notion-callout");
+        if (callout) callout.classList.add("festiv-callout-noicon");
+        svg.remove(); // ou svg.style.display = "none";
+      });
+  } catch (e) {
+    console.error("[festiv20] hideGenericCalloutIcons error:", e);
+  }
+}
+
+  
   function runAll() {
     makeLogoClickable();
     formatDates();
@@ -441,6 +457,7 @@ function fixInternalAnchors() {
     shortcodeRetour();
     bindNotionButtons();
     fixInternalAnchors();
+    hideGenericCalloutIcons();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
