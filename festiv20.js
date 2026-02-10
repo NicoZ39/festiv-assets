@@ -431,6 +431,22 @@ function fixInternalAnchors() {
     console.error("[festiv20] fixInternalAnchors error:", e);
   }
 }
+// 9) Aligner à gauche un bouton précis (par son texte)
+function alignOneButtonLeft() {
+  try {
+    const buttons = document.querySelectorAll("button.notion-button");
+    buttons.forEach((btn) => {
+      const label = (btn.textContent || "").replace(/\s+/g, " ").trim();
+
+      // Tolérant : avec ou sans ":" à la fin
+      if (label.startsWith("👉 Inscription Exposants")) {
+        btn.classList.add("festiv-align-left");
+      }
+    });
+  } catch (e) {
+    console.error("[festiv20] alignOneButtonLeft error:", e);
+  }
+}
 
   function runAll() {
     makeLogoClickable();
@@ -442,6 +458,7 @@ function fixInternalAnchors() {
     shortcodeRetour();
     bindNotionButtons();
     fixInternalAnchors();
+    alignOneButtonLeft();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
