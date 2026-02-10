@@ -871,7 +871,7 @@ details.notion-toggle[open] > summary::after {
 
 /* Contenu FAQ – base */
 details.notion-toggle > div {
-   padding-top: 0;
+  padding-top: 0;
   overflow: hidden;
   height: 0;
   opacity: 0;
@@ -880,7 +880,8 @@ details.notion-toggle > div {
   transition:
     height 350ms cubic-bezier(.4,0,.2,1),
     opacity 200ms ease,
-    transform 200ms ease;
+    transform 200ms ease,
+    padding-top 200ms ease;
 
   font-size: 17px;
   line-height: 1.65;
@@ -890,5 +891,6 @@ details.notion-toggle > div {
 details.notion-toggle[open] > div {
   opacity: 1;
   transform: translateY(0);
-   padding-top: 14px;
+  padding-top: 14px;
 }
+
