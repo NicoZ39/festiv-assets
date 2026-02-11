@@ -629,6 +629,49 @@ function localizeSearchUI() {
     console.error("[festiv20] localizeSearchUI error:", e);
   }
 }
+// 9) Back-to-top button (visible seulement après scroll)
+function setupBackToTop() {
+  try {
+    if (window.__FESTIV_BACKTOTOP_BOUND) return;
+    window.__FESTIV_BACKTOTOP_BOUND = true;
+
+    // Crée le bouton une seule fois
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "festiv-backtotop";
+    btn.setAttribute("aria-label", "Revenir en haut");
+    btn.innerHTML = "↑";
+
+    document.body.appendChild(btn);
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const scrollToTop = () => {
+      const behavior = reduceMotion.matches ? "auto" : "smooth";
+      window.scrollTo({ top: 0, left: 0, behavior });
+    };
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      scrollToTop();
+    });
+
+    const THRESHOLD = 220; // px avant apparition
+
+    const update = () => {
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      btn.classList.toggle("is-visible", y > THRESHOLD);
+    };
+
+    // update initial + au scroll/resize
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
+  } catch (e) {
+    console.error("[festiv20] setupBackToTop error:", e);
+  }
+}
 
 
 
@@ -646,6 +689,7 @@ function localizeSearchUI() {
     hideGenericCalloutIcons();
     setupFaqAnimation();
     localizeSearchUI();
+    setupBackToTop();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
