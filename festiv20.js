@@ -114,6 +114,8 @@ function formatDates() {
       // Dates en vue table (DB table view)
       ".notion-collection .notion-table-cell .notion-property-date",
       ".notion-collection .notion-table-cell .notion-text",
+      // ✅ Dates dans les encadrés (callouts)
+  ".notion-callout-text .notion-text",
       // Simple Table Notion (ton cas “Jan 30, 2026” en tableau)
       ".notion-simple-table-cell"
     ].join(","));
