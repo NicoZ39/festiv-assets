@@ -1042,12 +1042,10 @@ details.notion-toggle[open] > div {
     animation: none !important;
   }
 }
-/* ===== THEME TOGGLE ===== */
-
-/* ===== iOS THEME SWITCH ===== */
+/* ===== iOS THEME SWITCH (ULTRA CLEAN SVG) ===== */
 #festiv-theme-toggle.festiv-switch{
   position: fixed;
-  top: 76px;      /* garde ta valeur actuelle */
+  top: 76px;
   right: 18px;
   z-index: 9999;
 
@@ -1055,9 +1053,14 @@ details.notion-toggle[open] > div {
   padding: 0;
   background: transparent;
   cursor: pointer;
-
-  /* pour éviter le “bleu” sur mobile */
   -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 900px){
+  #festiv-theme-toggle.festiv-switch{
+    top: 76px;
+    right: 12px;
+  }
 }
 
 #festiv-theme-toggle .festiv-switch__track{
@@ -1067,8 +1070,8 @@ details.notion-toggle[open] > div {
   display: inline-block;
   position: relative;
 
-   /* 🎃 Orange Festiv en mode clair */
-  background: #ff7a00;   /* adapte si tu as un orange exact */
+  /* 🎃 Orange Festiv en mode clair */
+  background: #ff7a00;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
   transition: background 200ms ease, box-shadow 200ms ease;
 }
@@ -1084,64 +1087,45 @@ details.notion-toggle[open] > div {
   background: #fff;
   box-shadow: 0 6px 14px rgba(0,0,0,0.18);
   transform: translateX(0);
-  transition: transform 220ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms ease;
+  transition: transform 240ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms ease;
 }
 
+/* Icônes SVG centrées (et on en affiche une seule selon l’état) */
 #festiv-theme-toggle .festiv-switch__icon{
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 12px;
   line-height: 1;
   pointer-events: none;
-  transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+  opacity: 0;
+  transition: opacity 160ms ease;
 }
 
-/* État sombre */
+#festiv-theme-toggle .festiv-switch__icon svg{
+  display: block;
+  color: rgba(255,255,255,0.95); /* icône sur track coloré */
+}
+
+/* Clair => lune visible */
+#festiv-theme-toggle .festiv-switch__icon.is-moon{ opacity: 1; }
+
+/* Sombre => vert Festiv + soleil visible + knob à droite */
 #festiv-theme-toggle.is-dark .festiv-switch__track{
-  background: rgba(0,177,172,0.95); /* ton vert Festiv */
+  background: #00b1ac;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
 }
 
 #festiv-theme-toggle.is-dark .festiv-switch__knob{
   transform: translateX(18px);
-  box-shadow: 0 8px 18px rgba(255,122,0,0.35);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.22);
 }
 
-/* Icône qui “glisse” aussi */
-#festiv-theme-toggle .festiv-switch__icon::before{
-  content: "🌙";
-}
-
-#festiv-theme-toggle.is-dark .festiv-switch__icon{
-  transform: translate(calc(-50% + 18px), -50%);
-}
-
-
-#festiv-theme-toggle.is-dark .festiv-switch__icon::before{
-  content: "☀️";
-}
+#festiv-theme-toggle.is-dark .festiv-switch__icon.is-moon{ opacity: 0; }
+#festiv-theme-toggle.is-dark .festiv-switch__icon.is-sun{ opacity: 1; }
 
 /* Focus clavier */
 #festiv-theme-toggle:focus-visible .festiv-switch__track{
-  box-shadow: 0 0 0 3px rgba(0,177,172,0.25), inset 0 0 0 1px rgba(0,0,0,0.18);
-}
-
-
-/* Mode sombre */
-
-.dark-mode {
-  background-color: #111 !important;
-  color: #f2f2f2 !important;
-}
-
-.dark-mode .notion-callout {
-  background: #1b1b1b !important;
-  border-color: #333 !important;
-}
-
-.dark-mode .notion-button {
-  background-color: #00b1ac !important;
+  box-shadow: 0 0 0 3px rgba(0,177,172,0.25), inset 0 0 0 1px rgba(0,0,0,0.12);
 }
 
