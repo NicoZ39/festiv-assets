@@ -1090,11 +1090,12 @@ details.notion-toggle[open] > div {
 #festiv-theme-toggle .festiv-switch__icon{
   position: absolute;
   top: 50%;
-  left: 9px;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 12px;
   line-height: 1;
-  transition: transform 220ms cubic-bezier(.2,.8,.2,1), left 220ms cubic-bezier(.2,.8,.2,1);
+  pointer-events: none;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1);
 }
 
 /* État sombre */
@@ -1105,7 +1106,7 @@ details.notion-toggle[open] > div {
 
 #festiv-theme-toggle.is-dark .festiv-switch__knob{
   transform: translateX(18px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+  box-shadow: 0 8px 18px rgba(255,122,0,0.35);
 }
 
 /* Icône qui “glisse” aussi */
@@ -1114,8 +1115,9 @@ details.notion-toggle[open] > div {
 }
 
 #festiv-theme-toggle.is-dark .festiv-switch__icon{
-  left: 24px;
+  transform: translate(calc(-50% + 18px), -50%);
 }
+
 
 #festiv-theme-toggle.is-dark .festiv-switch__icon::before{
   content: "☀️";
