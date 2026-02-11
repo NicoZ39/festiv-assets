@@ -1164,3 +1164,7 @@ details.notion-toggle[open] > div {
   filter: invert(0.9) hue-rotate(180deg) !important;
   filter: brightness(1.15) contrast(1.05);
 }
+.dark-mode .notion-block-2fb6ae9a98f2804d97dfe79791798201 iframe {
+  filter: invert(0.9) hue-rotate(180deg) !important;
+  filter: brightness(1.15) contrast(1.05);
+}
