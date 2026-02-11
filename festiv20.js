@@ -159,9 +159,21 @@ function formatDates() {
         /\b(\d{2}:\d{2})\b/.test(raw) ||
         /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
 
-      el.textContent = hasTime
-        ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
-        : dateStr;
+      const formatted = hasTime
+  ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
+  : dateStr;
+
+// 🔎 On remplace seulement la date détectée dans le texte original
+const newText = raw.replace(parseDateFromText(raw)?.toString() || raw, formatted);
+
+// ⚠️ Comme toString() ne correspond pas au texte source exact,
+// on fait plus fiable : on remplace via le pattern looksLikeDate
+
+const datePattern =
+  /\b\d{4}-\d{2}-\d{2}\b|\b\d{4}\/\d{1,2}\/\d{1,2}\b|\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i;
+
+el.textContent = raw.replace(datePattern, formatted);
+
 
       el.dataset.festivDateDone = "1";
     });
