@@ -47,37 +47,48 @@
 
   // ===== THEME TOGGLE (bouton) =====
   function initThemeToggle() {
-    try {
-      // évite doublon si runAll() est rappelé 100 fois
-      let btn = document.getElementById("festiv-theme-toggle");
-      if (!btn) {
-        btn = document.createElement("button");
-        btn.type = "button";
-        btn.id = "festiv-theme-toggle";
-        btn.setAttribute("aria-label", "Changer de thème");
+  try {
+    let wrap = document.getElementById("festiv-theme-toggle");
+    if (!wrap) {
+      wrap = document.createElement("button");
+      wrap.type = "button";
+      wrap.id = "festiv-theme-toggle";
+      wrap.className = "festiv-switch";
+      wrap.setAttribute("aria-label", "Changer de thème");
+      wrap.setAttribute("aria-pressed", "false");
 
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+      // switch iOS (track + knob + icône)
+      wrap.innerHTML = `
+        <span class="festiv-switch__track" aria-hidden="true">
+          <span class="festiv-switch__knob" aria-hidden="true"></span>
+          <span class="festiv-switch__icon" aria-hidden="true"></span>
+        </span>
+      `;
 
-          const isDark = document.documentElement.classList.toggle("dark-mode");
-          btn.textContent = isDark ? "☀️" : "🌙";
+      wrap.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-          try {
-            localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
-          } catch {}
-        });
+        const isDark = document.documentElement.classList.toggle("dark-mode");
+        wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+        wrap.classList.toggle("is-dark", isDark);
 
-        document.body.appendChild(btn);
-      }
+        try {
+          localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
+        } catch {}
+      });
 
-      // ✅ met à jour l’icône à chaque runAll (si le thème a déjà été appliqué)
-      const isDarkNow = document.documentElement.classList.contains("dark-mode");
-      btn.textContent = isDarkNow ? "☀️" : "🌙";
-    } catch (e) {
-      console.error("[festiv20] initThemeToggle error:", e);
+      document.body.appendChild(wrap);
     }
+
+    // sync état (si navigation interne)
+    const isDarkNow = document.documentElement.classList.contains("dark-mode");
+    wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
+    wrap.classList.toggle("is-dark", isDarkNow);
+  } catch (e) {
+    console.error("[festiv20] initThemeToggle error:", e);
   }
+}
 
   // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
   applySavedTheme();
