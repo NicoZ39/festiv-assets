@@ -1087,7 +1087,7 @@ details.notion-toggle[open] > div {
   background: #fff;
   box-shadow: 0 6px 14px rgba(0,0,0,0.18);
   transform: translateX(0);
-  transition: transform 240ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms ease;
+  transition: transform 520ms cubic-bezier(.16, 1.15, .3, 1), box-shadow 200ms ease;
 
   /* ✅ centre l’icône dans le knob */
   display: flex;
@@ -1139,4 +1139,14 @@ details.notion-toggle[open] > div {
 /* Focus clavier */
 #festiv-theme-toggle:focus-visible .festiv-switch__track{
   box-shadow: 0 0 0 3px rgba(0,177,172,0.25), inset 0 0 0 1px rgba(0,0,0,0.12);
+}
+/* ===== Dark mode : icônes header (menu + recherche) ===== */
+.dark-mode .custom-header__menu,
+.dark-mode .notion-search-button,
+.dark-mode .notion-search-button .search-title,
+.dark-mode .notion-search-button svg,
+.dark-mode .custom-header__menu svg,
+.dark-mode .custom-header__menu .icon {
+  color: #fff !important;
+  fill: currentColor !important;
 }
