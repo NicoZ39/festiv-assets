@@ -1067,8 +1067,9 @@ details.notion-toggle[open] > div {
   display: inline-block;
   position: relative;
 
-  background: rgba(0,0,0,0.12);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.18);
+   /* 🎃 Orange Festiv en mode clair */
+  background: #ff7a00;   /* adapte si tu as un orange exact */
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
   transition: background 200ms ease, box-shadow 200ms ease;
 }
 
