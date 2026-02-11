@@ -1035,7 +1035,7 @@ details.notion-toggle[open] > div {
 
 #festiv-theme-toggle {
   position: fixed;
-  top: 18px;
+  top: 76px;
   right: 18px;
   z-index: 9999;
   cursor: pointer;
@@ -1045,6 +1045,12 @@ details.notion-toggle[open] > div {
   font-size: 16px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   transition: transform .2s ease, background .2s ease;
+}
+@media (max-width: 900px){
+  #festiv-theme-toggle{
+    top: 76px;  /* un poil plus bas sur petits écrans */
+    right: 12px;
+  }
 }
 
 #festiv-theme-toggle:hover {
@@ -1066,3 +1072,4 @@ details.notion-toggle[open] > div {
 .dark-mode .notion-button {
   background-color: #00b1ac !important;
 }
+
