@@ -959,5 +959,37 @@ details.notion-toggle[open] > div {
     transition: none !important;
   }
 }
+/* Tooltip desktop */
+@media (hover: hover) and (pointer: fine){
+  .festiv-backtotop{
+    position: fixed; /* déjà le cas, mais safe */
+  }
+
+  .festiv-backtotop::after{
+    content: "Haut de page";
+    position: absolute;
+    right: 0;
+    bottom: 62px;
+
+    background: rgba(0,0,0,.78);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 10px;
+
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+
+  .festiv-backtotop:hover::after,
+  .festiv-backtotop:focus-visible::after{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 
