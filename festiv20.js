@@ -18,7 +18,73 @@
     return String(n).padStart(2, "0");
   }
 
+  // =========================================
+  // THEME (persistant + robuste Simple.ink)
+  // =========================================
+
+  function getSavedTheme() {
+    try {
+      return localStorage.getItem("festiv-theme"); // "dark" | "light" | null
+    } catch {
+      return null;
+    }
+  }
+
+  function applySavedTheme() {
+    try {
+      const saved = getSavedTheme();
+      const isDark = saved === "dark";
+
+      // ✅ plus robuste que body (simple.ink peut retoucher body)
+      document.documentElement.classList.toggle("dark-mode", isDark);
+
+      // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
+      document.documentElement.classList.add("festiv-theme-ready");
+    } catch (e) {
+      console.error("[festiv20] applySavedTheme error:", e);
+    }
+  }
+
+  // ===== THEME TOGGLE (bouton) =====
+  function initThemeToggle() {
+    try {
+      // évite doublon si runAll() est rappelé 100 fois
+      let btn = document.getElementById("festiv-theme-toggle");
+      if (!btn) {
+        btn = document.createElement("button");
+        btn.type = "button";
+        btn.id = "festiv-theme-toggle";
+        btn.setAttribute("aria-label", "Changer de thème");
+
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          const isDark = document.documentElement.classList.toggle("dark-mode");
+          btn.textContent = isDark ? "☀️" : "🌙";
+
+          try {
+            localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
+          } catch {}
+        });
+
+        document.body.appendChild(btn);
+      }
+
+      // ✅ met à jour l’icône à chaque runAll (si le thème a déjà été appliqué)
+      const isDarkNow = document.documentElement.classList.contains("dark-mode");
+      btn.textContent = isDarkNow ? "☀️" : "🌙";
+    } catch (e) {
+      console.error("[festiv20] initThemeToggle error:", e);
+    }
+  }
+
+  // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
+  applySavedTheme();
+
+  // =========================================
   // 1) Logo cliquable
+  // =========================================
   function makeLogoClickable() {
     try {
       const logoDiv = document.querySelector(".styles_logo__JgM3o");
@@ -50,15 +116,16 @@
       const d = new Date(iso[0].replace(" ", "T"));
       if (!isNaN(d)) return d;
     }
+
     // Slash: 2026/01/30 ou 2025/05/8
-const slash = t.match(/\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b/);
-if (slash) {
-  const year = Number(slash[1]);
-  const month = Number(slash[2]) - 1; // 0-11
-  const day = Number(slash[3]);
-  const d = new Date(year, month, day);
-  if (!isNaN(d)) return d;
-}
+    const slash = t.match(/\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b/);
+    if (slash) {
+      const year = Number(slash[1]);
+      const month = Number(slash[2]) - 1; // 0-11
+      const day = Number(slash[3]);
+      const d = new Date(year, month, day);
+      if (!isNaN(d)) return d;
+    }
 
     // EN: "May 14, 2026" + optional time "06:00"
     const en = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
@@ -68,11 +135,11 @@ if (slash) {
     }
 
     // EN sans virgule: "Jan 30 2026" + optional time "06:00"
-const en2 = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2}\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
-if (en2) {
-  const d = new Date(en2[1] + (en2[2] ? " " + en2[2] : ""));
-  if (!isNaN(d)) return d;
-}
+    const en2 = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2}\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
+    if (en2) {
+      const d = new Date(en2[1] + (en2[2] ? " " + en2[2] : ""));
+      if (!isNaN(d)) return d;
+    }
 
     // FR: "14 mai 2026" + optional "dès 06h00" / "à 6h00"
     const fr = t
@@ -100,91 +167,67 @@ if (en2) {
     return null;
   }
 
-  // 2) Format dates
-  // 2) Format dates (robuste : callout + tables + pages)
-// 2) Format dates (callout + simple table + texte simple)
-function formatDates() {
-  try {
-    const els = document.querySelectorAll([
-      // Dates “prop” (page + DB)
-      ".notion-property-date",
-      // Dates dans les cartes (vignettes / gallery / list)
-      ".notion-collection-card .notion-property-date",
-      ".notion-collection-card .notion-property .notion-text",
-      // Dates en vue table (DB table view)
-      ".notion-collection .notion-table-cell .notion-property-date",
-      ".notion-collection .notion-table-cell .notion-text",
-      // ✅ Dates dans les encadrés (callouts)
-  ".notion-callout-text .notion-text",
-      // Simple Table Notion (ton cas “Jan 30, 2026” en tableau)
-      ".notion-simple-table-cell"
-    ].join(","));
+  // 2) Format dates (callout + simple table + texte simple)
+  function formatDates() {
+    try {
+      const els = document.querySelectorAll([
+        ".notion-property-date",
+        ".notion-collection-card .notion-property-date",
+        ".notion-collection-card .notion-property .notion-text",
+        ".notion-collection .notion-table-cell .notion-property-date",
+        ".notion-collection .notion-table-cell .notion-text",
+        ".notion-callout-text .notion-text",
+        ".notion-simple-table-cell"
+      ].join(","));
 
-    els.forEach((el) => {
-      if (el.dataset.festivDateDone === "1") return;
+      els.forEach((el) => {
+        if (el.dataset.festivDateDone === "1") return;
+        if (el.children && el.children.length > 0) return;
 
-      // on ne modifie que les feuilles
-      if (el.children && el.children.length > 0) return;
+        const raw = (el.textContent || "").replace(/\u00A0/g, " ").trim();
+        if (!raw) return;
 
-      const raw = (el.textContent || "").replace(/\u00A0/g, " ").trim();
-      if (!raw) return;
+        if (/^\s*(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/i.test(raw)) {
+          el.dataset.festivDateDone = "1";
+          return;
+        }
 
-      // évite de retoucher un texte déjà FR (ex: “vendredi 30 janvier 2026”)
-      if (/^\s*(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\b/i.test(raw)) {
+        const looksLikeDate =
+          /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||
+          /\b\d{4}\/\d{1,2}\/\d{1,2}\b/.test(raw) ||
+          /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||
+          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw);
+
+        if (!looksLikeDate) return;
+
+        const d = parseDateFromText(raw);
+        if (!d) return;
+
+        const dateStr = d.toLocaleDateString(locale, {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+        const hasTime =
+          /\b(\d{2}:\d{2})\b/.test(raw) ||
+          /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
+
+        const formatted = hasTime
+          ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
+          : dateStr;
+
+        const datePattern =
+          /\b\d{4}-\d{2}-\d{2}\b|\b\d{4}\/\d{1,2}\/\d{1,2}\b|\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i;
+
+        el.textContent = raw.replace(datePattern, formatted);
         el.dataset.festivDateDone = "1";
-        return;
-      }
-
-      // pré-filtre très léger : doit ressembler à une date
-      const looksLikeDate =
-  /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||                    // ISO
-  /\b\d{4}\/\d{1,2}\/\d{1,2}\b/.test(raw) ||              // ✅ Slash (blog)
-  /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||    // EN
-  /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw); // FR
-
-
-      if (!looksLikeDate) return;
-
-      const d = parseDateFromText(raw);
-      if (!d) return;
-
-      const dateStr = d.toLocaleDateString(locale, {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
       });
-
-      const hasTime =
-        /\b(\d{2}:\d{2})\b/.test(raw) ||
-        /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
-
-      const formatted = hasTime
-  ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
-  : dateStr;
-
-// 🔎 On remplace seulement la date détectée dans le texte original
-const newText = raw.replace(parseDateFromText(raw)?.toString() || raw, formatted);
-
-// ⚠️ Comme toString() ne correspond pas au texte source exact,
-// on fait plus fiable : on remplace via le pattern looksLikeDate
-
-const datePattern =
-  /\b\d{4}-\d{2}-\d{2}\b|\b\d{4}\/\d{1,2}\/\d{1,2}\b|\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b|\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i;
-
-el.textContent = raw.replace(datePattern, formatted);
-
-
-      el.dataset.festivDateDone = "1";
-    });
-  } catch (e) {
-    console.error("[festiv20] formatDates error:", e);
+    } catch (e) {
+      console.error("[festiv20] formatDates error:", e);
+    }
   }
-}
-
-
-
-
 
   // 3) Footer colonnes + copyright
   function createFooterColumns() {
@@ -213,7 +256,6 @@ el.textContent = raw.replace(datePattern, formatted);
   <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
   <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
 </div>`;
-
       footer.appendChild(wrapper);
     } catch (e) {
       console.error("[festiv20] createFooterColumns error:", e);
@@ -255,6 +297,7 @@ el.textContent = raw.replace(datePattern, formatted);
       console.error("[festiv20] tweakCover error:", e);
     }
   }
+
   // 5) Indicateurs scroll horizontal pour les tables (robuste)
   function setupTableScrollUX() {
     try {
@@ -262,11 +305,9 @@ el.textContent = raw.replace(datePattern, formatted);
       if (!tables.length) return;
 
       tables.forEach((table) => {
-        // évite les doublons avec ton MutationObserver
         if (table.dataset.festivUxBound === "1") return;
         table.dataset.festivUxBound = "1";
 
-        // 1) Ajout du hint texte (vrai DOM, pas ::before)
         if (!table.previousElementSibling || !table.previousElementSibling.classList.contains("festiv-table-hint")) {
           const hint = document.createElement("div");
           hint.className = "festiv-table-hint";
@@ -274,7 +315,6 @@ el.textContent = raw.replace(datePattern, formatted);
           table.parentNode.insertBefore(hint, table);
         }
 
-        // 2) Trouver le vrai élément qui scrolle (parfois .notion-table, parfois .notion-table-view)
         const candidates = [
           table,
           table.querySelector(".notion-table-view"),
@@ -294,17 +334,14 @@ el.textContent = raw.replace(datePattern, formatted);
           table.classList.toggle("festiv-can-scroll-left", canLeft);
           table.classList.toggle("festiv-can-scroll-right", canRight);
 
-          // si pas de débordement, on enlève tout
           if (maxScrollLeft <= EPS) {
             table.classList.remove("festiv-can-scroll-left", "festiv-can-scroll-right");
           }
         };
 
-        // listeners
         scroller.addEventListener("scroll", update, { passive: true });
         window.addEventListener("resize", update, { passive: true });
 
-        // update initial + après rendu
         update();
         setTimeout(update, 200);
         setTimeout(update, 800);
@@ -314,414 +351,355 @@ el.textContent = raw.replace(datePattern, formatted);
       console.error("[festiv20] setupTableScrollUX error:", e);
     }
   }
+
   // 6) Shortcode [retour] => bouton retour (anti "clic fantôme")
-function shortcodeRetour() {
-  try {
-    const pageBornAt = (window.__FESTIV_PAGE_BORN_AT ||= Date.now());
+  function shortcodeRetour() {
+    try {
+      const pageBornAt = (window.__FESTIV_PAGE_BORN_AT ||= Date.now());
 
-    const nodes = document.querySelectorAll(
-      ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
-    );
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+      );
 
-    nodes.forEach((node) => {
-      if (node.dataset.festivRetourDone === "1") return;
+      nodes.forEach((node) => {
+        if (node.dataset.festivRetourDone === "1") return;
 
-      const txt = (node.textContent || "").trim();
-      if (!txt.includes("[retour]")) return;
+        const txt = (node.textContent || "").trim();
+        if (!txt.includes("[retour]")) return;
 
-      node.dataset.festivRetourDone = "1";
+        node.dataset.festivRetourDone = "1";
 
-      const makeBtn = () => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "festiv-back-btn";
-        btn.textContent = "← Retour";
+        const makeBtn = () => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "festiv-back-btn";
+          btn.textContent = "← Retour";
 
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-          // Anti clic "hérité" du clic qui a ouvert la page
-          if (Date.now() - pageBornAt < 900) return;
+            if (Date.now() - pageBornAt < 900) return;
 
-          if (window.history.length > 1) window.history.back();
-          else window.location.href = "/";
-        });
+            if (window.history.length > 1) window.history.back();
+            else window.location.href = "/";
+          });
 
-        return btn;
-      };
+          return btn;
+        };
 
-      // Cas 1 : bloc uniquement "[retour]"
-      if (txt === "[retour]") {
-        node.textContent = "";
-        node.appendChild(makeBtn());
-        return;
-      }
-
-      // Cas 2 : [retour] au milieu du texte
-      const safe = node.textContent;
-      const parts = safe.split("[retour]");
-
-      node.textContent = "";
-      parts.forEach((part, i) => {
-        if (part) node.appendChild(document.createTextNode(part));
-        if (i < parts.length - 1) node.appendChild(makeBtn());
-      });
-    });
-  } catch (e) {
-    console.error("[festiv20] shortcodeRetour error:", e);
-  }
-}
-// 7) Mapping des boutons Notion -> navigation contrôlée
-function bindNotionButtons() {
-  try {
-    if (window.__FESTIV_NOTION_BTNS_BOUND) return;
-    window.__FESTIV_NOTION_BTNS_BOUND = true;
-
-    // 🔗 Mapping texte du bouton -> URL
-    const BUTTON_LINKS = {
-  "👉 Inscription Exposants": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a",
-  "👉 Voir les prochains événements": "https://festiv-ounans.thesimple.ink/d0b436d5-a1e1-428d-8bd7-6845ab0654de",
-  "🌶️ Participer au jeu du piment": "https://festiv-ounans.thesimple.ink/2fb6ae9a-98f2-8198-b110-c772434e56b8",
-  "👉 Voir tous les événements": "https://festiv-ounans.thesimple.ink/d0b436d5-a1e1-428d-8bd7-6845ab0654de",
-  "👉 S’inscrire comme exposant": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a"
-};
-
-    document.addEventListener(
-      "click",
-      (e) => {
-        const btn = e.target.closest?.("button.notion-button");
-        if (!btn) return;
-
-        const label = (btn.textContent || "").trim();
-        const url = BUTTON_LINKS[label];
-        if (!url) return;
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        // 👉 toujours même onglet (interne Festiv'Ounans)
-        window.location.assign(url);
-      },
-      true // capture : passe avant Simple.ink
-    );
-
-    if (DEBUG) console.log("[festiv20] Notion buttons bound ✅");
-  } catch (e) {
-    console.error("[festiv20] bindNotionButtons error:", e);
-  }
-}
-// 8) Corrige les <a target="_blank"> internes => même onglet
-function fixInternalAnchors() {
-  try {
-    const anchors = document.querySelectorAll('a[href]');
-    anchors.forEach((a) => {
-      const href = (a.getAttribute("href") || "").trim();
-      if (!href) return;
-      if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
-
-      let url;
-      try {
-        url = new URL(href, window.location.href);
-      } catch {
-        return;
-      }
-
-      const isInternal =
-        url.origin === window.location.origin ||
-        url.hostname.endsWith(".thesimple.ink"); // tes pages internes en absolu
-
-      if (isInternal) {
-        // ✅ même onglet
-        a.removeAttribute("target");          // le plus fiable
-        a.removeAttribute("rel");
-      } else {
-        // ✅ externe => nouvel onglet
-        a.setAttribute("target", "_blank");
-        a.setAttribute("rel", "noopener noreferrer");
-      }
-    });
-  } catch (e) {
-    console.error("[festiv20] fixInternalAnchors error:", e);
-  }
-}
-
-  function hideGenericCalloutIcons() {
-  try {
-    document
-      .querySelectorAll('.notion-callout > svg.notion-page-icon[alt="Page"]')
-      .forEach((svg) => {
-        const callout = svg.closest(".notion-callout");
-        if (callout) callout.classList.add("festiv-callout-noicon");
-        svg.remove(); // ou svg.style.display = "none";
-      });
-  } catch (e) {
-    console.error("[festiv20] hideGenericCalloutIcons error:", e);
-  }
-}
-// FAQ : accordion + animation ouverture/fermeture + espace progressif
-function setupFaqAnimation() {
-  try {
-    if (window.__FESTIV_FAQ_ANIM_BOUND) return;
-    window.__FESTIV_FAQ_ANIM_BOUND = true;
-
-    const TOP_SPACE = 14; // espace au-dessus du texte (px)
-
-    const closeWithAnim = (details) => {
-      const content = details.querySelector(":scope > div");
-      if (!content) {
-        details.removeAttribute("open");
-        return;
-      }
-      if (!details.hasAttribute("open")) return;
-
-      // état départ (ouvert)
-      const h = content.scrollHeight;
-      content.style.height = h + "px";
-      content.style.paddingTop = TOP_SPACE + "px";
-      content.getBoundingClientRect(); // reflow
-
-      // animate vers fermé
-      content.style.height = "0px";
-      content.style.paddingTop = "0px";
-
-      const onEnd = (ev) => {
-        if (ev.propertyName !== "height") return;
-        details.removeAttribute("open");
-        // nettoyage
-        content.style.height = "0px";
-        content.style.paddingTop = "0px";
-        content.removeEventListener("transitionend", onEnd);
-      };
-      content.addEventListener("transitionend", onEnd);
-    };
-
-    const openWithAnim = (details) => {
-      const content = details.querySelector(":scope > div");
-      if (!content) return;
-
-      // ouvrir pour que le contenu soit mesurable
-      details.setAttribute("open", "");
-
-      // état départ (fermé)
-      content.style.height = "0px";
-      content.style.paddingTop = "0px";
-      content.getBoundingClientRect(); // reflow
-
-      // cible (contenu + espace)
-      const h = content.scrollHeight;
-
-      // animate vers ouvert
-      content.style.paddingTop = TOP_SPACE + "px";
-      content.style.height = (h + TOP_SPACE) + "px";
-
-      const onEnd = (ev) => {
-        if (ev.propertyName !== "height") return;
-        // laisse le contenu respirer après animation
-        content.style.height = "auto";
-        content.removeEventListener("transitionend", onEnd);
-      };
-      content.addEventListener("transitionend", onEnd);
-    };
-
-    // Click handler (on remplace le toggle natif)
-    document.addEventListener(
-      "click",
-      (e) => {
-        const summary = e.target.closest("summary");
-        if (!summary) return;
-
-        const details = summary.parentElement;
-        if (!details || !details.matches("details.notion-toggle")) return;
-
-        e.preventDefault(); // stop comportement natif <details>
-
-        const isOpen = details.hasAttribute("open");
-
-        // fermer si déjà ouvert
-        if (isOpen) {
-          closeWithAnim(details);
+        if (txt === "[retour]") {
+          node.textContent = "";
+          node.appendChild(makeBtn());
           return;
         }
 
-        // accordion : fermer les autres AVEC animation
-        document.querySelectorAll("details.notion-toggle[open]").forEach((d) => {
-          if (d !== details) closeWithAnim(d);
+        const safe = node.textContent;
+        const parts = safe.split("[retour]");
+
+        node.textContent = "";
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(makeBtn());
         });
-
-        // ouvrir celui-ci
-        openWithAnim(details);
-      },
-      true
-    );
-
-    if (DEBUG) console.log("[festiv20] FAQ anim+accordion ✅");
-  } catch (e) {
-    console.error("[festiv20] setupFaqAnimation error:", e);
-  }
-}
-
-// ==============================
-// i18n "Search" simple.ink -> FR (sans MutationObserver)
-// ==============================
-function localizeSearchUI() {
-  try {
-    const FR = {
-      buttonLabel: "Recherche",
-      modalAriaLabel: "Recherche",
-      inputPlaceholder: "Rechercher",
-      toggleLabel: "Rechercher dans cette page",
-    };
-
-    // 1) Traduction du bouton dans le header (safe)
-    document.querySelectorAll(".notion-search-button .search-title").forEach((el) => {
-      if (el.textContent !== FR.buttonLabel) el.textContent = FR.buttonLabel;
-    });
-
-    // 2) Traduction de la modale (quand elle existe)
-    function translateModal() {
-      const modal = document.querySelector(".ReactModal__Content.notion-search");
-      if (modal && modal.getAttribute("aria-label") !== FR.modalAriaLabel) {
-        modal.setAttribute("aria-label", FR.modalAriaLabel);
-      }
-
-      const inp = document.querySelector("input.searchInput");
-      if (inp && inp.getAttribute("placeholder") !== FR.inputPlaceholder) {
-        inp.setAttribute("placeholder", FR.inputPlaceholder);
-      }
-
-      // Label "Search page content as well" (sans innerHTML pour éviter les boucles)
-      document.querySelectorAll(".searchmode-label").forEach((label) => {
-        if (label.dataset.festivI18nDone === "1") return;
-
-        // On garde le SVG, on remplace seulement le texte après
-        const svg = label.querySelector("svg");
-        if (!svg) return;
-
-        // Supprime les text nodes existants
-        Array.from(label.childNodes).forEach((n) => {
-          if (n.nodeType === Node.TEXT_NODE) n.remove();
-        });
-
-        label.append(document.createTextNode(" " + FR.toggleLabel));
-        label.dataset.festivI18nDone = "1";
       });
+    } catch (e) {
+      console.error("[festiv20] shortcodeRetour error:", e);
     }
+  }
 
-    // 3) Bind click une seule fois : au clic, la modale s'ouvre puis on traduit
-    if (!window.__FESTIV_SEARCH_I18N_BOUND) {
-      window.__FESTIV_SEARCH_I18N_BOUND = true;
+  // 7) Mapping des boutons Notion -> navigation contrôlée
+  function bindNotionButtons() {
+    try {
+      if (window.__FESTIV_NOTION_BTNS_BOUND) return;
+      window.__FESTIV_NOTION_BTNS_BOUND = true;
+
+      const BUTTON_LINKS = {
+        "👉 Inscription Exposants": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a",
+        "👉 Voir les prochains événements": "https://festiv-ounans.thesimple.ink/d0b436d5-a1e1-428d-8bd7-6845ab0654de",
+        "🌶️ Participer au jeu du piment": "https://festiv-ounans.thesimple.ink/2fb6ae9a-98f2-8198-b110-c772434e56b8",
+        "👉 Voir tous les événements": "https://festiv-ounans.thesimple.ink/d0b436d5-a1e1-428d-8bd7-6845ab0654de",
+        "👉 S’inscrire comme exposant": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a"
+      };
 
       document.addEventListener(
         "click",
         (e) => {
-          const btn = e.target.closest?.(".notion-search-button");
+          const btn = e.target.closest?.("button.notion-button");
           if (!btn) return;
 
-          // La modale est injectée juste après le clic -> on traduit plusieurs fois (safe)
-          setTimeout(translateModal, 0);
-          setTimeout(translateModal, 50);
-          setTimeout(translateModal, 200);
+          const label = (btn.textContent || "").trim();
+          const url = BUTTON_LINKS[label];
+          if (!url) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.assign(url);
         },
         true
       );
 
-      // Bonus : si ouverture au clavier (⌘K / Ctrl+K) ou autre, on tente aussi au keydown
+      if (DEBUG) console.log("[festiv20] Notion buttons bound ✅");
+    } catch (e) {
+      console.error("[festiv20] bindNotionButtons error:", e);
+    }
+  }
+
+  // 8) Corrige les <a target="_blank"> internes => même onglet
+  function fixInternalAnchors() {
+    try {
+      const anchors = document.querySelectorAll("a[href]");
+      anchors.forEach((a) => {
+        const href = (a.getAttribute("href") || "").trim();
+        if (!href) return;
+        if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
+
+        let url;
+        try {
+          url = new URL(href, window.location.href);
+        } catch {
+          return;
+        }
+
+        const isInternal =
+          url.origin === window.location.origin ||
+          url.hostname.endsWith(".thesimple.ink");
+
+        if (isInternal) {
+          a.removeAttribute("target");
+          a.removeAttribute("rel");
+        } else {
+          a.setAttribute("target", "_blank");
+          a.setAttribute("rel", "noopener noreferrer");
+        }
+      });
+    } catch (e) {
+      console.error("[festiv20] fixInternalAnchors error:", e);
+    }
+  }
+
+  function hideGenericCalloutIcons() {
+    try {
+      document
+        .querySelectorAll('.notion-callout > svg.notion-page-icon[alt="Page"]')
+        .forEach((svg) => {
+          const callout = svg.closest(".notion-callout");
+          if (callout) callout.classList.add("festiv-callout-noicon");
+          svg.remove();
+        });
+    } catch (e) {
+      console.error("[festiv20] hideGenericCalloutIcons error:", e);
+    }
+  }
+
+  // FAQ : accordion + animation ouverture/fermeture + espace progressif
+  function setupFaqAnimation() {
+    try {
+      if (window.__FESTIV_FAQ_ANIM_BOUND) return;
+      window.__FESTIV_FAQ_ANIM_BOUND = true;
+
+      const TOP_SPACE = 14;
+
+      const closeWithAnim = (details) => {
+        const content = details.querySelector(":scope > div");
+        if (!content) {
+          details.removeAttribute("open");
+          return;
+        }
+        if (!details.hasAttribute("open")) return;
+
+        const h = content.scrollHeight;
+        content.style.height = h + "px";
+        content.style.paddingTop = TOP_SPACE + "px";
+        content.getBoundingClientRect();
+
+        content.style.height = "0px";
+        content.style.paddingTop = "0px";
+
+        const onEnd = (ev) => {
+          if (ev.propertyName !== "height") return;
+          details.removeAttribute("open");
+          content.style.height = "0px";
+          content.style.paddingTop = "0px";
+          content.removeEventListener("transitionend", onEnd);
+        };
+        content.addEventListener("transitionend", onEnd);
+      };
+
+      const openWithAnim = (details) => {
+        const content = details.querySelector(":scope > div");
+        if (!content) return;
+
+        details.setAttribute("open", "");
+
+        content.style.height = "0px";
+        content.style.paddingTop = "0px";
+        content.getBoundingClientRect();
+
+        const h = content.scrollHeight;
+
+        content.style.paddingTop = TOP_SPACE + "px";
+        content.style.height = h + TOP_SPACE + "px";
+
+        const onEnd = (ev) => {
+          if (ev.propertyName !== "height") return;
+          content.style.height = "auto";
+          content.removeEventListener("transitionend", onEnd);
+        };
+        content.addEventListener("transitionend", onEnd);
+      };
+
       document.addEventListener(
-        "keydown",
+        "click",
         (e) => {
-          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+          const summary = e.target.closest("summary");
+          if (!summary) return;
+
+          const details = summary.parentElement;
+          if (!details || !details.matches("details.notion-toggle")) return;
+
+          e.preventDefault();
+
+          const isOpen = details.hasAttribute("open");
+          if (isOpen) {
+            closeWithAnim(details);
+            return;
+          }
+
+          document.querySelectorAll("details.notion-toggle[open]").forEach((d) => {
+            if (d !== details) closeWithAnim(d);
+          });
+
+          openWithAnim(details);
+        },
+        true
+      );
+
+      if (DEBUG) console.log("[festiv20] FAQ anim+accordion ✅");
+    } catch (e) {
+      console.error("[festiv20] setupFaqAnimation error:", e);
+    }
+  }
+
+  // i18n "Search" simple.ink -> FR (sans MutationObserver)
+  function localizeSearchUI() {
+    try {
+      const FR = {
+        buttonLabel: "Recherche",
+        modalAriaLabel: "Recherche",
+        inputPlaceholder: "Rechercher",
+        toggleLabel: "Rechercher dans cette page",
+      };
+
+      document.querySelectorAll(".notion-search-button .search-title").forEach((el) => {
+        if (el.textContent !== FR.buttonLabel) el.textContent = FR.buttonLabel;
+      });
+
+      function translateModal() {
+        const modal = document.querySelector(".ReactModal__Content.notion-search");
+        if (modal && modal.getAttribute("aria-label") !== FR.modalAriaLabel) {
+          modal.setAttribute("aria-label", FR.modalAriaLabel);
+        }
+
+        const inp = document.querySelector("input.searchInput");
+        if (inp && inp.getAttribute("placeholder") !== FR.inputPlaceholder) {
+          inp.setAttribute("placeholder", FR.inputPlaceholder);
+        }
+
+        document.querySelectorAll(".searchmode-label").forEach((label) => {
+          if (label.dataset.festivI18nDone === "1") return;
+
+          const svg = label.querySelector("svg");
+          if (!svg) return;
+
+          Array.from(label.childNodes).forEach((n) => {
+            if (n.nodeType === Node.TEXT_NODE) n.remove();
+          });
+
+          label.append(document.createTextNode(" " + FR.toggleLabel));
+          label.dataset.festivI18nDone = "1";
+        });
+      }
+
+      if (!window.__FESTIV_SEARCH_I18N_BOUND) {
+        window.__FESTIV_SEARCH_I18N_BOUND = true;
+
+        document.addEventListener(
+          "click",
+          (e) => {
+            const btn = e.target.closest?.(".notion-search-button");
+            if (!btn) return;
+
             setTimeout(translateModal, 0);
             setTimeout(translateModal, 50);
             setTimeout(translateModal, 200);
-          }
-        },
-        false
-      );
+          },
+          true
+        );
+
+        document.addEventListener(
+          "keydown",
+          (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+              setTimeout(translateModal, 0);
+              setTimeout(translateModal, 50);
+              setTimeout(translateModal, 200);
+            }
+          },
+          false
+        );
+      }
+    } catch (e) {
+      console.error("[festiv20] localizeSearchUI error:", e);
     }
-  } catch (e) {
-    console.error("[festiv20] localizeSearchUI error:", e);
   }
-}
-// 9) Back-to-top button (visible seulement après scroll)
-function setupBackToTop() {
-  try {
-    if (window.__FESTIV_BACKTOTOP_BOUND) return;
-    window.__FESTIV_BACKTOTOP_BOUND = true;
 
-    // Crée le bouton une seule fois
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "festiv-backtotop";
-    btn.setAttribute("aria-label", "Revenir en haut");
-    btn.innerHTML = "↑";
+  // 9) Back-to-top button (visible seulement après scroll)
+  function setupBackToTop() {
+    try {
+      if (window.__FESTIV_BACKTOTOP_BOUND) return;
+      window.__FESTIV_BACKTOTOP_BOUND = true;
 
-    document.body.appendChild(btn);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "festiv-backtotop";
+      btn.setAttribute("aria-label", "Revenir en haut");
+      btn.innerHTML = "↑";
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      document.body.appendChild(btn);
 
-    const scrollToTop = () => {
-      const behavior = reduceMotion.matches ? "auto" : "smooth";
-      window.scrollTo({ top: 0, left: 0, behavior });
-    };
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      scrollToTop();
-    });
+      const scrollToTop = () => {
+        const behavior = reduceMotion.matches ? "auto" : "smooth";
+        window.scrollTo({ top: 0, left: 0, behavior });
+      };
 
-    const THRESHOLD = 220; // px avant apparition
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        scrollToTop();
+      });
 
-    const update = () => {
-      const y = window.scrollY || document.documentElement.scrollTop || 0;
-      btn.classList.toggle("is-visible", y > THRESHOLD);
-    };
+      const THRESHOLD = 220;
 
-    // update initial + au scroll/resize
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
-  } catch (e) {
-    console.error("[festiv20] setupBackToTop error:", e);
+      const update = () => {
+        const y = window.scrollY || document.documentElement.scrollTop || 0;
+        btn.classList.toggle("is-visible", y > THRESHOLD);
+      };
+
+      update();
+      window.addEventListener("scroll", update, { passive: true });
+      window.addEventListener("resize", update, { passive: true });
+    } catch (e) {
+      console.error("[festiv20] setupBackToTop error:", e);
+    }
   }
-}
-// ===== THEME TOGGLE =====
-function initThemeToggle() {
-  try {
-    // évite doublon si runAll() est rappelé 100 fois
-    if (document.getElementById("festiv-theme-toggle")) return;
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = "festiv-theme-toggle";
-    btn.setAttribute("aria-label", "Changer de thème");
-
-    // appliquer thème sauvegardé
-    const saved = localStorage.getItem("festiv-theme");
-    const isDarkSaved = saved === "dark";
-    document.body.classList.toggle("dark-mode", isDarkSaved);
-    btn.textContent = isDarkSaved ? "☀️" : "🌙";
-
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const isDark = document.body.classList.toggle("dark-mode");
-      btn.textContent = isDark ? "☀️" : "🌙";
-      localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
-    });
-
-    document.body.appendChild(btn);
-  } catch (e) {
-    console.error("[festiv20] initThemeToggle error:", e);
-  }
-}
-
-
-
-  
   function runAll() {
+    // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
+    applySavedTheme();
+
     makeLogoClickable();
     formatDates();
     createFooterColumns();
@@ -735,10 +713,13 @@ function initThemeToggle() {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+
+    // ✅ bouton toggle + icône à jour
     initThemeToggle();
   }
-setTimeout(fixInternalAnchors, 500);
-setTimeout(fixInternalAnchors, 1500);
+
+  setTimeout(fixInternalAnchors, 500);
+  setTimeout(fixInternalAnchors, 1500);
 
   onReady(() => {
     log("loaded ✅");
@@ -746,7 +727,6 @@ setTimeout(fixInternalAnchors, 1500);
 
     let t = null;
     const observer = new MutationObserver(() => {
-      // debounce pour éviter 200 appels
       clearTimeout(t);
       t = setTimeout(runAll, 60);
     });
