@@ -1159,12 +1159,14 @@ details.notion-toggle[open] > div {
   fill: currentColor !important;
 }
 /* === Formulaire Fillout - éclaircir en dark mode === */
+.dark-mode 
+.notion-block-77e137afe607458b909ae1f62e58dee4 iframe,
+.dark-mode 
+.notion-block-2fb6ae9a98f2804d97dfe79791798201 iframe,
+.dark-mode 
+.notion-block-1d26ae9a98f28027a4f1c5c9eb9ab3ae iframe,
+.dark-mode 
+.notion-block-1d26ae9a98f280feb7b5d9f7058c7ddd iframe {
+  filter: invert(0.9) hue-rotate(180deg) brightness(1.15) contrast(1.05) !important;
+}
 
-.dark-mode .notion-block-77e137afe607458b909ae1f62e58dee4 iframe {
-  filter: invert(0.9) hue-rotate(180deg) !important;
-  filter: brightness(1.15) contrast(1.05);
-}
-.dark-mode .notion-block-2fb6ae9a98f2804d97dfe79791798201 iframe {
-  filter: invert(0.9) hue-rotate(180deg) !important;
-  filter: brightness(1.15) contrast(1.05);
-}
