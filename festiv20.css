@@ -1042,7 +1042,7 @@ details.notion-toggle[open] > div {
     animation: none !important;
   }
 }
-/* ===== iOS THEME SWITCH (ULTRA CLEAN SVG) ===== */
+/* ===== iOS THEME SWITCH (ULTRA CLEAN SVG — ICON IN KNOB) ===== */
 #festiv-theme-toggle.festiv-switch{
   position: fixed;
   top: 76px;
@@ -1088,29 +1088,33 @@ details.notion-toggle[open] > div {
   box-shadow: 0 6px 14px rgba(0,0,0,0.18);
   transform: translateX(0);
   transition: transform 240ms cubic-bezier(.2,.8,.2,1), box-shadow 200ms ease;
+
+  /* ✅ centre l’icône dans le knob */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Icônes SVG centrées (et on en affiche une seule selon l’état) */
-#festiv-theme-toggle .festiv-switch__icon{
+/* ✅ Icônes SVG dans le knob (on en affiche une seule) */
+#festiv-theme-toggle .festiv-switch__knob-icon{
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  line-height: 1;
-  pointer-events: none;
   opacity: 0;
-  transition: opacity 160ms ease;
+  transform: scale(0.92);
+  transition: opacity 160ms ease, transform 220ms cubic-bezier(.2,.8,.2,1);
 }
 
-#festiv-theme-toggle .festiv-switch__icon svg{
+#festiv-theme-toggle .festiv-switch__knob-icon svg{
   display: block;
-  color: rgba(255,255,255,0.95); /* icône sur track coloré */
+  color: rgba(0,0,0,0.55); /* icône sombre sur knob blanc */
 }
 
 /* Clair => lune visible */
-#festiv-theme-toggle .festiv-switch__icon.is-moon{ opacity: 1; }
+#festiv-theme-toggle .festiv-switch__knob-icon.is-moon{
+  opacity: 1;
+  transform: scale(1);
+}
 
-/* Sombre => vert Festiv + soleil visible + knob à droite */
+/* Sombre => vert Festiv + knob à droite */
 #festiv-theme-toggle.is-dark .festiv-switch__track{
   background: #00b1ac;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
@@ -1121,11 +1125,18 @@ details.notion-toggle[open] > div {
   box-shadow: 0 8px 18px rgba(0,0,0,0.22);
 }
 
-#festiv-theme-toggle.is-dark .festiv-switch__icon.is-moon{ opacity: 0; }
-#festiv-theme-toggle.is-dark .festiv-switch__icon.is-sun{ opacity: 1; }
+/* Sombre => soleil visible */
+#festiv-theme-toggle.is-dark .festiv-switch__knob-icon.is-moon{
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+#festiv-theme-toggle.is-dark .festiv-switch__knob-icon.is-sun{
+  opacity: 1;
+  transform: scale(1);
+}
 
 /* Focus clavier */
 #festiv-theme-toggle:focus-visible .festiv-switch__track{
   box-shadow: 0 0 0 3px rgba(0,177,172,0.25), inset 0 0 0 1px rgba(0,0,0,0.12);
 }
-
