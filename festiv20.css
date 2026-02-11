@@ -1047,7 +1047,7 @@ details.notion-toggle[open] > div {
 /* ===== iOS THEME SWITCH ===== */
 #festiv-theme-toggle.festiv-switch{
   position: fixed;
-  top: 70px;      /* garde ta valeur actuelle */
+  top: 76px;      /* garde ta valeur actuelle */
   right: 18px;
   z-index: 9999;
 
