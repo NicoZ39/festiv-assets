@@ -1,6 +1,17 @@
 @import url(https://fonts.googleapis.com/css2?family=Poppins:wght@900&display=swap);
 @import url(https://fonts.googleapis.com/css2?family=Caprasimo:wght@400&display=swap);
 
+/* Anti-flash : on masque la page 1 instant tant que le thème n’est pas appliqué */
+html:not(.festiv-theme-ready) body {
+  opacity: 0;
+}
+
+html.festiv-theme-ready body {
+  opacity: 1;
+  transition: opacity 120ms ease;
+}
+
+
 /* =========================================
    BOUTONS (style "link-in-bio") + liens header
    Remplace l'ancien bloc "Boutons & liens header"
