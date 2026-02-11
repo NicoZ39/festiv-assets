@@ -1159,9 +1159,6 @@ details.notion-toggle[open] > div {
   fill: currentColor !important;
 }
 /* === Formulaire Fillout - éclaircir en dark mode === */
-.dark-mode .notion-block-77e137afe607458b909ae1f62e58dee4 {
-  background-color: #00b1ac !important;
-}
 
 .dark-mode 
 .notion-block-77e137afe607458b909ae1f62e58dee4 iframe,
@@ -1172,7 +1169,5 @@ details.notion-toggle[open] > div {
 .dark-mode 
 .notion-block-1046ae9a98f2809ead97fef492b2b5f0 iframe,
 .dark-mode 
-.notion-block-1d26ae9a98f280feb7b5d9f7058c7ddd iframe {
-  background: transparent !important;
-  filter: invert(1) hue-rotate(180deg) !important;
-}
+.notion-block-1d26ae9a98f280feb7b5d9f7058c7ddd iframe { 
+  filter: invert(0.895) hue-rotate(180deg) brightness(1.15) contrast(1.05) !important;
