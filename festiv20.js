@@ -686,6 +686,37 @@ function setupBackToTop() {
     console.error("[festiv20] setupBackToTop error:", e);
   }
 }
+// ===== THEME TOGGLE =====
+function initThemeToggle() {
+  try {
+    // évite doublon si runAll() est rappelé 100 fois
+    if (document.getElementById("festiv-theme-toggle")) return;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.id = "festiv-theme-toggle";
+    btn.setAttribute("aria-label", "Changer de thème");
+
+    // appliquer thème sauvegardé
+    const saved = localStorage.getItem("festiv-theme");
+    const isDarkSaved = saved === "dark";
+    document.body.classList.toggle("dark-mode", isDarkSaved);
+    btn.textContent = isDarkSaved ? "☀️" : "🌙";
+
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const isDark = document.body.classList.toggle("dark-mode");
+      btn.textContent = isDark ? "☀️" : "🌙";
+      localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
+    });
+
+    document.body.appendChild(btn);
+  } catch (e) {
+    console.error("[festiv20] initThemeToggle error:", e);
+  }
+}
 
 
 
@@ -704,6 +735,7 @@ function setupBackToTop() {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+    initThemeToggle();
   }
 setTimeout(fixInternalAnchors, 500);
 setTimeout(fixInternalAnchors, 1500);
