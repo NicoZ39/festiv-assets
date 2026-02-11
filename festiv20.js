@@ -46,7 +46,7 @@
   }
 
   // ===== THEME TOGGLE (bouton) =====
-  function initThemeToggle() {
+ function initThemeToggle() {
   try {
     let wrap = document.getElementById("festiv-theme-toggle");
     if (!wrap) {
@@ -57,11 +57,24 @@
       wrap.setAttribute("aria-label", "Changer de thème");
       wrap.setAttribute("aria-pressed", "false");
 
-      // switch iOS (track + knob + icône)
+      // ✅ switch iOS + icônes SVG (moon / sun) centrées
       wrap.innerHTML = `
         <span class="festiv-switch__track" aria-hidden="true">
           <span class="festiv-switch__knob" aria-hidden="true"></span>
-          <span class="festiv-switch__icon" aria-hidden="true"></span>
+
+          <span class="festiv-switch__icon is-moon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
+              <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z" fill="currentColor"/>
+            </svg>
+          </span>
+
+          <span class="festiv-switch__icon is-sun" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
+              <path d="M12 2.6v2.2M12 19.2v2.2M4.8 12H2.6M21.4 12h-2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"
+                stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            </svg>
+          </span>
         </span>
       `;
 
@@ -81,7 +94,7 @@
       document.body.appendChild(wrap);
     }
 
-    // sync état (si navigation interne)
+    // Sync état à chaque runAll (navigation interne)
     const isDarkNow = document.documentElement.classList.contains("dark-mode");
     wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
     wrap.classList.toggle("is-dark", isDarkNow);
@@ -89,6 +102,7 @@
     console.error("[festiv20] initThemeToggle error:", e);
   }
 }
+
 
   // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
   applySavedTheme();
