@@ -1158,3 +1158,8 @@ details.notion-toggle[open] > div {
   color: #fff !important;
   fill: currentColor !important;
 }
+/* === Formulaire Fillout - éclaircir en dark mode === */
+
+.dark-mode .notion-block-77e137afe607458b909ae1f62e58dee4 iframe {
+  filter: brightness(1.15) contrast(1.05);
+}
