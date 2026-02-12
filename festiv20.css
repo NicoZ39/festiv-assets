@@ -1182,3 +1182,6 @@ details.notion-toggle[open] > div {
   border: none;
   background: transparent !important;
 }
+.dark-mode a.notion-link *{
+  opacity: 1 !important;
+}
