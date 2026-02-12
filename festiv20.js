@@ -89,6 +89,8 @@
         try {
           localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
         } catch {}
+        // ✅ sync Meteoblue APRÈS changement de thème
+  syncMeteoblueTheme();
       });
 
       document.body.appendChild(wrap);
@@ -729,23 +731,36 @@
     if (!iframe) return;
 
     const isDark = document.documentElement.classList.contains("dark-mode");
-
-    // on part de l’URL actuelle (ou data-src si jamais)
-    const src = iframe.getAttribute("src") || "";
-
-    // si le src n’est pas encore là, on ne fait rien
+    const src = iframe.getAttribute("src");
     if (!src) return;
 
-    // remplace layout=bright <-> layout=dark
-    const next = src
-      .replace(/layout=(bright|dark)/, `layout=${isDark ? "dark" : "bright"}`);
+    let url;
 
-    // évite de recharger si inutile
-    if (next !== src) iframe.setAttribute("src", next);
+    try {
+      url = new URL(src, window.location.origin);
+    } catch {
+      return;
+    }
+
+    // ✅ si layout existe → on le modifie
+    if (url.searchParams.has("layout")) {
+      url.searchParams.set("layout", isDark ? "dark" : "bright");
+    } else {
+      // ✅ sinon on l’ajoute
+      url.searchParams.append("layout", isDark ? "dark" : "bright");
+    }
+
+    const newSrc = url.toString();
+
+    if (newSrc !== src) {
+      iframe.setAttribute("src", newSrc);
+    }
+
   } catch (e) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
+
 
 
   function runAll() {
