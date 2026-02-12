@@ -19,43 +19,92 @@
   }
 
   // =========================================
-  // THEME (persistant + robuste Simple.ink)
+  // THEME (auto système + override manuel)
   // =========================================
 
   function getSavedTheme() {
     try {
-      return localStorage.getItem("festiv-theme"); // "dark" | "light" | null
+      const v = localStorage.getItem("festiv-theme"); // "dark" | "light" | null
+      return v === "dark" || v === "light" ? v : null;
     } catch {
       return null;
     }
   }
 
+  function getSystemTheme() {
+    try {
+      return window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    } catch {
+      return "light";
+    }
+  }
+
+  function getEffectiveTheme() {
+    return getSavedTheme() || getSystemTheme(); // ✅ auto si rien de sauvegardé
+  }
+
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
+    document.documentElement.classList.toggle("dark-mode", isDark);
+
+    // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
+    document.documentElement.classList.add("festiv-theme-ready");
+
+    // si le bouton existe déjà, on le resync
+    const wrap = document.getElementById("festiv-theme-toggle");
+    if (wrap) {
+      wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+      wrap.classList.toggle("is-dark", isDark);
+    }
+  }
+
   function applySavedTheme() {
     try {
-      const saved = getSavedTheme();
-      const isDark = saved === "dark";
-
-      // ✅ plus robuste que body (simple.ink peut retoucher body)
-      document.documentElement.classList.toggle("dark-mode", isDark);
-
-      // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
-      document.documentElement.classList.add("festiv-theme-ready");
+      applyTheme(getEffectiveTheme());
     } catch (e) {
       console.error("[festiv20] applySavedTheme error:", e);
     }
   }
 
+  // ✅ si l’OS change de thème : on suit, mais seulement si pas d’override manuel
+  function bindSystemThemeListener() {
+    try {
+      if (window.__FESTIV_SYS_THEME_BOUND) return;
+      window.__FESTIV_SYS_THEME_BOUND = true;
+
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      const onChange = () => {
+        if (!getSavedTheme()) applySavedTheme(); // auto only
+      };
+
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange); // Safari old
+    } catch (e) {
+      console.error("[festiv20] bindSystemThemeListener error:", e);
+    }
+  }
+
+
   // ===== THEME TOGGLE (bouton) =====
+  let ignoreClickUntil = 0;
  function initThemeToggle() {
   try {
     let wrap = document.getElementById("festiv-theme-toggle");
     if (!wrap) {
       wrap = document.createElement("button");
-      wrap.type = "button";
-      wrap.id = "festiv-theme-toggle";
-      wrap.className = "festiv-switch";
-      wrap.setAttribute("aria-label", "Changer de thème");
-      wrap.setAttribute("aria-pressed", "false");
+wrap.type = "button";
+wrap.id = "festiv-theme-toggle";
+wrap.className = "festiv-switch";
+wrap.setAttribute("aria-label", "Changer de thème");
+wrap.setAttribute("aria-pressed", "false");
+wrap.setAttribute(
+  "title",
+  "Clic : changer le thème • Double-clic : Auto (thème du système)"
+);
+
 
       // ✅ switch iOS + icônes SVG (moon / sun) centrées
       wrap.innerHTML = `
@@ -79,17 +128,33 @@
       `;
 
       wrap.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+  // ✅ ignore le click déclenché juste après un dblclick
+  if (Date.now() < ignoreClickUntil) return;
 
-        const isDark = document.documentElement.classList.toggle("dark-mode");
-        wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
-        wrap.classList.toggle("is-dark", isDark);
+  e.preventDefault();
+  e.stopPropagation();
 
-        try {
-          localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
-        } catch {}
-      });
+  const isDark = document.documentElement.classList.toggle("dark-mode");
+  wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+  wrap.classList.toggle("is-dark", isDark);
+
+  try {
+    localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
+  } catch {}
+});
+
+
+wrap.addEventListener("dblclick", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  // bloque le click “fantôme” juste après le dblclick
+  ignoreClickUntil = Date.now() + 350;
+  
+  try { localStorage.removeItem("festiv-theme"); } catch {}
+  applySavedTheme();
+});
+
 
       document.body.appendChild(wrap);
     }
@@ -106,6 +171,7 @@
 
   // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
   applySavedTheme();
+  bindSystemThemeListener();
 
   // =========================================
   // 1) Logo cliquable
@@ -814,6 +880,7 @@
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+    bindSystemThemeListener();
     // ✅ calendrier FR
     bindCalendarI18nHooks();
     translateNotionCalendar();
