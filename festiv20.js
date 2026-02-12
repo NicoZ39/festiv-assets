@@ -105,11 +105,9 @@
 
       // Tooltip dynamique
       wrap.setAttribute(
-        "title",
-        auto
-          ? "AUTO : suit le thème du système • Clic : forcer • Double-clic : Auto"
-          : "Clic : changer le thème • Double-clic : Auto (thème du système)"
-      );
+  "title",
+  auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
+);
     } catch {}
   }
 
