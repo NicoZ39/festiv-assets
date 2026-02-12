@@ -77,7 +77,10 @@
 
       const mq = window.matchMedia("(prefers-color-scheme: dark)");
       const onChange = () => {
-        if (!getSavedTheme()) applySavedTheme(); // auto only
+        if (!getSavedTheme()) {
+          applySavedTheme();       // suit l’OS
+          syncAutoIndicator();     // met à jour le badge AUTO
+        }
       };
 
       if (mq.addEventListener) mq.addEventListener("change", onChange);
@@ -87,87 +90,114 @@
     }
   }
 
-
-  // ===== THEME TOGGLE (bouton) =====
-  let ignoreClickUntil = 0;
- function initThemeToggle() {
-  try {
-    let wrap = document.getElementById("festiv-theme-toggle");
-    if (!wrap) {
-      wrap = document.createElement("button");
-wrap.type = "button";
-wrap.id = "festiv-theme-toggle";
-wrap.className = "festiv-switch";
-wrap.setAttribute("aria-label", "Changer de thème");
-wrap.setAttribute("aria-pressed", "false");
-wrap.setAttribute(
-  "title",
-  "Clic : changer le thème • Double-clic : Auto (thème du système)"
-);
-
-
-      // ✅ switch iOS + icônes SVG (moon / sun) centrées
-      wrap.innerHTML = `
-        <span class="festiv-switch__track" aria-hidden="true">
-  <span class="festiv-switch__knob" aria-hidden="true">
-    <span class="festiv-switch__knob-icon is-moon" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
-        <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z" fill="currentColor"/>
-      </svg>
-    </span>
-    <span class="festiv-switch__knob-icon is-sun" aria-hidden="true">
-      <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
-        <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
-        <path d="M12 2.6v2.2M12 19.2v2.2M4.8 12H2.6M21.4 12h-2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"
-          stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-      </svg>
-    </span>
-  </span>
-</span>
-
-      `;
-
-      wrap.addEventListener("click", (e) => {
-  // ✅ ignore le click déclenché juste après un dblclick
-  if (Date.now() < ignoreClickUntil) return;
-
-  e.preventDefault();
-  e.stopPropagation();
-
-  const isDark = document.documentElement.classList.toggle("dark-mode");
-  wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
-  wrap.classList.toggle("is-dark", isDark);
-
-  try {
-    localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
-  } catch {}
-});
-
-
-wrap.addEventListener("dblclick", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-
-  // bloque le click “fantôme” juste après le dblclick
-  ignoreClickUntil = Date.now() + 350;
-  
-  try { localStorage.removeItem("festiv-theme"); } catch {}
-  applySavedTheme();
-});
-
-
-      document.body.appendChild(wrap);
-    }
-
-    // Sync état à chaque runAll (navigation interne)
-    const isDarkNow = document.documentElement.classList.contains("dark-mode");
-    wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
-    wrap.classList.toggle("is-dark", isDarkNow);
-  } catch (e) {
-    console.error("[festiv20] initThemeToggle error:", e);
+  // ===== INDICATEUR AUTO (badge + tooltip) =====
+  function isAutoMode() {
+    return !getSavedTheme();
   }
-}
 
+  function syncAutoIndicator() {
+    try {
+      const wrap = document.getElementById("festiv-theme-toggle");
+      if (!wrap) return;
+
+      const auto = isAutoMode();
+      wrap.classList.toggle("is-auto", auto);
+
+      // Tooltip dynamique
+      wrap.setAttribute(
+        "title",
+        auto
+          ? "AUTO : suit le thème du système • Clic : forcer • Double-clic : Auto"
+          : "Clic : changer le thème • Double-clic : Auto (thème du système)"
+      );
+    } catch {}
+  }
+
+  // =========================================
+  // THEME TOGGLE (bouton)
+  // =========================================
+  let ignoreClickUntil = 0;
+
+  function initThemeToggle() {
+    try {
+      let wrap = document.getElementById("festiv-theme-toggle");
+      if (!wrap) {
+        wrap = document.createElement("button");
+        wrap.type = "button";
+        wrap.id = "festiv-theme-toggle";
+        wrap.className = "festiv-switch";
+        wrap.setAttribute("aria-label", "Changer de thème");
+        wrap.setAttribute("aria-pressed", "false");
+
+        // (Le title sera géré par syncAutoIndicator)
+        wrap.setAttribute("title", "Clic : changer le thème • Double-clic : Auto");
+
+        // ✅ switch iOS + icônes SVG (moon / sun) centrées
+        wrap.innerHTML = `
+          <span class="festiv-switch__track" aria-hidden="true">
+            <span class="festiv-switch__knob" aria-hidden="true">
+              <span class="festiv-switch__knob-icon is-moon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
+                  <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z" fill="currentColor"/>
+                </svg>
+              </span>
+              <span class="festiv-switch__knob-icon is-sun" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
+                  <path d="M12 2.6v2.2M12 19.2v2.2M4.8 12H2.6M21.4 12h-2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"
+                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                </svg>
+              </span>
+            </span>
+          </span>
+        `;
+
+        // CLIC = toggle manuel => sauvegarde
+        wrap.addEventListener("click", (e) => {
+          // ✅ ignore le click déclenché juste après un dblclick
+          if (Date.now() < ignoreClickUntil) return;
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          const isDark = document.documentElement.classList.toggle("dark-mode");
+          wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+          wrap.classList.toggle("is-dark", isDark);
+
+          try {
+            localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
+          } catch {}
+
+          syncAutoIndicator();
+        });
+
+        // DOUBLE-CLIC = retour AUTO (suit l’OS) => supprime la sauvegarde
+        wrap.addEventListener("dblclick", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          // bloque le click “fantôme” juste après le dblclick
+          ignoreClickUntil = Date.now() + 350;
+
+          try { localStorage.removeItem("festiv-theme"); } catch {}
+          applySavedTheme();
+          syncAutoIndicator();
+        });
+
+        document.body.appendChild(wrap);
+        syncAutoIndicator();
+      }
+
+      // Sync état à chaque runAll (navigation interne)
+      const isDarkNow = document.documentElement.classList.contains("dark-mode");
+      wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
+      wrap.classList.toggle("is-dark", isDarkNow);
+
+      syncAutoIndicator();
+    } catch (e) {
+      console.error("[festiv20] initThemeToggle error:", e);
+    }
+  }
 
   // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
   applySavedTheme();
@@ -625,7 +655,7 @@ wrap.addEventListener("dblclick", (e) => {
 
         content.style.height = "0px";
         content.style.paddingTop = "0px";
-        content.getBoundingClientRect();
+        content.getElementById; // no-op
 
         const h = content.scrollHeight;
 
@@ -821,7 +851,6 @@ wrap.addEventListener("dblclick", (e) => {
       if (headerTitle) {
         const parts = headerTitle.textContent.trim().split(/\s+/);
         if (parts.length >= 2 && monthMap[parts[0]]) {
-          // garde l'année (et tout ce qui suit) intact
           headerTitle.textContent = monthMap[parts[0]] + " " + parts.slice(1).join(" ");
         }
       }
@@ -850,7 +879,6 @@ wrap.addEventListener("dblclick", (e) => {
       document.addEventListener(
         "click",
         () => {
-          // Notion reconstruit le calendrier -> on retraduit après le repaint
           setTimeout(translateNotionCalendar, 0);
           setTimeout(translateNotionCalendar, 80);
           setTimeout(translateNotionCalendar, 200);
@@ -862,11 +890,10 @@ wrap.addEventListener("dblclick", (e) => {
     }
   }
 
-
-
   function runAll() {
     // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
     applySavedTheme();
+
     makeLogoClickable();
     formatDates();
     createFooterColumns();
@@ -880,11 +907,15 @@ wrap.addEventListener("dblclick", (e) => {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+
+    // ✅ listener OS (protégé par flag)
     bindSystemThemeListener();
+
     // ✅ calendrier FR
     bindCalendarI18nHooks();
     translateNotionCalendar();
-    // ✅ bouton toggle + icône à jour
+
+    // ✅ bouton toggle + icône + badge AUTO à jour
     initThemeToggle();
   }
 
