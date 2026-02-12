@@ -1180,8 +1180,9 @@ details.notion-toggle[open] > div {
   }
 /* ===== Dark mode : meteo start ===== */
 /* Meteoblue uniquement */
-iframe[src*="meteoblue.com/en/weather/widget"]{
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36 :is(iframe, embed, object){
   filter: invert(0.898) hue-rotate(180deg) brightness(1.15) contrast(1.05) !important;
 }
+
 
 /* ===== Dark mode : meteo end ===== */
