@@ -1174,11 +1174,10 @@ details.notion-toggle[open] > div {
 .dark-mode 
 .notion-block-2f26ae9a98f2805fbbb4f3fd90c97bae iframe,
 /* ===== Dark mode : countdown end ===== */
+/* ===== Dark mode : meteo start ===== */
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe,
+/* ===== Dark mode : meteo end ===== */
 .dark-mode 
 .notion-block-1d26ae9a98f280feb7b5d9f7058c7ddd iframe { 
   filter: invert(0.898) hue-rotate(180deg) brightness(1.15) contrast(1.05) !important;
   }
-
-
-
-  
