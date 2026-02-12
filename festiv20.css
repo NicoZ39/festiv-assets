@@ -1180,6 +1180,6 @@ details.notion-toggle[open] > div {
   }
 /* ===== Dark mode : meteo start ===== */
 .notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe { 
-  filter: invert(0.898) hue-rotate(180deg) !important;
+  filter: invert(1)  !important;
   }
 /* ===== Dark mode : meteo end ===== */
