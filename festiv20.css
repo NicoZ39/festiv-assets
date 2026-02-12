@@ -939,7 +939,7 @@ details.notion-toggle[open] > div {
 }
 
 .festiv-backtotop.is-visible{
-  opacity: 0.92;
+  opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
