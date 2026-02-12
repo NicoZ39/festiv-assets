@@ -720,17 +720,37 @@
       console.error("[festiv20] setupBackToTop error:", e);
     }
   }
-if (document.body.classList.contains("dark-mode")) {
-  const iframe = document.querySelector(".notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe");
-  if (iframe) {
-    iframe.src = iframe.src.replace("layout=bright", "layout=dark");
+
+  function syncMeteoblueTheme() {
+  try {
+    const iframe = document.querySelector(
+      ".notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe"
+    );
+    if (!iframe) return;
+
+    const isDark = document.documentElement.classList.contains("dark-mode");
+
+    // on part de l’URL actuelle (ou data-src si jamais)
+    const src = iframe.getAttribute("src") || "";
+
+    // si le src n’est pas encore là, on ne fait rien
+    if (!src) return;
+
+    // remplace layout=bright <-> layout=dark
+    const next = src
+      .replace(/layout=(bright|dark)/, `layout=${isDark ? "dark" : "bright"}`);
+
+    // évite de recharger si inutile
+    if (next !== src) iframe.setAttribute("src", next);
+  } catch (e) {
+    console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
+
 
   function runAll() {
     // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
     applySavedTheme();
-
     makeLogoClickable();
     formatDates();
     createFooterColumns();
@@ -744,6 +764,7 @@ if (document.body.classList.contains("dark-mode")) {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+    syncMeteoblueTheme();
 
     // ✅ bouton toggle + icône à jour
     initThemeToggle();
