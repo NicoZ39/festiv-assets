@@ -1194,12 +1194,15 @@ details.notion-toggle[open] > div {
   opacity: 1 !important;
   box-shadow: inset 0 -2px 0 0 currentColor !important;
 }
-/* ===== THEME TOGGLE : indicateur AUTO discret (point + label au hover) ===== */
+/* =========================================
+   THEME TOGGLE : AUTO (point vert + glow)
+   ========================================= */
+
 #festiv-theme-toggle{
   position: relative;
 }
 
-/* Le petit point (visible seulement en AUTO) */
+/* --- Petit point vert (visible en mode Auto uniquement) --- */
 #festiv-theme-toggle.is-auto::after{
   content: "";
   position: absolute;
@@ -1209,21 +1212,28 @@ details.notion-toggle[open] > div {
   height: 8px;
   border-radius: 9999px;
 
-  background: rgba(255,255,255,.95);
-  border: 1px solid rgba(0,0,0,.18);
-  box-shadow: 0 6px 18px rgba(0,0,0,.18);
+  background: #22c55e; /* 🟢 vert validation */
+  border: 1px solid rgba(0,0,0,.15);
+
+  /* Glow subtil */
+  box-shadow:
+    0 0 0 3px rgba(34,197,94,.18),
+    0 4px 10px rgba(0,0,0,.2);
 
   pointer-events: none;
 }
 
-/* En dark-mode : on inverse le point */
+/* En dark mode : même vert, glow un peu plus visible */
 .dark-mode #festiv-theme-toggle.is-auto::after{
-  background: rgba(0,0,0,.85);
-  border: 1px solid rgba(255,255,255,.22);
-  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  background: #22c55e;
+  border: 1px solid rgba(255,255,255,.2);
+
+  box-shadow:
+    0 0 0 3px rgba(34,197,94,.25),
+    0 4px 14px rgba(0,0,0,.6);
 }
 
-/* Le label "Auto" (uniquement au survol en AUTO) */
+/* --- Label "Auto" (uniquement au survol desktop) --- */
 #festiv-theme-toggle.is-auto::before{
   content: "Auto";
   position: absolute;
@@ -1234,14 +1244,14 @@ details.notion-toggle[open] > div {
   line-height: 1;
   padding: 6px 8px;
   border-radius: 9999px;
-  font-weight: 700;
+  font-weight: 600;
 
   opacity: 0;
   transform: translateY(4px);
   transition: opacity 160ms ease, transform 160ms ease;
 
   background: rgba(255,255,255,.95);
-  color: rgba(0,0,0,.78);
+  color: rgba(0,0,0,.8);
   border: 1px solid rgba(0,0,0,.12);
   box-shadow: 0 10px 26px rgba(0,0,0,.18);
 
@@ -1255,7 +1265,7 @@ details.notion-toggle[open] > div {
   transform: translateY(0);
 }
 
-/* Dark-mode pour le label */
+/* Label en dark mode */
 .dark-mode #festiv-theme-toggle.is-auto::before{
   background: rgba(0,0,0,.85);
   color: rgba(255,255,255,.92);
