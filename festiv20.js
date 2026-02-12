@@ -721,6 +721,80 @@
     }
   }
 
+  // 8bis) Traduire le calendrier Notion (mois, jours, Today)
+  function translateNotionCalendar() {
+    try {
+      const monthMap = {
+        January: "Janvier",
+        February: "Février",
+        March: "Mars",
+        April: "Avril",
+        May: "Mai",
+        June: "Juin",
+        July: "Juillet",
+        August: "Août",
+        September: "Septembre",
+        October: "Octobre",
+        November: "Novembre",
+        December: "Décembre",
+      };
+
+      const dayMap = {
+        Mon: "Lun",
+        Tue: "Mar",
+        Wed: "Mer",
+        Thur: "Jeu",
+        Thu: "Jeu",
+        Fri: "Ven",
+        Sat: "Sam",
+        Sun: "Dim",
+      };
+
+      // Titre du mois: "February 2026" -> "Février 2026"
+      const headerTitle = document.querySelector(".notion-calendar-header-title");
+      if (headerTitle) {
+        const parts = headerTitle.textContent.trim().split(/\s+/);
+        if (parts.length >= 2 && monthMap[parts[0]]) {
+          // garde l'année (et tout ce qui suit) intact
+          headerTitle.textContent = monthMap[parts[0]] + " " + parts.slice(1).join(" ");
+        }
+      }
+
+      // Jours: Mon Tue Wed...
+      document.querySelectorAll(".notion-calendar-body-title span").forEach((el) => {
+        const k = el.textContent.trim();
+        if (dayMap[k]) el.textContent = dayMap[k];
+      });
+
+      // Bouton Today -> Aujourd’hui
+      document.querySelectorAll(".notion-calendar-header-controls span").forEach((el) => {
+        if (el.textContent.trim() === "Today") el.textContent = "Aujourd’hui";
+      });
+    } catch (e) {
+      console.error("[festiv20] translateNotionCalendar error:", e);
+    }
+  }
+
+  // Pour que ça reste traduit après navigation (flèches mois / Today)
+  function bindCalendarI18nHooks() {
+    try {
+      if (window.__FESTIV_CAL_I18N_BOUND) return;
+      window.__FESTIV_CAL_I18N_BOUND = true;
+
+      document.addEventListener(
+        "click",
+        () => {
+          // Notion reconstruit le calendrier -> on retraduit après le repaint
+          setTimeout(translateNotionCalendar, 0);
+          setTimeout(translateNotionCalendar, 80);
+          setTimeout(translateNotionCalendar, 200);
+        },
+        true
+      );
+    } catch (e) {
+      console.error("[festiv20] bindCalendarI18nHooks error:", e);
+    }
+  }
 
 
 
@@ -740,7 +814,9 @@
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
-
+    // ✅ calendrier FR
+    bindCalendarI18nHooks();
+    translateNotionCalendar();
     // ✅ bouton toggle + icône à jour
     initThemeToggle();
   }
