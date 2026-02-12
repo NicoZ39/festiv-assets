@@ -1178,3 +1178,8 @@ details.notion-toggle[open] > div {
 .notion-block-1d26ae9a98f280feb7b5d9f7058c7ddd iframe { 
   filter: invert(0.898) hue-rotate(180deg) brightness(1.15) contrast(1.05) !important;
   }
+
+.dark-mode 
+.notion-block-3056ae9a98f28089842bd6c8d9c87542 iframe { 
+  filter: invert(0.898) hue-rotate(180deg) brightness(1.15) contrast(1.05) !important;
+  }
