@@ -1194,4 +1194,33 @@ details.notion-toggle[open] > div {
   opacity: 1 !important;
   box-shadow: inset 0 -2px 0 0 currentColor !important;
 }
+#festiv-theme-toggle{ position: relative; }
+
+#festiv-theme-toggle.is-auto::after{
+  content: "AUTO";
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  font-size: 9px;
+  line-height: 1;
+  padding: 3px 5px;
+  border-radius: 9999px;
+  letter-spacing: .6px;
+  font-weight: 700;
+
+  background: rgba(255,255,255,.92);
+  color: rgba(0,0,0,.78);
+  border: 1px solid rgba(0,0,0,.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.dark-mode #festiv-theme-toggle.is-auto::after{
+  background: rgba(0,0,0,.78);
+  color: rgba(255,255,255,.92);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+}
 
