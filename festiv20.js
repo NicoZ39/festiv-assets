@@ -89,8 +89,6 @@
         try {
           localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
         } catch {}
-        // ✅ sync Meteoblue APRÈS changement de thème
-  syncMeteoblueTheme();
       });
 
       document.body.appendChild(wrap);
@@ -723,43 +721,6 @@
     }
   }
 
-  function syncMeteoblueTheme() {
-  try {
-    const iframe = document.querySelector(
-      ".notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe"
-    );
-    if (!iframe) return;
-
-    const isDark = document.documentElement.classList.contains("dark-mode");
-    const src = iframe.getAttribute("src");
-    if (!src) return;
-
-    let url;
-
-    try {
-      url = new URL(src, window.location.origin);
-    } catch {
-      return;
-    }
-
-    // ✅ si layout existe → on le modifie
-    if (url.searchParams.has("layout")) {
-      url.searchParams.set("layout", isDark ? "dark" : "bright");
-    } else {
-      // ✅ sinon on l’ajoute
-      url.searchParams.append("layout", isDark ? "dark" : "bright");
-    }
-
-    const newSrc = url.toString();
-
-    if (newSrc !== src) {
-      iframe.setAttribute("src", newSrc);
-    }
-
-  } catch (e) {
-    console.error("[festiv20] syncMeteoblueTheme error:", e);
-  }
-}
 
 
 
@@ -779,7 +740,6 @@
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
-    syncMeteoblueTheme();
 
     // ✅ bouton toggle + icône à jour
     initThemeToggle();
