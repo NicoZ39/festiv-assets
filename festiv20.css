@@ -1182,6 +1182,16 @@ details.notion-toggle[open] > div {
   border: none;
   background: transparent !important;
 }
-.dark-mode a.notion-link *{
-  opacity: 1 !important;
+/* ✅ Fix liens "notion-link" trop sombres en dark mode */
+.dark-mode a.notion-link{
+  color: #00b1ac !important;     /* même vert que tes liens */
+  opacity: 1 !important;         /* enlève l'effet "muted" */
 }
+
+/* hover cohérent */
+.dark-mode a.notion-link:hover{
+  color: #ff7034 !important;
+  opacity: 1 !important;
+  box-shadow: inset 0 -2px 0 0 currentColor !important;
+}
+
