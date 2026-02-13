@@ -1294,13 +1294,17 @@ details.notion-toggle[open] > div {
   }
 }
 
-/* iPhone SE / petits écrans : plus de marge */
-@media (max-width: 380px){
-  .notion-asset-wrapper-embed iframe[src*="tZMYfrqCWAus"]{
-    height: calc(100dvh + 820px) !important;
-    min-height: calc(100dvh + 820px) !important;
+/* ✅ Fillout : donner un max de place à l'iframe sur mobile */
+@media (max-width: 700px){
+  .notion-asset-wrapper-embed iframe[src*="fillout.com"]{
+    height: calc(100dvh + 320px) !important; /* marge anti erreurs / upload / sticky */
+    min-height: calc(100dvh + 320px) !important;
+    width: 100% !important;
+    border: 0 !important;
+    display: block !important;
   }
 }
+
 
 
 
