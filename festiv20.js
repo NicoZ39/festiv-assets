@@ -887,6 +887,43 @@
       console.error("[festiv20] bindCalendarI18nHooks error:", e);
     }
   }
+  // =========================================
+  // 10) Fillout (embed natif + dynamic resize)
+  // =========================================
+  function injectFilloutNative() {
+    try {
+      const FILL0UT_ID = "tZMYfrqCWAus";
+      const TARGET_BLOCK = ".notion-block-NOTION_BLOCK_ID_ICI"; // ← à remplacer
+
+      const host = document.querySelector(TARGET_BLOCK);
+      if (!host) return;
+
+      // évite ré-injection si navigation interne / observer
+      if (host.querySelector(`[data-fillout-id="${FILL0UT_ID}"]`)) return;
+
+      host.innerHTML = `
+        <div class="festiv-fillout"
+             style="width:100%;min-height:520px;"
+             data-fillout-id="${FILL0UT_ID}"
+             data-fillout-embed-type="standard"
+             data-fillout-inherit-parameters
+             data-fillout-dynamic-resize>
+        </div>
+      `;
+
+      // charger le script Fillout une seule fois
+      const SRC = "https://server.fillout.com/embed/v1/";
+      const already = [...document.scripts].some(s => s.src === SRC);
+      if (!already) {
+        const s = document.createElement("script");
+        s.src = SRC;
+        s.async = true;
+        document.head.appendChild(s);
+      }
+    } catch (e) {
+      console.error("[festiv20] injectFilloutNative error:", e);
+    }
+  }
 
   function runAll() {
     // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
@@ -915,6 +952,8 @@
 
     // ✅ bouton toggle + icône + badge AUTO à jour
     initThemeToggle();
+    // ✅ Fillout natif (auto-resize)
+    injectFilloutNative();
   }
 
   setTimeout(fixInternalAnchors, 500);
