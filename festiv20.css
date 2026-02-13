@@ -1285,3 +1285,15 @@ details.notion-toggle[open] > div {
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 10px 26px rgba(0,0,0,.35);
 }
+/* Fillout injecté via shortcode */
+.festiv-fillout{
+  width: 100%;
+  min-height: 520px;
+}
+
+/* Sur mobile : on garde une hauteur mini confortable */
+@media (max-width: 700px){
+  .festiv-fillout{
+    min-height: 650px;
+  }
+}
