@@ -926,8 +926,8 @@
       ensureFilloutScriptLoaded();
 
       // 2) Injecte tes formulaires où tu veux
-      injectFilloutIntoBlock(".notion-block-1536ae9a98f28088b29adceaf42d1125 ", "tZMYfrqCWAus", 520); // ex: Contact
-      injectFilloutIntoBlock(".notion-block-3066ae9a98f280b8b391d15455e98a24", "jYPEHAqG3Lus", 520); // ex: Inscription Marché Nocturne
+      injectFilloutIntoBlock(".notion-block-1536ae9a98f28088b29adceaf42d1125", "tZMYfrqCWAus", 520); // ex: Contact
+      injectFilloutIntoBlock(".notion-block-3066ae9a98f280b8b391d15455e98a24", "jYPEHAqG3Lus", 520); // ex: Inscription Marche Nocturne
     } catch (e) {
       console.error("[festiv20] injectFilloutNative error:", e);
     }
