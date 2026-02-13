@@ -1158,8 +1158,12 @@ details.notion-toggle[open] > div {
   color: #fff !important;
   fill: currentColor !important;
 }
-/* === Formulaire Fillout - éclaircir en dark mode === */
+/* === Formulaire Fillout & autres - éclaircir en dark mode === */
 
+/* ===== Dark mode : formulaire inscription start ===== */
+.dark-mode 
+.notion-block-2ec6ae9a98f280b68b7bf84779828c93 iframe,
+/* ===== Dark mode : inscription end ===== */
 .dark-mode 
 .notion-block-77e137afe607458b909ae1f62e58dee4 iframe,
 .dark-mode 
