@@ -1287,17 +1287,3 @@ details.notion-toggle[open] > div {
   width: 100% !important;
   border: 0 !important;
 }
-@media (max-width: 700px){
-  .notion-asset-wrapper-embed iframe[src*="tZMYfrqCWAus"]{
-    height: calc(100dvh + 520px) !important;
-    min-height: calc(100dvh + 520px) !important;
-  }
-}
-
-/* iPhone SE / petits écrans : plus de marge */
-@media (max-width: 380px){
-  .notion-asset-wrapper-embed iframe[src*="tZMYfrqCWAus"]{
-    height: calc(100dvh + 820px) !important;
-    min-height: calc(100dvh + 820px) !important;
-  }
-}
