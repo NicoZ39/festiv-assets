@@ -887,105 +887,66 @@
       console.error("[festiv20] bindCalendarI18nHooks error:", e);
     }
   }
-   // =========================================
-  // 10) Fillout (embeds natifs + dynamic resize)
-  //    Version ROBUSTE (shortcodes + re-init)
+    // =========================================
+  // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
   // =========================================
-
-  function loadFilloutScript(callback) {
-    const SRC = "https://server.fillout.com/embed/v1/";
-    const existing = [...document.scripts].find((s) => s.src === SRC);
-
-    // Déjà chargé
-    if (existing && window.__FESTIV_FILLOUT_LOADED) {
-      callback?.();
-      return;
-    }
-
-    // Déjà en cours de chargement
-    if (window.__FESTIV_FILLOUT_LOADING) {
-      // on se re-rappelle un poil après
-      setTimeout(() => callback?.(), 80);
-      return;
-    }
-
-    window.__FESTIV_FILLOUT_LOADING = true;
-
-    // Si un script existe mais pas “loaded”, on le réutilise
-    const s = existing || document.createElement("script");
-    if (!existing) {
-      s.src = SRC;
-      s.async = true;
-      document.head.appendChild(s);
-    }
-
-    // onload (fiable)
-    s.addEventListener(
-      "load",
-      () => {
-        window.__FESTIV_FILLOUT_LOADED = true;
-        window.__FESTIV_FILLOUT_LOADING = false;
-        callback?.();
-      },
-      { once: true }
-    );
-
-    // fallback au cas où “load” ne trigger pas (rare)
-    setTimeout(() => {
-      window.__FESTIV_FILLOUT_LOADED = true;
-      window.__FESTIV_FILLOUT_LOADING = false;
-      callback?.();
-    }, 1200);
-  }
-
-  function replaceFilloutShortcodes() {
-    // anti-boucle : on évite de refaire 10x de suite
-    if (window.__FESTIV_FILLOUT_RENDERING) return;
-    window.__FESTIV_FILLOUT_RENDERING = true;
-
+  function shortcodeContactForm() {
     try {
+      const FILL0UT_ID = "tZMYfrqCWAus";
+
       const nodes = document.querySelectorAll(
-        ".notion-text, .notion-paragraph, .notion-callout-text .notion-text"
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
       );
 
-      let didInject = false;
+      let found = false;
 
       nodes.forEach((node) => {
-        if (node.dataset.festivFilloutDone === "1") return;
+        if (node.dataset.festivContactFormDone === "1") return;
 
         const txt = (node.textContent || "").trim();
-        const m = txt.match(/^\[\[fillout:([a-zA-Z0-9]+)\]\]$/);
-        if (!m) return;
+        if (!txt.includes("[contact-form]")) return;
 
-        const filloutId = m[1];
-        node.dataset.festivFilloutDone = "1";
-        didInject = true;
+        node.dataset.festivContactFormDone = "1";
+        found = true;
 
-        node.innerHTML = `
-          <div class="festiv-fillout"
-               style="width:100%;min-height:520px;"
-               data-fillout-id="${filloutId}"
-               data-fillout-embed-type="standard"
-               data-fillout-inherit-parameters
-               data-fillout-dynamic-resize>
-          </div>
-        `;
+        const mount = document.createElement("div");
+        mount.className = "festiv-fillout";
+        mount.style.width = "100%";
+        mount.style.minHeight = "520px";
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
+        mount.setAttribute("data-fillout-embed-type", "standard");
+        mount.setAttribute("data-fillout-inherit-parameters", "");
+        mount.setAttribute("data-fillout-dynamic-resize", "");
+
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[contact-form]") {
+          node.textContent = "";
+          node.appendChild(mount);
+          return;
+        }
+
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[contact-form]");
+        node.textContent = "";
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(mount.cloneNode(true));
+        });
       });
 
-      if (didInject) {
-        // Charge le script et “laisse” Fillout initialiser les nouveaux embeds
-        loadFilloutScript(() => {
-          // petit coup de pouce : certains embeds écoutent resize
-          window.dispatchEvent(new Event("resize"));
-        });
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
+        }
       }
     } catch (e) {
-      console.error("[festiv20] replaceFilloutShortcodes error:", e);
-    } finally {
-      // on libère le lock après un court délai (MutationObserver friendly)
-      setTimeout(() => {
-        window.__FESTIV_FILLOUT_RENDERING = false;
-      }, 120);
+      console.error("[festiv20] shortcodeContactForm error:", e);
     }
   }
 
@@ -1019,7 +980,7 @@
     // ✅ bouton toggle + icône + badge AUTO à jour
     initThemeToggle();
     // ✅ Fillout natif (auto-resize)
-    replaceFilloutShortcodes();
+    shortcodeContactForm();
   }
 
   setTimeout(fixInternalAnchors, 500);
