@@ -1276,3 +1276,14 @@ details.notion-toggle[open] > div {
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: 0 10px 26px rgba(0,0,0,.35);
 }
+/* ✅ Formulaire Contact – Fillout uniquement */
+.notion-block-77e137afe607458b909ae1f62e58dee4 .remove-minwidth{
+  height: min(94vh, 1100px) !important;  /* hauteur dynamique */
+  min-height: 900px !important;          /* évite scroll interne */
+}
+
+.notion-block-77e137afe607458b909ae1f62e58dee4 iframe{
+  height: 100% !important;
+  width: 100% !important;
+  border: 0 !important;
+}
