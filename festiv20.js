@@ -953,7 +953,7 @@
  // =========================================
   // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
   // =========================================
-  function shortcodeContactForm2() {
+  function shortcodeInscriptionForm() {
     try {
       const FILL0UT_ID = "jYPEHAqG3Lus";
 
@@ -967,7 +967,7 @@
         if (node.dataset.festivContactFormDone === "1") return;
 
         const txt = (node.textContent || "").trim();
-        if (!txt.includes("[contact-form]")) return;
+        if (!txt.includes("[inscription-form]")) return;
 
         node.dataset.festivContactFormDone = "1";
         found = true;
@@ -1043,7 +1043,7 @@
     initThemeToggle();
     // ✅ Fillout natif (auto-resize)
     shortcodeContactForm();
-    shortcodeContactForm2();
+    shortcodeInscriptionForm();
   }
 
   setTimeout(fixInternalAnchors, 500);
