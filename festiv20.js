@@ -964,12 +964,12 @@
       let found = false;
 
       nodes.forEach((node) => {
-        if (node.dataset.festivContactFormDone === "1") return;
+        if (node.dataset.festivInscriptionFormDone === "1") return;
 
         const txt = (node.textContent || "").trim();
         if (!txt.includes("[inscription-form]")) return;
 
-        node.dataset.festivContactFormDone = "1";
+        node.dataset.festivInscriptionFormDone = "1";
         found = true;
 
         const mount = document.createElement("div");
@@ -989,7 +989,7 @@
         }
 
         // Sinon on conserve le texte autour et on injecte au bon endroit
-        const parts = (node.textContent || "").split("[contact-form]");
+        const parts = (node.textContent || "").split("[inscription-form]");
         node.textContent = "";
         parts.forEach((part, i) => {
           if (part) node.appendChild(document.createTextNode(part));
@@ -1009,7 +1009,7 @@
         }
       }
     } catch (e) {
-      console.error("[festiv20] shortcodeContactForm error:", e);
+      console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
 
