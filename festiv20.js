@@ -887,51 +887,108 @@
       console.error("[festiv20] bindCalendarI18nHooks error:", e);
     }
   }
-  // =========================================
+   // =========================================
   // 10) Fillout (embeds natifs + dynamic resize)
+  //    Version ROBUSTE (shortcodes + re-init)
   // =========================================
 
-  function ensureFilloutScriptLoaded() {
+  function loadFilloutScript(callback) {
     const SRC = "https://server.fillout.com/embed/v1/";
-    const already = [...document.scripts].some((s) => s.src === SRC);
-    if (already) return;
+    const existing = [...document.scripts].find((s) => s.src === SRC);
 
-    const s = document.createElement("script");
-    s.src = SRC;
-    s.async = true;
-    document.head.appendChild(s);
+    // Déjà chargé
+    if (existing && window.__FESTIV_FILLOUT_LOADED) {
+      callback?.();
+      return;
+    }
+
+    // Déjà en cours de chargement
+    if (window.__FESTIV_FILLOUT_LOADING) {
+      // on se re-rappelle un poil après
+      setTimeout(() => callback?.(), 80);
+      return;
+    }
+
+    window.__FESTIV_FILLOUT_LOADING = true;
+
+    // Si un script existe mais pas “loaded”, on le réutilise
+    const s = existing || document.createElement("script");
+    if (!existing) {
+      s.src = SRC;
+      s.async = true;
+      document.head.appendChild(s);
+    }
+
+    // onload (fiable)
+    s.addEventListener(
+      "load",
+      () => {
+        window.__FESTIV_FILLOUT_LOADED = true;
+        window.__FESTIV_FILLOUT_LOADING = false;
+        callback?.();
+      },
+      { once: true }
+    );
+
+    // fallback au cas où “load” ne trigger pas (rare)
+    setTimeout(() => {
+      window.__FESTIV_FILLOUT_LOADED = true;
+      window.__FESTIV_FILLOUT_LOADING = false;
+      callback?.();
+    }, 1200);
   }
 
-  function injectFilloutIntoBlock(blockSelector, filloutId, minHeight = 520) {
-    const host = document.querySelector(blockSelector);
-    if (!host) return;
+  function replaceFilloutShortcodes() {
+    // anti-boucle : on évite de refaire 10x de suite
+    if (window.__FESTIV_FILLOUT_RENDERING) return;
+    window.__FESTIV_FILLOUT_RENDERING = true;
 
-    // évite ré-injection si déjà présent
-    if (host.querySelector(`[data-fillout-id="${filloutId}"]`)) return;
-
-    host.innerHTML = `
-      <div class="festiv-fillout"
-           style="width:100%;min-height:${minHeight}px;"
-           data-fillout-id="${filloutId}"
-           data-fillout-embed-type="standard"
-           data-fillout-inherit-parameters
-           data-fillout-dynamic-resize>
-      </div>
-    `;
-  }
-
-  function injectFilloutNative() {
     try {
-      // 1) Charge le script (1 seule fois)
-      ensureFilloutScriptLoaded();
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-paragraph, .notion-callout-text .notion-text"
+      );
 
-      // 2) Injecte tes formulaires où tu veux
-      injectFilloutIntoBlock(".notion-block-1536ae9a98f28088b29adceaf42d1125", "tZMYfrqCWAus", 520); // ex: Contact
-      injectFilloutIntoBlock(".notion-block-2ec6ae9a98f2800bbe0ac7b9a62f610f", "jYPEHAqG3Lus", 520); // ex: Inscription Marche Nocturne
+      let didInject = false;
+
+      nodes.forEach((node) => {
+        if (node.dataset.festivFilloutDone === "1") return;
+
+        const txt = (node.textContent || "").trim();
+        const m = txt.match(/^\[\[fillout:([a-zA-Z0-9]+)\]\]$/);
+        if (!m) return;
+
+        const filloutId = m[1];
+        node.dataset.festivFilloutDone = "1";
+        didInject = true;
+
+        node.innerHTML = `
+          <div class="festiv-fillout"
+               style="width:100%;min-height:520px;"
+               data-fillout-id="${filloutId}"
+               data-fillout-embed-type="standard"
+               data-fillout-inherit-parameters
+               data-fillout-dynamic-resize>
+          </div>
+        `;
+      });
+
+      if (didInject) {
+        // Charge le script et “laisse” Fillout initialiser les nouveaux embeds
+        loadFilloutScript(() => {
+          // petit coup de pouce : certains embeds écoutent resize
+          window.dispatchEvent(new Event("resize"));
+        });
+      }
     } catch (e) {
-      console.error("[festiv20] injectFilloutNative error:", e);
+      console.error("[festiv20] replaceFilloutShortcodes error:", e);
+    } finally {
+      // on libère le lock après un court délai (MutationObserver friendly)
+      setTimeout(() => {
+        window.__FESTIV_FILLOUT_RENDERING = false;
+      }, 120);
     }
   }
+
 
 
   function runAll() {
@@ -962,7 +1019,7 @@
     // ✅ bouton toggle + icône + badge AUTO à jour
     initThemeToggle();
     // ✅ Fillout natif (auto-resize)
-    injectFilloutNative();
+    replaceFilloutShortcodes();
   }
 
   setTimeout(fixInternalAnchors, 500);
