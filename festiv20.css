@@ -1287,3 +1287,9 @@ details.notion-toggle[open] > div {
   width: 100% !important;
   border: 0 !important;
 }
+@media (max-width: 700px){
+  .notion-block-77e137afe607458b909ae1f62e58dee4 .remove-minwidth{
+    height: 96vh !important;
+    min-height: 96vh !important;
+  }
+}
