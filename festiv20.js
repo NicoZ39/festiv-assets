@@ -888,42 +888,51 @@
     }
   }
   // =========================================
-  // 10) Fillout (embed natif + dynamic resize)
+  // 10) Fillout (embeds natifs + dynamic resize)
   // =========================================
+
+  function ensureFilloutScriptLoaded() {
+    const SRC = "https://server.fillout.com/embed/v1/";
+    const already = [...document.scripts].some((s) => s.src === SRC);
+    if (already) return;
+
+    const s = document.createElement("script");
+    s.src = SRC;
+    s.async = true;
+    document.head.appendChild(s);
+  }
+
+  function injectFilloutIntoBlock(blockSelector, filloutId, minHeight = 520) {
+    const host = document.querySelector(blockSelector);
+    if (!host) return;
+
+    // évite ré-injection si déjà présent
+    if (host.querySelector(`[data-fillout-id="${filloutId}"]`)) return;
+
+    host.innerHTML = `
+      <div class="festiv-fillout"
+           style="width:100%;min-height:${minHeight}px;"
+           data-fillout-id="${filloutId}"
+           data-fillout-embed-type="standard"
+           data-fillout-inherit-parameters
+           data-fillout-dynamic-resize>
+      </div>
+    `;
+  }
+
   function injectFilloutNative() {
     try {
-      const FILL0UT_ID = "tZMYfrqCWAus";
-      const TARGET_BLOCK = ".notion-block-1536ae9a98f28088b29adceaf42d1125"; // ← à remplacer
+      // 1) Charge le script (1 seule fois)
+      ensureFilloutScriptLoaded();
 
-      const host = document.querySelector(TARGET_BLOCK);
-      if (!host) return;
-
-      // évite ré-injection si navigation interne / observer
-      if (host.querySelector(`[data-fillout-id="${FILL0UT_ID}"]`)) return;
-
-      host.innerHTML = `
-        <div class="festiv-fillout"
-             style="width:100%;min-height:520px;"
-             data-fillout-id="${FILL0UT_ID}"
-             data-fillout-embed-type="standard"
-             data-fillout-inherit-parameters
-             data-fillout-dynamic-resize>
-        </div>
-      `;
-
-      // charger le script Fillout une seule fois
-      const SRC = "https://server.fillout.com/embed/v1/";
-      const already = [...document.scripts].some(s => s.src === SRC);
-      if (!already) {
-        const s = document.createElement("script");
-        s.src = SRC;
-        s.async = true;
-        document.head.appendChild(s);
-      }
+      // 2) Injecte tes formulaires où tu veux
+      injectFilloutIntoBlock(".notion-block-1536ae9a98f28088b29adceaf42d1125 ", "tZMYfrqCWAus", 520); // ex: Contact
+      injectFilloutIntoBlock(".notion-block-3066ae9a98f280b8b391d15455e98a24", "jYPEHAqG3Lus", 520); // ex: Inscription Marché Nocturne
     } catch (e) {
       console.error("[festiv20] injectFilloutNative error:", e);
     }
   }
+
 
   function runAll() {
     // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
