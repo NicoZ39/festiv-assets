@@ -1287,16 +1287,15 @@ details.notion-toggle[open] > div {
   width: 100% !important;
   border: 0 !important;
 }
+/* ✅ Fillout : donner un max de place à l'iframe sur mobile */
 @media (max-width: 700px){
-
-  .notion-block-77e137afe607458b909ae1f62e58dee4 .remove-minwidth{
-    height: 100dvh !important;
-    min-height: 100dvh !important;
+  .notion-asset-wrapper-embed iframe[src*="fillout.com"]{
+    height: calc(100dvh + 320px) !important; /* marge anti erreurs / upload / sticky */
+    min-height: calc(100dvh + 320px) !important;
+    width: 100% !important;
+    border: 0 !important;
+    display: block !important;
   }
-
-  .notion-block-77e137afe607458b909ae1f62e58dee4 iframe{
-    height: 100% !important;
-  }
-
 }
+
 
