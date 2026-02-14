@@ -1012,17 +1012,7 @@
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
-function hideFilloutBrandingIfVisible() {
-  try {
-    document
-      .querySelectorAll('a[href*="utm_source=fillout-powered-by"]')
-      .forEach(a => {
-        const wrap = a.closest("div");
-        if (wrap) wrap.style.display = "none";
-        a.style.display = "none";
-      });
-  } catch {}
-}
+
 
 
 
@@ -1043,10 +1033,7 @@ function hideFilloutBrandingIfVisible() {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
-    // ✅ Supprimer branding Fillout
-    hideFilloutBrandingIfVisible();
-    setTimeout(removeFilloutBranding, 300);
-    setTimeout(removeFilloutBranding, 1200);
+
 
     // ✅ listener OS (protégé par flag)
     bindSystemThemeListener();
