@@ -1297,10 +1297,4 @@ details.notion-toggle[open] > div {
     min-height: 650px;
   }
 }
-/* Masque le badge "Made with Fillout" */
-a[href*="utm_source=fillout-powered-by"],
-a[href*="fillout-powered-by"]{
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
+
