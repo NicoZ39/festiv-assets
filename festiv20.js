@@ -1048,7 +1048,10 @@ function removeFilloutBranding() {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+    // ✅ Supprimer branding Fillout
     removeFilloutBranding();
+    setTimeout(removeFilloutBranding, 300);
+    setTimeout(removeFilloutBranding, 1200);
 
     // ✅ listener OS (protégé par flag)
     bindSystemThemeListener();
