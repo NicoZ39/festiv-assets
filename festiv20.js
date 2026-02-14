@@ -1013,6 +1013,17 @@
     }
   }
 
+function hideFilloutBrandingIfVisible() {
+  try {
+    document
+      .querySelectorAll('a[href*="utm_source=fillout-powered-by"]')
+      .forEach(a => {
+        const wrap = a.closest("div");
+        if (wrap) wrap.style.display = "none";
+        a.style.display = "none";
+      });
+  } catch {}
+}
 
 
 
@@ -1033,7 +1044,7 @@
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
-
+    hideFilloutBrandingIfVisible();
 
     // ✅ listener OS (protégé par flag)
     bindSystemThemeListener();
