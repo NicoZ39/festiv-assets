@@ -1012,6 +1012,23 @@
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
+// =========================================
+// 11) Masquer/Supprimer branding Fillout (si autorisé)
+// =========================================
+function removeFilloutBranding() {
+  try {
+    // Cible le lien "Made with Fillout"
+    const links = document.querySelectorAll('a[href*="fillout-powered-by"], a[href*="utm_source=fillout-powered-by"]');
+
+    links.forEach((a) => {
+      // selon les versions, le badge est souvent dans un wrapper (div flex...)
+      const wrapper = a.closest("div") || a;
+      wrapper.remove();
+    });
+  } catch (e) {
+    console.error("[festiv20] removeFilloutBranding error:", e);
+  }
+}
 
 
   function runAll() {
@@ -1031,6 +1048,7 @@
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+    removeFilloutBranding();
 
     // ✅ listener OS (protégé par flag)
     bindSystemThemeListener();
