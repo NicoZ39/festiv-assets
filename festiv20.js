@@ -168,7 +168,9 @@
 
           syncAutoIndicator();
           // ✅ maintenant seulement
-          syncMeteoblueTheme();
+          setTimeout(syncMeteoblueTheme, 300);
+          setTimeout(syncMeteoblueTheme, 1200);
+
         });
 
         // DOUBLE-CLIC = retour AUTO (suit l’OS) => supprime la sauvegarde
@@ -1170,18 +1172,17 @@
     }
   }
 
-function syncMeteoblueTheme(tries = 12) {
+function syncMeteoblueTheme(tries = 20) {
   try {
     const isDark = document.documentElement.classList.contains("dark-mode");
 
-    // ✅ on cible Meteoblue par l'URL (marche même si l'ID de bloc change sur mobile)
+    // ✅ match large (langue variable / chemins variables)
     const iframe = document.querySelector(
-      'iframe[src*="meteoblue.com/en/weather/widget"], iframe[data-src*="meteoblue.com/en/weather/widget"]'
+      'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
     );
 
-    // si pas encore là (lazy / rebuild), on retente un peu
     if (!iframe) {
-      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 180);
+      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
       return;
     }
 
@@ -1189,13 +1190,13 @@ function syncMeteoblueTheme(tries = 12) {
     const dataSrcAttr = iframe.getAttribute("data-src");
     const current = srcAttr || dataSrcAttr || "";
     if (!current) {
-      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 180);
+      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
       return;
     }
 
     let url;
     try {
-      url = new URL(current, window.location.origin);
+      url = new URL(current, window.location.href);
     } catch {
       return;
     }
@@ -1203,10 +1204,15 @@ function syncMeteoblueTheme(tries = 12) {
     url.searchParams.set("layout", isDark ? "dark" : "bright");
     const next = url.toString();
 
-    // ✅ important iOS/lazy : on met à jour src ET data-src si présent
-    if (srcAttr && srcAttr !== next) iframe.setAttribute("src", next);
-    if (dataSrcAttr && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
+    // ✅ met à jour les deux (iOS/lazy)
+    if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
+    if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
 
+    // ✅ iOS/Simple.ink peut réécrire le src après coup → re-sync “tardive”
+    if (tries === 20) {
+      setTimeout(() => syncMeteoblueTheme(3), 900);
+      setTimeout(() => syncMeteoblueTheme(3), 2500);
+    }
   } catch (e) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
