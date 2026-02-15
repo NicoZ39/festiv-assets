@@ -1111,7 +1111,7 @@
       console.error("[festiv20] initDisqus error:", e);
     }
   }
-
+ window.__festivInitDisqus = initDisqus;
   // =========================================
   // CookieHub → si l'utilisateur change son choix,
   // on retente initDisqus() sans refresh.
