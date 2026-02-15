@@ -47,19 +47,25 @@
   }
 
   function applyTheme(theme) {
-    const isDark = theme === "dark";
-    document.documentElement.classList.toggle("dark-mode", isDark);
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("dark-mode", isDark);
 
-    // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
-    document.documentElement.classList.add("festiv-theme-ready");
+  // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
+  document.documentElement.classList.add("festiv-theme-ready");
 
-    // si le bouton existe déjà, on le resync
-    const wrap = document.getElementById("festiv-theme-toggle");
-    if (wrap) {
-      wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
-      wrap.classList.toggle("is-dark", isDark);
-    }
+  // si le bouton existe déjà, on le resync
+  const wrap = document.getElementById("festiv-theme-toggle");
+  if (wrap) {
+    wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+    wrap.classList.toggle("is-dark", isDark);
   }
+
+    // ✅ si Disqus est présent (page commentaires), on resync
+  if (document.getElementById("disqus_thread")) {
+    setTimeout(() => { try { refreshDisqusTheme(); } catch {} }, 50);
+  }
+
+
 
   function applySavedTheme() {
     try {
@@ -173,6 +179,10 @@
         setTimeout(syncMeteoblueTheme, 300);
         setTimeout(syncMeteoblueTheme, 1200);
 
+        // ✅ Disqus : forcer le thème à se recalculer sans refresh page
+        refreshDisqusTheme();
+        setTimeout(refreshDisqusTheme, 350);
+        setTimeout(refreshDisqusTheme, 1200);
 
         });
 
@@ -187,6 +197,11 @@
           try { localStorage.removeItem("festiv-theme"); } catch {}
           applySavedTheme();
           syncAutoIndicator();
+
+          // ✅ Disqus : idem
+          refreshDisqusTheme();
+          setTimeout(refreshDisqusTheme, 350);
+          setTimeout(refreshDisqusTheme, 1200);
         });
 
         document.body.appendChild(wrap);
@@ -1140,6 +1155,28 @@
       setTimeout(patchDisqusAgeGateFR, 1400);
     } catch (e) {
       console.error("[festiv20] initDisqus error:", e);
+    }
+  }
+    // 🔁 Force Disqus à se recharger (utile quand on change de thème sans refresh)
+  function refreshDisqusTheme() {
+    try {
+      if (!document.getElementById("disqus_thread")) return;
+
+      const disqusConfig = function () {
+        this.page.url = window.location.href.split("#")[0];
+        this.page.identifier = window.location.pathname;
+        this.language = "fr";
+      };
+
+      if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+        window.DISQUS.reset({ reload: true, config: disqusConfig });
+
+        // patch FR + laisser le temps à Disqus de rerender
+        setTimeout(patchDisqusAgeGateFR, 400);
+        setTimeout(patchDisqusAgeGateFR, 1100);
+      }
+    } catch (e) {
+      console.error("[festiv20] refreshDisqusTheme error:", e);
     }
   }
 
