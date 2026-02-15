@@ -64,7 +64,7 @@
   if (document.getElementById("disqus_thread")) {
     setTimeout(() => { try { refreshDisqusTheme(); } catch {} }, 50);
   }
-
+}
 
 
   function applySavedTheme() {
