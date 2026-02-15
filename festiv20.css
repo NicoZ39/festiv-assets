@@ -1340,3 +1340,20 @@ html.dark-mode { color-scheme: dark; }
 .dark-mode #disqus_thread iframe{
   color-scheme: light !important;
 }
+/* =========================================
+   FIX reCAPTCHA (Disqus) : popup images tronqué à droite
+   ========================================= */
+
+/* Le challenge reCAPTCHA est un iframe "bframe" en fixed */
+iframe[src*="recaptcha"][src*="bframe"],
+iframe[src*="google.com/recaptcha"][src*="bframe"],
+iframe[src*="recaptcha.net"][src*="bframe"]{
+  max-width: calc(100vw - 24px) !important; /* évite de dépasser du viewport */
+  right: 12px !important;                  /* décale légèrement vers la gauche */
+  left: auto !important;                   /* neutralise un left imposé */
+}
+
+/* Parfois le wrapper est celui qui est fixé (rare) */
+body > div[style*="position: fixed"][style*="z-index"]{
+  max-width: 100vw !important;
+}
