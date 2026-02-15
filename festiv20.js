@@ -1257,6 +1257,59 @@ function syncMeteoblueTheme(tries = 20) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
+// =========================================
+// reCAPTCHA (Disqus) — popup tronqué à droite
+// Fix: recaler l'iframe "bframe" dans le viewport
+// =========================================
+function fixRecaptchaPopup(tries = 40) {
+  try {
+    const frames = Array.from(document.querySelectorAll("iframe")).filter((f) => {
+      const src = f.getAttribute("src") || "";
+      const title = (f.getAttribute("title") || "").toLowerCase();
+      return (
+        src.includes("recaptcha") &&
+        (src.includes("bframe") || title.includes("recaptcha"))
+      );
+    });
+
+    if (!frames.length) {
+      if (tries > 0) setTimeout(() => fixRecaptchaPopup(tries - 1), 150);
+      return;
+    }
+
+    frames.forEach((f) => {
+      // force un style "écran"
+      f.style.maxWidth = "calc(100vw - 24px)";
+      f.style.right = "12px";
+      f.style.left = "auto";
+      f.style.zIndex = "2147483647"; // au-dessus de tout
+
+      // si malgré tout ça déborde, on translate légèrement à gauche
+      // (certaines configs posent un left inline chelou)
+      f.style.transform = "translateX(-8px)";
+    });
+  } catch (e) {
+    console.error("[festiv20] fixRecaptchaPopup error:", e);
+  }
+}
+
+// Observer : dès qu'un iframe recaptcha est injecté, on fixe
+function bindRecaptchaFix() {
+  try {
+    if (window.__FESTIV_RECAPTCHA_FIX_BOUND) return;
+    window.__FESTIV_RECAPTCHA_FIX_BOUND = true;
+
+    const obs = new MutationObserver(() => {
+      fixRecaptchaPopup(2);
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+
+    // aussi au resize
+    window.addEventListener("resize", () => fixRecaptchaPopup(2), { passive: true });
+  } catch (e) {
+    console.error("[festiv20] bindRecaptchaFix error:", e);
+  }
+}
 
 
 
@@ -1286,6 +1339,9 @@ setTimeout(syncMeteoblueTheme, 300);
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
+      bindRecaptchaFix();
+      fixRecaptchaPopup();
+
 
       // ✅ listener OS (protégé par flag)
       bindSystemThemeListener();
