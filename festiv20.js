@@ -166,10 +166,13 @@
             localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
           } catch {}
 
-          syncAutoIndicator();
-          // ✅ maintenant seulement
-          setTimeout(syncMeteoblueTheme, 300);
-          setTimeout(syncMeteoblueTheme, 1200);
+         syncAutoIndicator();
+
+        // ✅ Meteoblue : sync tout de suite + re-sync (iPhone / lazy)
+        syncMeteoblueTheme();
+        setTimeout(syncMeteoblueTheme, 300);
+        setTimeout(syncMeteoblueTheme, 1200);
+
 
         });
 
