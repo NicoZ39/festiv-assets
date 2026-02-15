@@ -1320,30 +1320,7 @@ details.notion-toggle[open] > div {
 }
 
 /* Bloc Meteoblue : wrapper + iframe */
-.notion-block-3056ae9a98f28048a4b1eec195ab2d36,
-.notion-block-3056ae9a98f28048a4b1eec195ab2d36 * {
-  background: transparent !important;
-}
-
-.notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-/* iOS/Safari : évite le "fond noir" imposé aux iframes */
 html { color-scheme: light dark; }
-
-/* Optionnel : si tu veux forcer le schéma selon ton toggle */
 html:not(.dark-mode) { color-scheme: light; }
 html.dark-mode { color-scheme: dark; }
-/* Wrapper Notion autour du widget Meteoblue */
-.notion-asset-wrapper:has(iframe[src*="meteoblue.com"]),
-.notion-asset-wrapper:has(iframe[data-src*="meteoblue.com"]) {
-  background: transparent !important;
-}
 
-/* L'iframe elle-même */
-iframe[src*="meteoblue.com"],
-iframe[data-src*="meteoblue.com"]{
-  background: transparent !important;
-  box-shadow: none !important;
-}
