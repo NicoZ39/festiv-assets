@@ -1347,4 +1347,22 @@ html.dark-mode { color-scheme: dark; }
 .dark-mode #disqus_thread iframe{
   color-scheme: light !important;
 }
+/* =========================================
+   reCAPTCHA (Disqus) — centrage du challenge (anti-troncature)
+   ========================================= */
+
+iframe[src*="recaptcha"][src*="bframe"],
+iframe[src*="google.com/recaptcha"][src*="bframe"],
+iframe[src*="recaptcha.net"][src*="bframe"]{
+  /* Le challenge est en position fixed : on le centre */
+  left: 50% !important;
+  right: auto !important;
+
+  /* Centre parfait + légère réduction si besoin */
+  transform: translateX(-50%) scale(0.98) !important;
+  transform-origin: top center !important;
+
+  /* Empêche de dépasser */
+  max-width: calc(100vw - 24px) !important;
+}
 
