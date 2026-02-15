@@ -1012,14 +1012,95 @@
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
+  // =========================================
+  // DISQUS (uniquement si H2 "💬 Commentaires")
+  // =========================================
+  function resetDisqusIfPathChanged() {
+    try {
+      const current = window.location.pathname;
+      if (window.__FESTIV_DISQUS_PATH === current) return;
+
+      // ✅ navigation interne détectée
+      window.__FESTIV_DISQUS_PATH = current;
+      window.__FESTIV_DISQUS_DONE = false;
+
+      // Supprime l'ancien conteneur si présent
+      const old = document.getElementById("disqus_thread");
+      if (old) old.remove();
+
+      // Nettoie quelques globals Disqus (précaution SPA)
+      try { delete window.DISQUS; } catch {}
+      try { delete window.DISQUSWIDGETS; } catch {}
+      try { delete window.disqus_config; } catch {}
+    } catch (e) {
+      console.error("[festiv20] resetDisqusIfPathChanged error:", e);
+    }
+  }
+
+  function initDisqus() {
+    try {
+      if (window.__FESTIV_DISQUS_DONE) return;
+
+      // Cherche le marqueur H2/H3/H1 exact
+      const hs = document.querySelectorAll("h1,h2,h3");
+      let marker = null;
+      for (const h of hs) {
+        if ((h.textContent || "").trim() === "💬 Commentaires") {
+          marker = h;
+          break;
+        }
+      }
+      if (!marker) return; // pas un article → ne rien faire
+
+      // Crée le wrapper si absent
+      if (!document.getElementById("disqus_thread")) {
+        const wrap = document.createElement("div");
+        wrap.className = "festiv-disqus-wrap";
+
+        const thread = document.createElement("div");
+        thread.id = "disqus_thread";
+
+        wrap.appendChild(thread);
+        marker.insertAdjacentElement("afterend", wrap);
+      }
+
+      // Config (DOIT être défini AVANT embed.js)
+      window.disqus_config = function () {
+        this.page.url = window.location.href.split("#")[0];
+        this.page.identifier = window.location.pathname;
+        this.language = "fr";
+      };
+
+      // Charge Disqus une seule fois
+      const already = [...document.scripts].some((s) =>
+        (s.src || "").includes("festivounans.disqus.com/embed.js")
+      );
+
+      if (!already) {
+        const s = document.createElement("script");
+        s.src = "https://festivounans.disqus.com/embed.js";
+        s.setAttribute("data-timestamp", String(+new Date()));
+        (document.head || document.body).appendChild(s);
+      } else {
+        // Si le script est déjà là, Disqus a parfois besoin d'un petit refresh
+        // (généralement pas nécessaire si page reload complète)
+      }
+
+      window.__FESTIV_DISQUS_DONE = true;
+      if (DEBUG) console.log("[festiv20] Disqus init ✅");
+    } catch (e) {
+      console.error("[festiv20] initDisqus error:", e);
+    }
+  }
 
 
 
 
   function runAll() {
+        // ✅ reset Disqus si navigation interne
+    resetDisqusIfPathChanged();
     // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
     applySavedTheme();
-
     makeLogoClickable();
     formatDates();
     createFooterColumns();
@@ -1033,7 +1114,8 @@
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
-
+    // ✅ Disqus (uniquement si H2 "💬 Commentaires" existe)
+    initDisqus();
     // ✅ listener OS (protégé par flag)
     bindSystemThemeListener();
 
@@ -1046,6 +1128,8 @@
     // ✅ Fillout natif (auto-resize)
     shortcodeContactForm();
     shortcodeInscriptionForm();
+    // ✅ Disqus (uniquement si H2 "💬 Commentaires")
+    initDisqus();
   }
 
   setTimeout(fixInternalAnchors, 500);
