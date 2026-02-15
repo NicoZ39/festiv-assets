@@ -1319,4 +1319,14 @@ details.notion-toggle[open] > div {
   cursor: pointer;
 }
 
+/* Bloc Meteoblue : wrapper + iframe */
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36,
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36 * {
+  background: transparent !important;
+}
+
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe {
+  background: transparent !important;
+  box-shadow: none !important;
+}
 
