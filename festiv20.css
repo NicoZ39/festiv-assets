@@ -1324,3 +1324,19 @@ html { color-scheme: light dark; }
 html:not(.dark-mode) { color-scheme: light; }
 html.dark-mode { color-scheme: dark; }
 
+/* =========================
+   DISQUS — FIX "texte blanc sur fond blanc" (dark mode)
+   Cause : color-scheme dark du navigateur
+========================= */
+
+/* On force Disqus à rester en color-scheme light pour les champs */
+#disqus_thread,
+#disqus_thread iframe{
+  color-scheme: light !important;
+}
+
+/* Même en dark-mode */
+.dark-mode #disqus_thread,
+.dark-mode #disqus_thread iframe{
+  color-scheme: light !important;
+}
