@@ -1319,23 +1319,13 @@ details.notion-toggle[open] > div {
   cursor: pointer;
 }
 
-/* ===== Meteoblue : supprimer fond noir autour de l'iframe ===== */
-
-/* 1) cible le bloc notion (adapter l'id si tu veux, mais on peut aussi cibler par URL) */
-.notion-asset-wrapper:has(iframe[src*="meteoblue.com"]),
-.notion-asset-wrapper:has(iframe[data-src*="meteoblue.com"]) {
+/* Bloc Meteoblue : wrapper + iframe */
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36,
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36 * {
   background: transparent !important;
 }
 
-/* 2) le conteneur interne de l'embed */
-.notion-asset-wrapper:has(iframe[src*="meteoblue.com"]) > div,
-.notion-asset-wrapper:has(iframe[data-src*="meteoblue.com"]) > div {
-  background: transparent !important;
-}
-
-/* 3) l'iframe elle-même : pas de background noir + pas d'ombre */
-iframe[src*="meteoblue.com"],
-iframe[data-src*="meteoblue.com"] {
+.notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe {
   background: transparent !important;
   box-shadow: none !important;
 }
