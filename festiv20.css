@@ -1359,7 +1359,7 @@ iframe[src*="recaptcha.net"][src*="bframe"]{
   right: auto !important;
 
   /* Centre parfait + légère réduction si besoin */
-  transform: translateX(-50%) scale(0.98) !important;
+  transform: translateX(-50%) scale(0.94) !important;
   transform-origin: top center !important;
 
   /* Empêche de dépasser */
