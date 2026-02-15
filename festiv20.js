@@ -105,9 +105,9 @@
 
       // Tooltip dynamique
       wrap.setAttribute(
-  "title",
-  auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
-);
+        "title",
+        auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
+      );
     } catch {}
   }
 
@@ -427,7 +427,10 @@
         if (table.dataset.festivUxBound === "1") return;
         table.dataset.festivUxBound = "1";
 
-        if (!table.previousElementSibling || !table.previousElementSibling.classList.contains("festiv-table-hint")) {
+        if (
+          !table.previousElementSibling ||
+          !table.previousElementSibling.classList.contains("festiv-table-hint")
+        ) {
           const hint = document.createElement("div");
           hint.className = "festiv-table-hint";
           hint.textContent = "👉 Faites glisser le tableau horizontalement";
@@ -653,7 +656,7 @@
 
         content.style.height = "0px";
         content.style.paddingTop = "0px";
-        content.getElementById; // no-op
+        content.getBoundingClientRect(); // force reflow
 
         const h = content.scrollHeight;
 
@@ -887,7 +890,8 @@
       console.error("[festiv20] bindCalendarI18nHooks error:", e);
     }
   }
-    // =========================================
+
+  // =========================================
   // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
   // =========================================
   function shortcodeContactForm() {
@@ -950,7 +954,7 @@
     }
   }
 
- // =========================================
+  // =========================================
   // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
   // =========================================
   function shortcodeInscriptionForm() {
@@ -982,7 +986,7 @@
         mount.setAttribute("data-fillout-dynamic-resize", "");
 
         // Si le bloc ne contient QUE le shortcode -> on remplace tout
-        if (txt === "[contact-form]") {
+        if (txt === "[inscription-form]") {
           node.textContent = "";
           node.appendChild(mount);
           return;
@@ -1012,176 +1016,205 @@
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
-// =========================================
-// DISQUS (uniquement si H2 "💬 Commentaires")
-// + respecte CookieHub + SPA-friendly
-// =========================================
-function initDisqus() {
-  try {
-    // Cherche le marqueur
-    const hs = document.querySelectorAll("h1,h2,h3");
-    let marker = null;
-    for (const h of hs) {
-      if ((h.textContent || "").trim() === "💬 Commentaires") {
-        marker = h;
-        break;
+
+  // =========================================
+  // DISQUS (uniquement si H2 "💬 Commentaires")
+  // + respecte CookieHub + SPA-friendly
+  // =========================================
+  function initDisqus() {
+    try {
+      // 1) Cherche le marqueur
+      const hs = document.querySelectorAll("h1,h2,h3");
+      let marker = null;
+      for (const h of hs) {
+        if ((h.textContent || "").trim() === "💬 Commentaires") {
+          marker = h;
+          break;
+        }
       }
-    }
-    if (!marker) return;
+      if (!marker) return;
 
-    // Consent CookieHub (catégorie la plus fréquente : "marketing")
-    const CH = window.cookiehub;
-    const consentOk =
-      !CH || !CH.hasConsented
-        ? true
-        : CH.hasConsented("marketing"); // <- si chez toi c'est "analytics", on changera
+      // 2) Consent CookieHub (souvent: "marketing")
+      const CH = window.cookiehub;
+      const consentOk =
+        !CH || !CH.hasConsented ? true : CH.hasConsented("marketing"); // <-- si besoin: "analytics"
 
-    // Si pas de consentement : placeholder + bouton "gérer"
-    const existingWrap = document.querySelector(".festiv-disqus-wrap");
-    if (!consentOk) {
-      if (!existingWrap) {
-        const wrap = document.createElement("div");
-        wrap.className = "festiv-disqus-wrap";
-        wrap.innerHTML = `
-          <div class="festiv-disqus-consent">
-            <p style="margin:0 0 10px 0;">Pour afficher les commentaires (Disqus), merci d’accepter les cookies correspondants.</p>
-            <button type="button" class="festiv-disqus-consent-btn">⚙️ Gérer mes cookies</button>
-          </div>
-        `;
-        marker.insertAdjacentElement("afterend", wrap);
+      const existingWrap = document.querySelector(".festiv-disqus-wrap");
 
-        wrap.querySelector(".festiv-disqus-consent-btn")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          try {
-            if (window.cookiehub?.openSettings) window.cookiehub.openSettings();
-            else if (window.cookiehub?.openDialog) window.cookiehub.openDialog();
-          } catch {}
-        });
+      // 3) Pas de consentement → placeholder
+      if (!consentOk) {
+        if (!existingWrap) {
+          const wrap = document.createElement("div");
+          wrap.className = "festiv-disqus-wrap";
+          wrap.innerHTML = `
+            <div class="festiv-disqus-consent">
+              <p style="margin:0 0 10px 0;">Pour afficher les commentaires (Disqus), merci d’accepter les cookies correspondants.</p>
+              <button type="button" class="festiv-disqus-consent-btn">⚙️ Gérer mes cookies</button>
+            </div>
+          `;
+          marker.insertAdjacentElement("afterend", wrap);
+
+          wrap.querySelector(".festiv-disqus-consent-btn")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              if (window.cookiehub?.openSettings) window.cookiehub.openSettings();
+              else if (window.cookiehub?.openDialog) window.cookiehub.openDialog();
+            } catch {}
+          });
+        }
+        return;
       }
-      return;
-    } else {
-      // Consent OK : retire le placeholder s'il existe
+
+      // 4) Consent OK → retire le placeholder
       const ph = document.querySelector(".festiv-disqus-consent");
       if (ph) ph.remove();
+
+      // 5) Crée le conteneur Disqus si absent
+      if (!document.getElementById("disqus_thread")) {
+        const wrap = existingWrap || document.createElement("div");
+        wrap.className = "festiv-disqus-wrap";
+
+        const thread = document.createElement("div");
+        thread.id = "disqus_thread";
+        wrap.appendChild(thread);
+
+        if (!existingWrap) marker.insertAdjacentElement("afterend", wrap);
+      }
+
+      // 6) Config Disqus
+      const disqusConfig = function () {
+        this.page.url = window.location.href.split("#")[0];
+        this.page.identifier = window.location.pathname;
+        this.language = "fr";
+      };
+
+      // 7) Si déjà chargé → reset SPA propre
+      if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+        window.DISQUS.reset({ reload: true, config: disqusConfig });
+        return;
+      }
+
+      // 8) Premier chargement
+      window.disqus_config = disqusConfig;
+
+      const already = [...document.scripts].some((s) =>
+        (s.src || "").includes("festivounans.disqus.com/embed.js")
+      );
+      if (!already) {
+        const s = document.createElement("script");
+        s.src = "https://festivounans.disqus.com/embed.js";
+        s.setAttribute("data-timestamp", String(+new Date()));
+        (document.head || document.body).appendChild(s);
+      }
+    } catch (e) {
+      console.error("[festiv20] initDisqus error:", e);
     }
-
-    // Crée le conteneur Disqus si absent
-    if (!document.getElementById("disqus_thread")) {
-      const wrap = existingWrap || document.createElement("div");
-      wrap.className = "festiv-disqus-wrap";
-
-      const thread = document.createElement("div");
-      thread.id = "disqus_thread";
-      wrap.appendChild(thread);
-
-      if (!existingWrap) marker.insertAdjacentElement("afterend", wrap);
-    }
-
-    // Config Disqus (fr + identifiants stables)
-    const disqusConfig = function () {
-      this.page.url = window.location.href.split("#")[0];
-      this.page.identifier = window.location.pathname;
-      this.language = "fr";
-    };
-
-    // Si déjà chargé : reset SPA propre
-    if (window.DISQUS && typeof window.DISQUS.reset === "function") {
-      window.DISQUS.reset({ reload: true, config: disqusConfig });
-      return;
-    }
-
-    // Sinon : premier chargement
-    window.disqus_config = disqusConfig;
-
-    const already = [...document.scripts].some((s) =>
-      (s.src || "").includes("festivounans.disqus.com/embed.js")
-    );
-    if (!already) {
-      const s = document.createElement("script");
-      s.src = "https://festivounans.disqus.com/embed.js";
-      s.setAttribute("data-timestamp", String(+new Date()));
-      (document.head || document.body).appendChild(s);
-    }
-  } catch (e) {
-    console.error("[festiv20] initDisqus error:", e);
   }
-}
 
+  // =========================================
+  // CookieHub → si l'utilisateur change son choix,
+  // on retente initDisqus() sans refresh.
+  // =========================================
+  function bindCookieHubForDisqus() {
+    try {
+      if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
+      window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
 
+      const rerun = () => {
+        setTimeout(() => { try { initDisqus(); } catch {} }, 50);
+        setTimeout(() => { try { initDisqus(); } catch {} }, 250);
+      };
 
+      // Fallback fiable : quand on ferme le panneau cookies et que la page reprend le focus
+      window.addEventListener("focus", rerun);
 
+      // Si CookieHub expose une API d'events (selon version)
+      const CH = window.cookiehub;
+      if (CH && typeof CH.on === "function") {
+        CH.on("onAllow", rerun);
+        CH.on("onStatusChange", rerun);
+        CH.on("onRevoke", rerun);
+      }
+    } catch (e) {
+      console.error("[festiv20] bindCookieHubForDisqus error:", e);
+    }
+  }
 
+  // =========================================
+  // runAll (appelé au load + à chaque rebuild DOM)
+  // =========================================
   function runAll() {
-      function runAll() {
     if (window.__FESTIV_RUNALL_LOCK) return;
     window.__FESTIV_RUNALL_LOCK = true;
 
     try {
-      // ... ton code existant ...
+      // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
+      applySavedTheme();
+
+      makeLogoClickable();
+      formatDates();
+      createFooterColumns();
+      addCopyright();
+      tweakCover();
+      setupTableScrollUX();
+      shortcodeRetour();
+      bindNotionButtons();
+      fixInternalAnchors();
+      hideGenericCalloutIcons();
+      setupFaqAnimation();
+      localizeSearchUI();
+      setupBackToTop();
+
+      // ✅ listener OS (protégé par flag)
+      bindSystemThemeListener();
+
+      // ✅ calendrier FR
+      bindCalendarI18nHooks();
+      translateNotionCalendar();
+
+      // ✅ bouton toggle + icône + badge AUTO à jour
+      initThemeToggle();
+
+      // ✅ Fillout natif (auto-resize)
+      shortcodeContactForm();
+      shortcodeInscriptionForm();
+
+      // ✅ Disqus (si H2 "💬 Commentaires")
       initDisqus();
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
   }
 
-    // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
-    applySavedTheme();
-    makeLogoClickable();
-    formatDates();
-    createFooterColumns();
-    addCopyright();
-    tweakCover();
-    setupTableScrollUX();
-    shortcodeRetour();
-    bindNotionButtons();
-    fixInternalAnchors();
-    hideGenericCalloutIcons();
-    setupFaqAnimation();
-    localizeSearchUI();
-    setupBackToTop();
-    // ✅ Disqus (uniquement si H2 "💬 Commentaires" existe)
-    initDisqus();
-    // ✅ listener OS (protégé par flag)
-    bindSystemThemeListener();
-
-    // ✅ calendrier FR
-    bindCalendarI18nHooks();
-    translateNotionCalendar();
-
-    // ✅ bouton toggle + icône + badge AUTO à jour
-    initThemeToggle();
-    // ✅ Fillout natif (auto-resize)
-    shortcodeContactForm();
-    shortcodeInscriptionForm();
-
-    initDisqus();
-
-  }
-
+  // Petits retours internes
   setTimeout(fixInternalAnchors, 500);
   setTimeout(fixInternalAnchors, 1500);
 
   onReady(() => {
     log("loaded ✅");
+
+    // ✅ CookieHub → retenter Disqus après changement de consentement
+    bindCookieHubForDisqus();
+
+    // ✅ run initial
     runAll();
 
-        let t = null;
+    // ✅ observer global : relance runAll si Simple.ink reconstruit le DOM,
+    // mais IGNORE tout ce qui vient de Disqus (sinon boucle infinie).
+    let t = null;
     const observer = new MutationObserver((mutations) => {
-      // ✅ Ignore les mutations causées par Disqus (sinon boucle infinie)
       for (const m of mutations) {
         const target = m.target;
         if (target && target.closest && target.closest("#disqus_thread, .festiv-disqus-wrap")) {
           return;
         }
-        // Ignore aussi si les nodes ajoutés sont des iframes Disqus
         for (const n of m.addedNodes || []) {
           if (n.nodeType === 1) {
             const el = n;
             if (el.id === "disqus_thread") return;
             if (el.closest && el.closest("#disqus_thread, .festiv-disqus-wrap")) return;
-            const ifr = el.querySelector?.('iframe[src*="disqus"]');
-            if (ifr) return;
+            if (el.querySelector?.('iframe[src*="disqus"]')) return;
           }
         }
       }
@@ -1191,6 +1224,5 @@ function initDisqus() {
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-
   });
 })();
