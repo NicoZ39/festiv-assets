@@ -1226,6 +1226,7 @@ function syncMeteoblueTheme(tries = 12) {
       // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
       applySavedTheme();
       syncMeteoblueTheme();
+setTimeout(syncMeteoblueTheme, 300);
       makeLogoClickable();
       formatDates();
       createFooterColumns();
