@@ -1297,4 +1297,28 @@ details.notion-toggle[open] > div {
     min-height: 650px;
   }
 }
+/* ===== Disqus: reset anti-CSS global (iframes) ===== */
+.festiv-disqus-wrap {
+  width: 100%;
+  max-width: 900px;
+  margin: 24px auto 0;
+}
+
+#disqus_thread {
+  width: 100% !important;
+  min-height: 300px;
+}
+
+#disqus_thread iframe {
+  display: block !important;
+  width: 1px !important;        /* hack recommandé par Disqus dans certains cas */
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: auto;
+}
+
+/* Si tu as des filtres dark-mode sur les iframes, on neutralise Disqus */
+.dark-mode #disqus_thread iframe {
+  filter: none !important;
+}
 
