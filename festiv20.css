@@ -1329,3 +1329,21 @@ details.notion-toggle[open] > div {
   background: transparent !important;
   box-shadow: none !important;
 }
+/* iOS/Safari : évite le "fond noir" imposé aux iframes */
+html { color-scheme: light dark; }
+
+/* Optionnel : si tu veux forcer le schéma selon ton toggle */
+html:not(.dark-mode) { color-scheme: light; }
+html.dark-mode { color-scheme: dark; }
+/* Wrapper Notion autour du widget Meteoblue */
+.notion-asset-wrapper:has(iframe[src*="meteoblue.com"]),
+.notion-asset-wrapper:has(iframe[data-src*="meteoblue.com"]) {
+  background: transparent !important;
+}
+
+/* L'iframe elle-même */
+iframe[src*="meteoblue.com"],
+iframe[data-src*="meteoblue.com"]{
+  background: transparent !important;
+  box-shadow: none !important;
+}
