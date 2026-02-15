@@ -1182,6 +1182,7 @@
 
       // ✅ Disqus (si H2 "💬 Commentaires")
       initDisqus();
+      document.documentElement.setAttribute("lang", "fr");
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
