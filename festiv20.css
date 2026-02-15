@@ -1301,7 +1301,7 @@ details.notion-toggle[open] > div {
 /* Disqus plus large (évite reCAPTCHA tronqué) */
 .festiv-disqus-wrap{
   width: 100% !important;
-  max-width: 1100px !important;   /* tu peux tester 1200 si besoin */
+  max-width: 1200px !important;   /* tu peux tester 1200 si besoin */
   margin: 24px auto 0 !important;
   padding: 0 16px !important;
 }
