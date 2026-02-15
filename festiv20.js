@@ -1113,6 +1113,18 @@ function initDisqus() {
 
 
   function runAll() {
+      function runAll() {
+    if (window.__FESTIV_RUNALL_LOCK) return;
+    window.__FESTIV_RUNALL_LOCK = true;
+
+    try {
+      // ... ton code existant ...
+      initDisqus();
+    } finally {
+      window.__FESTIV_RUNALL_LOCK = false;
+    }
+  }
+
     // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
     applySavedTheme();
     makeLogoClickable();
@@ -1154,12 +1166,31 @@ function initDisqus() {
     log("loaded ✅");
     runAll();
 
-    let t = null;
-    const observer = new MutationObserver(() => {
+        let t = null;
+    const observer = new MutationObserver((mutations) => {
+      // ✅ Ignore les mutations causées par Disqus (sinon boucle infinie)
+      for (const m of mutations) {
+        const target = m.target;
+        if (target && target.closest && target.closest("#disqus_thread, .festiv-disqus-wrap")) {
+          return;
+        }
+        // Ignore aussi si les nodes ajoutés sont des iframes Disqus
+        for (const n of m.addedNodes || []) {
+          if (n.nodeType === 1) {
+            const el = n;
+            if (el.id === "disqus_thread") return;
+            if (el.closest && el.closest("#disqus_thread, .festiv-disqus-wrap")) return;
+            const ifr = el.querySelector?.('iframe[src*="disqus"]');
+            if (ifr) return;
+          }
+        }
+      }
+
       clearTimeout(t);
-      t = setTimeout(runAll, 60);
+      t = setTimeout(runAll, 80);
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
+
   });
 })();
