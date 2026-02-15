@@ -167,6 +167,8 @@
           } catch {}
 
           syncAutoIndicator();
+          // ✅ maintenant seulement
+          syncMeteoblueTheme();
         });
 
         // DOUBLE-CLIC = retour AUTO (suit l’OS) => supprime la sauvegarde
@@ -1168,43 +1170,48 @@
     }
   }
 
-function syncMeteoblueTheme() {
+function syncMeteoblueTheme(tries = 12) {
   try {
-    const iframe = document.querySelector(
-      ".notion-block-3056ae9a98f28048a4b1eec195ab2d36 iframe"
-    );
-    if (!iframe) return;
-
     const isDark = document.documentElement.classList.contains("dark-mode");
-    const src = iframe.getAttribute("src");
-    if (!src) return;
+
+    // ✅ on cible Meteoblue par l'URL (marche même si l'ID de bloc change sur mobile)
+    const iframe = document.querySelector(
+      'iframe[src*="meteoblue.com/en/weather/widget"], iframe[data-src*="meteoblue.com/en/weather/widget"]'
+    );
+
+    // si pas encore là (lazy / rebuild), on retente un peu
+    if (!iframe) {
+      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 180);
+      return;
+    }
+
+    const srcAttr = iframe.getAttribute("src");
+    const dataSrcAttr = iframe.getAttribute("data-src");
+    const current = srcAttr || dataSrcAttr || "";
+    if (!current) {
+      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 180);
+      return;
+    }
 
     let url;
-
     try {
-      url = new URL(src, window.location.origin);
+      url = new URL(current, window.location.origin);
     } catch {
       return;
     }
 
-    // ✅ si layout existe → on le modifie
-    if (url.searchParams.has("layout")) {
-      url.searchParams.set("layout", isDark ? "dark" : "bright");
-    } else {
-      // ✅ sinon on l’ajoute
-      url.searchParams.append("layout", isDark ? "dark" : "bright");
-    }
+    url.searchParams.set("layout", isDark ? "dark" : "bright");
+    const next = url.toString();
 
-    const newSrc = url.toString();
-
-    if (newSrc !== src) {
-      iframe.setAttribute("src", newSrc);
-    }
+    // ✅ important iOS/lazy : on met à jour src ET data-src si présent
+    if (srcAttr && srcAttr !== next) iframe.setAttribute("src", next);
+    if (dataSrcAttr && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
 
   } catch (e) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
+
 
 
   
