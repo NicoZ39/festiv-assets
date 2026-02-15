@@ -1020,9 +1020,26 @@
   // =========================================
   // DISQUS (uniquement si H2 "💬 Commentaires")
   // + respecte CookieHub + SPA-friendly
+  // + patch FR du texte "I am 18 or older"
   // =========================================
+
+  function patchDisqusAgeGateFR() {
+    try {
+      const root = document.querySelector("#disqus_thread");
+      if (!root) return;
+
+      root.querySelectorAll("label, span, div, p").forEach((el) => {
+        const t = (el.textContent || "").trim();
+        if (t === "I am 18 or older") el.textContent = "J’ai 18 ans ou plus";
+      });
+    } catch {}
+  }
+
   function initDisqus() {
     try {
+      // (optionnel mais propre) indique au site qu'on est en FR
+      document.documentElement.setAttribute("lang", "fr");
+
       // 1) Cherche le marqueur
       const hs = document.querySelectorAll("h1,h2,h3");
       let marker = null;
@@ -1036,8 +1053,7 @@
 
       // 2) Consent CookieHub (souvent: "marketing")
       const CH = window.cookiehub;
-      const consentOk =
-        !CH || !CH.hasConsented ? true : CH.hasConsented("marketing"); // <-- si besoin: "analytics"
+      const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing"); // si besoin: "analytics"
 
       const existingWrap = document.querySelector(".festiv-disqus-wrap");
 
@@ -1067,8 +1083,7 @@
       }
 
       // 4) Consent OK → retire le placeholder
-      const ph = document.querySelector(".festiv-disqus-consent");
-      if (ph) ph.remove();
+      document.querySelector(".festiv-disqus-consent")?.remove();
 
       // 5) Crée le conteneur Disqus si absent
       if (!document.getElementById("disqus_thread")) {
@@ -1092,6 +1107,10 @@
       // 7) Si déjà chargé → reset SPA propre
       if (window.DISQUS && typeof window.DISQUS.reset === "function") {
         window.DISQUS.reset({ reload: true, config: disqusConfig });
+
+        // patch FR après rendu (2 tentatives)
+        setTimeout(patchDisqusAgeGateFR, 300);
+        setTimeout(patchDisqusAgeGateFR, 900);
         return;
       }
 
@@ -1101,17 +1120,25 @@
       const already = [...document.scripts].some((s) =>
         (s.src || "").includes("festivounans.disqus.com/embed.js")
       );
+
       if (!already) {
         const s = document.createElement("script");
         s.src = "https://festivounans.disqus.com/embed.js";
         s.setAttribute("data-timestamp", String(+new Date()));
         (document.head || document.body).appendChild(s);
       }
+
+      // patch FR après rendu (2 tentatives)
+      setTimeout(patchDisqusAgeGateFR, 600);
+      setTimeout(patchDisqusAgeGateFR, 1400);
     } catch (e) {
       console.error("[festiv20] initDisqus error:", e);
     }
   }
- window.__festivInitDisqus = initDisqus;
+
+  // expose pour CookieHub callbacks (Simple.ink)
+  window.__festivInitDisqus = initDisqus;
+
   // =========================================
   // CookieHub → si l'utilisateur change son choix,
   // on retente initDisqus() sans refresh.
@@ -1126,7 +1153,7 @@
         setTimeout(() => { try { initDisqus(); } catch {} }, 250);
       };
 
-      // Fallback fiable : quand on ferme le panneau cookies et que la page reprend le focus
+      // Fallback fiable : quand la page reprend le focus
       window.addEventListener("focus", rerun);
 
       // Si CookieHub expose une API d'events (selon version)
@@ -1140,6 +1167,7 @@
       console.error("[festiv20] bindCookieHubForDisqus error:", e);
     }
   }
+
 
   // =========================================
   // runAll (appelé au load + à chaque rebuild DOM)
@@ -1180,9 +1208,11 @@
       shortcodeContactForm();
       shortcodeInscriptionForm();
 
-      // ✅ Disqus (si H2 "💬 Commentaires")
-      initDisqus();
-      document.documentElement.setAttribute("lang", "fr");
+     // ✅ Disqus (si H2 "💬 Commentaires")
+document.documentElement.setAttribute("lang", "fr");
+initDisqus();
+
+      
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
