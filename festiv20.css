@@ -1299,12 +1299,8 @@ details.notion-toggle[open] > div {
 }
 /* ===== Disqus reset (anti conflit iframe) ===== */
 /* Disqus plus large (évite reCAPTCHA tronqué) */
-.festiv-disqus-wrap{
-  width: 100% !important;
-  max-width: 1200px !important;   /* tu peux tester 1200 si besoin */
-  margin: 24px auto 0 !important;
-  padding: 0 16px !important;
-}
+.festiv-disqus-wrap{width:100%;max-width:900px;margin:24px auto 0}
+
 
 #disqus_thread{width:100%!important;min-height:300px}
 #disqus_thread iframe{display:block!important;width:1px!important;min-width:100%!important;max-width:100%!important}
