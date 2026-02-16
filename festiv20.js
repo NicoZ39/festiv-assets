@@ -1045,13 +1045,13 @@
   function getDisqusConsentStatus() {
   const CH = window.cookiehub;
 
-  // CookieHub pas encore là
+  // CookieHub pas encore présent
   if (!CH) return null;
 
-  // si hasConsented n'existe pas encore => pas prêt
+  // API pas encore prête
   if (typeof CH.hasConsented !== "function") return null;
 
-  // Catégories possibles selon paramétrage CookieHub
+  // Catégories possibles selon config CookieHub
   const CATS = [
     "marketing",
     "advertising",
@@ -1060,28 +1060,40 @@
     "statistics",
     "performance",
     "preferences",
-    "functional"
+    "functional",
+    "necessary"
   ];
 
   try {
-    // 1) Certains setups supportent hasConsented() sans argument
-    // (si ça marche et renvoie true => OK)
+    // 1) Certaines configs supportent hasConsented() sans argument
+    // (si ça renvoie true => OK)
     try {
       const any = CH.hasConsented();
       if (any === true) return true;
+      if (any === false) {
+        // on ne conclut pas refusé, car parfois "sans argument" = autre chose
+      }
     } catch {}
 
-    // 2) Sinon on teste plusieurs catégories
+    // 2) Test multi catégories
     let sawFalse = false;
     for (const c of CATS) {
       try {
         const v = CH.hasConsented(c);
         if (v === true) return true;
         if (v === false) sawFalse = true;
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
+
+    // Si on a réussi à lire au moins un false, on considère que CookieHub est prêt
+    // mais que le user n'a pas consenti à ces catégories.
+    // Sinon, on considère "pas prêt" (null).
+    return sawFalse ? false : null;
+  } catch {
+    return null;
+  }
+}
+
 
     // Si on a pu lire des "false" au moins une fois : on considère refusé
     // Sinon : CookieHub pas prêt / état non lisible
@@ -1089,6 +1101,34 @@
   } catch {
     return null;
   }
+}
+function scheduleDisqusConsentRecheck() {
+  if (window.__FESTIV_DISQUS_CONSENT_POLLING) return;
+  window.__FESTIV_DISQUS_CONSENT_POLLING = true;
+
+  let tries = 0;
+  const MAX_TRIES = 80; // ~12 secondes
+  const DELAY = 150;
+
+  const tick = () => {
+    tries++;
+    const consent = getDisqusConsentStatus();
+
+    if (consent === true) {
+      window.__FESTIV_DISQUS_CONSENT_POLLING = false;
+      try { initDisqus(true); } catch {}
+      return;
+    }
+
+    if (tries >= MAX_TRIES) {
+      window.__FESTIV_DISQUS_CONSENT_POLLING = false;
+      return;
+    }
+
+    setTimeout(tick, DELAY);
+  };
+
+  setTimeout(tick, 50);
 }
 
   // =========================================
