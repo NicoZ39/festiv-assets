@@ -1347,15 +1347,30 @@ html.dark-mode { color-scheme: dark; }
 .dark-mode #disqus_thread iframe{
   color-scheme: light !important;
 }
-/* =========================================
-   reCAPTCHA (Disqus) — neutraliser le style
-   (on laisse Google gérer, le JS corrige si ça déborde)
-   ========================================= */
 
-iframe[src*="recaptcha"][src*="bframe"],
-iframe[src*="google.com/recaptcha"][src*="bframe"],
-iframe[src*="recaptcha.net"][src*="bframe"]{
-  max-width: calc(100vw - 24px) !important;
+
+/* =========================
+   Layout global : contenu plus large (desktop)
+   ========================= */
+@media (min-width: 900px){
+  /* conteneur principal Notion/Simple.ink (plusieurs variantes selon pages) */
+  .notion-page-content,
+  .notion-page-content-inner,
+  .notion-frame,
+  .notion-scroller{
+    max-width: 1200px !important;  /* teste 1200 / 1300 */
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  /* un peu de padding pour éviter d’être collé aux bords */
+  .notion-page-content{
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+}
+iframe[src*="recaptcha"][src*="bframe"]{
   z-index: 2147483647 !important;
 }
+
 
