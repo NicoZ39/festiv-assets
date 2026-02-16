@@ -1050,59 +1050,70 @@
   // DISQUS — mini tip "invité"
   // =========================================
   function injectDisqusGuestTip() {
-    try {
-      const hs = document.querySelectorAll("h1,h2,h3");
-      let marker = null;
-      for (const h of hs) {
-        if ((h.textContent || "").trim() === "💬 Commentaires") {
-          marker = h;
-          break;
-        }
+  try {
+    // ✅ n'affiche pas le tip si pas de consentement Disqus
+    const CH = window.cookiehub;
+    const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing");
+    if (!consentOk) return;
+
+    // ✅ et seulement si le module Disqus est présent (évite le tip "à vide")
+    if (!document.getElementById("disqus_thread")) return;
+
+    const hs = document.querySelectorAll("h1,h2,h3");
+    let marker = null;
+    for (const h of hs) {
+      if ((h.textContent || "").trim() === "💬 Commentaires") {
+        marker = h;
+        break;
       }
-      if (!marker) return;
-
-      if (marker.dataset.festivDisqusGuestTipDone === "1") return;
-      marker.dataset.festivDisqusGuestTipDone = "1";
-
-      if (!document.getElementById("festiv-disqus-guest-tip-style")) {
-        const style = document.createElement("style");
-        style.id = "festiv-disqus-guest-tip-style";
-        style.textContent = `
-          .festiv-disqus-guest-tip{
-            width: min(980px, calc(100% - 24px));
-            margin: 10px 0 14px 0;
-            padding: 12px 14px;
-            border-radius: 12px;
-            line-height: 1.4;
-            font-size: 14px;
-            background: rgba(255,255,255,0.85);
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            backdrop-filter: blur(8px);
-          }
-          .dark-mode .festiv-disqus-guest-tip{
-            background: rgba(15,15,15,0.72);
-            border: 1px solid rgba(255,255,255,0.12);
-            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-          }
-          .festiv-disqus-guest-tip b{font-weight:700;}
-        `;
-        document.head.appendChild(style);
-      }
-
-      const box = document.createElement("div");
-      box.className = "festiv-disqus-guest-tip";
-      box.innerHTML = `
-        <b>Commenter sans créer de compte ?</b>
-        Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
-        Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
-      `;
-
-      marker.insertAdjacentElement("afterend", box);
-    } catch (e) {
-      console.error("[festiv20] injectDisqusGuestTip error:", e);
     }
+    if (!marker) return;
+
+    // évite la ré-injection à chaque runAll
+    if (marker.dataset.festivDisqusGuestTipDone === "1") return;
+    marker.dataset.festivDisqusGuestTipDone = "1";
+
+    // styles 1 seule fois
+    if (!document.getElementById("festiv-disqus-guest-tip-style")) {
+      const style = document.createElement("style");
+      style.id = "festiv-disqus-guest-tip-style";
+      style.textContent = `
+        .festiv-disqus-guest-tip{
+          width: min(980px, calc(100% - 24px));
+          margin: 10px 0 14px 0;
+          padding: 12px 14px;
+          border-radius: 12px;
+          line-height: 1.4;
+          font-size: 14px;
+          background: rgba(255,255,255,0.85);
+          border: 1px solid rgba(0,0,0,0.08);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+          backdrop-filter: blur(8px);
+        }
+        .dark-mode .festiv-disqus-guest-tip{
+          background: rgba(15,15,15,0.72);
+          border: 1px solid rgba(255,255,255,0.12);
+          box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+        }
+        .festiv-disqus-guest-tip b{font-weight:700;}
+      `;
+      document.head.appendChild(style);
+    }
+
+    const box = document.createElement("div");
+    box.className = "festiv-disqus-guest-tip";
+    box.innerHTML = `
+      <b>Commenter sans créer de compte ?</b>
+      Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
+      Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
+    `;
+
+    marker.insertAdjacentElement("afterend", box);
+  } catch (e) {
+    console.error("[festiv20] injectDisqusGuestTip error:", e);
   }
+}
+
 
   // =========================================
   // DISQUS — patch texte "18+"
@@ -1433,8 +1444,8 @@ try {
 
       // Disqus (idempotent = safe)
       document.documentElement.setAttribute("lang", "fr");
-      injectDisqusGuestTip();
       initDisqus(false);
+      injectDisqusGuestTip();
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
