@@ -990,3 +990,18 @@ html.dark-mode { color-scheme: dark; }
   max-width: 900px !important;
   margin: 0 auto !important;
 }
+/* =========================================
+   DISQUS — message "cookies refusés" centré
+   (garde le wrapper full-bleed, mais limite le fallback)
+========================================= */
+.festiv-disqus-wrap > *:not(#disqus_thread){
+  max-width: 900px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* optionnel : un peu d’air */
+.festiv-disqus-wrap > *:not(#disqus_thread){
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
