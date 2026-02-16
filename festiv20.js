@@ -50,27 +50,29 @@
     try {
       const isDark = theme === "dark";
 
-      // garde-fou: si thème identique, ne rien refaire
+      // ✅ garde-fou: si thème identique, ne rien refaire
       if (
         window.__FESTIV_LAST_THEME === theme &&
         document.documentElement.classList.contains("festiv-theme-ready")
-      ) return;
-
+      ) {
+        return;
+      }
       window.__FESTIV_LAST_THEME = theme;
 
       document.documentElement.classList.toggle("dark-mode", isDark);
 
-      // anti-flash : on retire le "cloak" dès que le thème est posé
+      // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
       document.documentElement.classList.add("festiv-theme-ready");
 
-      // resync bouton
+      // si le bouton existe déjà, on le resync
       const wrap = document.getElementById("festiv-theme-toggle");
       if (wrap) {
         wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
         wrap.classList.toggle("is-dark", isDark);
       }
 
-      // IMPORTANT : on NE refresh PAS Disqus ici (sinon flicker / reset)
+      // ⚠️ IMPORTANT : on NE refresh PAS Disqus ici.
+      // (sinon, applySavedTheme() appelé par runAll/observer => flicker + reset)
     } catch (e) {
       console.error("[festiv20] applyTheme error:", e);
     }
@@ -84,6 +86,7 @@
     }
   }
 
+  // ✅ si l’OS change de thème : on suit, mais seulement si pas d’override manuel
   function bindSystemThemeListener() {
     try {
       if (window.__FESTIV_SYS_THEME_BOUND) return;
@@ -104,6 +107,7 @@
     }
   }
 
+  // ===== INDICATEUR AUTO (badge + tooltip) =====
   function isAutoMode() {
     return !getSavedTheme();
   }
@@ -115,6 +119,7 @@
 
       const auto = isAutoMode();
       wrap.classList.toggle("is-auto", auto);
+
       wrap.setAttribute(
         "title",
         auto
@@ -175,6 +180,7 @@
             localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
           } catch {}
 
+          // mémorise le thème pour éviter un applyTheme "inutile" derrière
           window.__FESTIV_LAST_THEME = isDark ? "dark" : "light";
 
           syncAutoIndicator();
@@ -184,22 +190,28 @@
           setTimeout(syncMeteoblueTheme, 300);
           setTimeout(syncMeteoblueTheme, 1200);
 
-          // Disqus : refresh volontaire uniquement ici (pas via runAll)
+          // ✅ Disqus : refresh volontaire (pas via applyTheme/runAll)
           refreshDisqusTheme();
+          setTimeout(refreshDisqusTheme, 350);
+          setTimeout(refreshDisqusTheme, 1200);
         });
 
-        // DOUBLE-CLIC = retour AUTO
+        // DOUBLE-CLIC = retour AUTO (suit l’OS)
         wrap.addEventListener("dblclick", (e) => {
           e.preventDefault();
           e.stopPropagation();
           ignoreClickUntil = Date.now() + 350;
 
-          try { localStorage.removeItem("festiv-theme"); } catch {}
+          try {
+            localStorage.removeItem("festiv-theme");
+          } catch {}
 
           applySavedTheme();
           syncAutoIndicator();
 
           refreshDisqusTheme();
+          setTimeout(refreshDisqusTheme, 350);
+          setTimeout(refreshDisqusTheme, 1200);
         });
 
         document.body.appendChild(wrap);
@@ -209,13 +221,14 @@
       const isDarkNow = document.documentElement.classList.contains("dark-mode");
       wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
       wrap.classList.toggle("is-dark", isDarkNow);
+
       syncAutoIndicator();
     } catch (e) {
       console.error("[festiv20] initThemeToggle error:", e);
     }
   }
 
-  // appliquer le thème le plus tôt possible
+  // 🔥 appliquer le thème le plus tôt possible
   applySavedTheme();
   bindSystemThemeListener();
 
@@ -278,7 +291,9 @@
 
     const fr = t
       .replace(/^⏰\s*/g, "")
-      .match(/\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i);
+      .match(
+        /\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i
+      );
 
     if (fr) {
       const day = Number(fr[1]);
@@ -286,8 +301,18 @@
       const year = Number(fr[3]);
 
       const months = {
-        janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
-        juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11
+        janvier: 0,
+        février: 1,
+        mars: 2,
+        avril: 3,
+        mai: 4,
+        juin: 5,
+        juillet: 6,
+        août: 7,
+        septembre: 8,
+        octobre: 9,
+        novembre: 10,
+        décembre: 11,
       };
 
       const time = t.match(/\b(?:dès|à)\s*(\d{1,2})h(\d{2})\b/i);
@@ -331,7 +356,9 @@
           /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||
           /\b\d{4}\/\d{1,2}\/\d{1,2}\b/.test(raw) ||
           /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||
-          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw);
+          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(
+            raw
+          );
 
         if (!looksLikeDate) return;
 
@@ -531,7 +558,9 @@
           return;
         }
 
-        const parts = (node.textContent || "").split("[retour]");
+        const safe = node.textContent;
+        const parts = safe.split("[retour]");
+
         node.textContent = "";
         parts.forEach((part, i) => {
           if (part) node.appendChild(document.createTextNode(part));
@@ -768,6 +797,7 @@
           (e) => {
             const btn = e.target.closest?.(".notion-search-button");
             if (!btn) return;
+
             setTimeout(translateModal, 0);
             setTimeout(translateModal, 50);
             setTimeout(translateModal, 200);
@@ -793,7 +823,7 @@
   }
 
   // =========================================
-  // Back-to-top
+  // 9) Back-to-top
   // =========================================
   function setupBackToTop() {
     try {
@@ -805,6 +835,7 @@
       btn.className = "festiv-backtotop";
       btn.setAttribute("aria-label", "Revenir en haut");
       btn.innerHTML = "↑";
+
       document.body.appendChild(btn);
 
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -834,7 +865,7 @@
   }
 
   // =========================================
-  // Calendrier Notion FR
+  // 10) Calendrier Notion FR
   // =========================================
   function translateNotionCalendar() {
     try {
@@ -905,7 +936,7 @@
   }
 
   // =========================================
-  // Shortcodes Fillout
+  // 11) Shortcodes Fillout
   // =========================================
   function shortcodeContactForm() {
     try {
@@ -1016,6 +1047,305 @@
   }
 
   // =========================================
+  // DISQUS — mini tip "invité"
+  // =========================================
+  function injectDisqusGuestTip() {
+    try {
+      const hs = document.querySelectorAll("h1,h2,h3");
+      let marker = null;
+      for (const h of hs) {
+        if ((h.textContent || "").trim() === "💬 Commentaires") {
+          marker = h;
+          break;
+        }
+      }
+      if (!marker) return;
+
+      if (marker.dataset.festivDisqusGuestTipDone === "1") return;
+      marker.dataset.festivDisqusGuestTipDone = "1";
+
+      if (!document.getElementById("festiv-disqus-guest-tip-style")) {
+        const style = document.createElement("style");
+        style.id = "festiv-disqus-guest-tip-style";
+        style.textContent = `
+          .festiv-disqus-guest-tip{
+            width: min(980px, calc(100% - 24px));
+            margin: 10px 0 14px 0;
+            padding: 12px 14px;
+            border-radius: 12px;
+            line-height: 1.4;
+            font-size: 14px;
+            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            backdrop-filter: blur(8px);
+          }
+          .dark-mode .festiv-disqus-guest-tip{
+            background: rgba(15,15,15,0.72);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+          }
+          .festiv-disqus-guest-tip b{font-weight:700;}
+        `;
+        document.head.appendChild(style);
+      }
+
+      const box = document.createElement("div");
+      box.className = "festiv-disqus-guest-tip";
+      box.innerHTML = `
+        <b>Commenter sans créer de compte ?</b>
+        Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
+        Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
+      `;
+
+      marker.insertAdjacentElement("afterend", box);
+    } catch (e) {
+      console.error("[festiv20] injectDisqusGuestTip error:", e);
+    }
+  }
+
+  // =========================================
+  // DISQUS — patch texte "18+"
+  // =========================================
+  function patchDisqusAgeGateFR() {
+    try {
+      const FROM = "Acknowledge I am 18 or older";
+      const TO = "Je confirme avoir 18 ans ou plus";
+
+      // best-effort dans le DOM courant (si jamais Disqus le rend hors iframe)
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      const touched = new Set();
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (!n || !n.nodeValue) continue;
+        if (touched.has(n)) continue;
+        if (n.nodeValue.includes(FROM)) {
+          n.nodeValue = n.nodeValue.replaceAll(FROM, TO);
+          touched.add(n);
+        }
+      }
+
+      // best-effort si une iframe est accessible (rare, souvent cross-origin)
+      document.querySelectorAll("iframe").forEach((ifr) => {
+        try {
+          const doc = ifr.contentDocument;
+          if (!doc || !doc.body) return;
+          const w = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+          while (w.nextNode()) {
+            const n = w.currentNode;
+            if (n && n.nodeValue && n.nodeValue.includes(FROM)) {
+              n.nodeValue = n.nodeValue.replaceAll(FROM, TO);
+            }
+          }
+        } catch {}
+      });
+    } catch {}
+  }
+
+  // =========================================
+  // DISQUS — init idempotent (anti-flicker)
+  // =========================================
+  function initDisqus(force = false) {
+    try {
+      document.documentElement.setAttribute("lang", "fr");
+
+      // 1) Cherche le marqueur
+      const hs = document.querySelectorAll("h1,h2,h3");
+      let marker = null;
+      for (const h of hs) {
+        if ((h.textContent || "").trim() === "💬 Commentaires") {
+          marker = h;
+          break;
+        }
+      }
+      if (!marker) return;
+
+      // 2) Consent CookieHub
+      const CH = window.cookiehub;
+      const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing");
+
+      const existingWrap = document.querySelector(".festiv-disqus-wrap");
+
+      // 3) Pas de consentement → placeholder
+      if (!consentOk) {
+        if (!existingWrap) {
+          const wrap = document.createElement("div");
+          wrap.className = "festiv-disqus-wrap";
+          wrap.innerHTML = `
+            <div class="festiv-disqus-consent">
+              <p style="margin:0 0 10px 0;">Pour afficher les commentaires (Disqus), merci d’accepter les cookies correspondants.</p>
+              <button type="button" class="festiv-disqus-consent-btn">⚙️ Gérer mes cookies</button>
+            </div>
+          `;
+          marker.insertAdjacentElement("afterend", wrap);
+
+          wrap.querySelector(".festiv-disqus-consent-btn")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              if (window.cookiehub?.openSettings) window.cookiehub.openSettings();
+              else if (window.cookiehub?.openDialog) window.cookiehub.openDialog();
+            } catch {}
+          });
+        }
+        return;
+      }
+
+      // 4) Consent OK → retire placeholder
+      document.querySelector(".festiv-disqus-consent")?.remove();
+
+      // 5) Crée #disqus_thread si absent
+      if (!document.getElementById("disqus_thread")) {
+        const wrap = existingWrap || document.createElement("div");
+        wrap.className = "festiv-disqus-wrap";
+
+        const thread = document.createElement("div");
+        thread.id = "disqus_thread";
+        wrap.appendChild(thread);
+
+        if (!existingWrap) marker.insertAdjacentElement("afterend", wrap);
+      }
+
+      const pageUrl = window.location.href.split("#")[0];
+      const pageId = window.location.pathname;
+      const pageKey = pageId + "||" + pageUrl;
+
+      // ✅ si déjà OK pour cette page et pas de force → ne rien faire (anti flicker)
+      if (!force && window.__FESTIV_DISQUS_KEY === pageKey && window.__FESTIV_DISQUS_READY) {
+        return;
+      }
+
+      const disqusConfig = function () {
+        this.page.url = pageUrl;
+        this.page.identifier = pageId;
+        this.language = "fr";
+      };
+
+      // 7) Disqus déjà chargé → reset seulement si (page change ou force)
+      if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+        // ✅ si l'utilisateur est en train de taper dans un champ Disqus, ne pas reset
+try {
+  const ae = document.activeElement;
+  if (ae && ae.tagName === "IFRAME") {
+    // on est probablement focus dans Disqus => surtout ne pas reset
+    if (!force) return;
+    // même en force, on évite si on est en focus iframe
+    return;
+  }
+} catch {}
+
+        window.__FESTIV_DISQUS_KEY = pageKey;
+        window.__FESTIV_DISQUS_READY = true;
+
+        window.DISQUS.reset({ reload: true, config: disqusConfig });
+        setTimeout(patchDisqusAgeGateFR, 300);
+        setTimeout(patchDisqusAgeGateFR, 900);
+        return;
+      }
+
+      // 8) Premier chargement
+      window.disqus_config = disqusConfig;
+
+      const already = [...document.scripts].some((s) => (s.src || "").includes("festivounans.disqus.com/embed.js"));
+      if (!already) {
+        const s = document.createElement("script");
+        s.src = "https://festivounans.disqus.com/embed.js";
+        s.setAttribute("data-timestamp", String(+new Date()));
+        (document.head || document.body).appendChild(s);
+      }
+
+      window.__FESTIV_DISQUS_KEY = pageKey;
+      window.__FESTIV_DISQUS_READY = true;
+
+      setTimeout(patchDisqusAgeGateFR, 600);
+      setTimeout(patchDisqusAgeGateFR, 1400);
+    } catch (e) {
+      console.error("[festiv20] initDisqus error:", e);
+    }
+  }
+
+  // 🔁 Refresh volontaire (ex: toggle thème) — garde-fou anti-spam
+  function refreshDisqusTheme() {
+    try {
+      if (!document.getElementById("disqus_thread")) return;
+
+      // debounce
+      if (window.__FESTIV_DISQUS_REFRESH_T) {
+        clearTimeout(window.__FESTIV_DISQUS_REFRESH_T);
+      }
+
+      window.__FESTIV_DISQUS_REFRESH_T = setTimeout(() => {
+        try {
+          const pageUrl = window.location.href.split("#")[0];
+          const pageId = window.location.pathname;
+
+          const disqusConfig = function () {
+            this.page.url = pageUrl;
+            this.page.identifier = pageId;
+            this.language = "fr";
+          };
+
+          if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+            // force = true pour accepter le reset ici
+            window.__FESTIV_DISQUS_KEY = pageId + "||" + pageUrl;
+            window.__FESTIV_DISQUS_READY = true;
+
+            window.DISQUS.reset({ reload: true, config: disqusConfig });
+            setTimeout(patchDisqusAgeGateFR, 400);
+            setTimeout(patchDisqusAgeGateFR, 1100);
+          }
+        } catch {}
+      }, 120);
+    } catch (e) {
+      console.error("[festiv20] refreshDisqusTheme error:", e);
+    }
+  }
+
+  // expose pour CookieHub callbacks (Simple.ink)
+  window.__festivInitDisqus = initDisqus;
+
+  // =========================================
+  // CookieHub -> retenter Disqus si changement consentement
+  // =========================================
+  function bindCookieHubForDisqus() {
+  try {
+    if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
+    window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
+
+    const rerunSoft = () => {
+      // ✅ soft: ne force pas => pas de reset si déjà OK
+      setTimeout(() => { try { initDisqus(false); } catch {} }, 50);
+      setTimeout(() => { try { initDisqus(false); } catch {} }, 250);
+    };
+
+    const rerunHard = () => {
+      // ✅ hard: seulement quand CookieHub dit "changement"
+      setTimeout(() => { try { initDisqus(true); } catch {} }, 50);
+      setTimeout(() => { try { initDisqus(true); } catch {} }, 250);
+    };
+
+    // ❌ IMPORTANT : on enlève le fallback "focus"
+    // (ça se déclenche à chaque sortie d’iframe Disqus => flicker)
+    // window.addEventListener("focus", rerun);
+
+    const CH = window.cookiehub;
+    if (CH && typeof CH.on === "function") {
+      // uniquement sur vrais events CookieHub
+      CH.on("onAllow", rerunHard);
+      CH.on("onStatusChange", rerunHard);
+      CH.on("onRevoke", rerunHard);
+    } else {
+      // fallback ultra soft si aucune API event (mais pas via focus)
+      // on tente une fois au chargement, pas plus
+      rerunSoft();
+    }
+  } catch (e) {
+    console.error("[festiv20] bindCookieHubForDisqus error:", e);
+  }
+}
+
+
+  // =========================================
   // Meteoblue theme sync
   // =========================================
   function syncMeteoblueTheme(tries = 20) {
@@ -1062,409 +1392,103 @@
   }
 
   // =========================================
-  // DISQUS
+  // runAll (load + rebuild DOM)
   // =========================================
-
-  function patchDisqusAgeGateFR() {
-    try {
-      const FROM = "Acknowledge I am 18 or older";
-      const TO = "Je confirme avoir 18 ans ou plus";
-
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-      while (walker.nextNode()) {
-        const n = walker.currentNode;
-        if (n?.nodeValue?.includes(FROM)) {
-          n.nodeValue = n.nodeValue.replaceAll(FROM, TO);
-        }
-      }
-    } catch {}
-  }
-
-  // Consent robuste : true / false / null (pas prêt)
-  function getDisqusConsent() {
-    const CH = window.cookiehub;
-    if (!CH) return true;
-    if (typeof CH.hasConsented !== "function") return null;
+  function runAll() {
+    if (window.__FESTIV_RUNALL_LOCK) return;
+    window.__FESTIV_RUNALL_LOCK = true;
 
     try {
-      return CH.hasConsented("marketing") ? true : false;
-    } catch {
-      return null;
+      // Theme / syncs
+      applySavedTheme();
+      syncMeteoblueTheme();
+      setTimeout(syncMeteoblueTheme, 300);
+
+      // UI tweaks
+      makeLogoClickable();
+      formatDates();
+      createFooterColumns();
+      addCopyright();
+      tweakCover();
+      setupTableScrollUX();
+      shortcodeRetour();
+      bindNotionButtons();
+      fixInternalAnchors();
+      hideGenericCalloutIcons();
+      setupFaqAnimation();
+      localizeSearchUI();
+      setupBackToTop();
+
+      // listeners
+      bindSystemThemeListener();
+      bindCalendarI18nHooks();
+      translateNotionCalendar();
+
+      // theme toggle
+      initThemeToggle();
+
+      // Fillout
+      shortcodeContactForm();
+      shortcodeInscriptionForm();
+
+      // Disqus (idempotent = safe)
+      document.documentElement.setAttribute("lang", "fr");
+      injectDisqusGuestTip();
+      initDisqus(false);
+    } finally {
+      window.__FESTIV_RUNALL_LOCK = false;
     }
   }
 
-  // Retenter initDisqus après load si CookieHub pas prêt
-  function scheduleInitDisqusRetry(reason = "boot", triesLeft = 24) {
-  try {
-    // on garde juste 1 timer actif
-    if (window.__FESTIV_DISQUS_BOOT_T) clearTimeout(window.__FESTIV_DISQUS_BOOT_T);
+  // petits retours internes
+  setTimeout(fixInternalAnchors, 500);
+  setTimeout(fixInternalAnchors, 1500);
 
-    const tick = (n) => {
-      if (n <= 0) return;
+  onReady(() => {
+    log("loaded ✅");
 
-      window.__FESTIV_DISQUS_BOOT_T = setTimeout(() => {
-        try {
-          // 1) essaye d'init
-          initDisqus(false);
+    bindCookieHubForDisqus();
 
-          // 2) essaye d'injecter le tip (ne s'injecte que si Disqus iframe est là)
-          injectDisqusGuestTip();
+    runAll();
 
-          // 3) condition d'arrêt : thread + iframe Disqus présents
-          const thread = document.getElementById("disqus_thread");
-          const hasIframe = !!thread?.querySelector?.('iframe[src*="disqus.com"]');
+    // ✅ observer global : relance runAll si Simple.ink reconstruit le DOM
+    // mais ignore tout ce qui vient de Disqus (sinon flicker / reset)
+    let t = null;
 
-          // 4) ou condition d'arrêt : placeholder visible (refus cookies)
-          const hasPlaceholder = !!document.querySelector(".festiv-disqus-consent");
+    const isDisqusRelatedNode = (node) => {
+      if (!node || node.nodeType !== 1) return false;
+      const el = node;
 
-          if (hasIframe || hasPlaceholder) return; // ✅ stop
+      if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
 
-        } catch {}
+      // iframes disqus/recaptcha
+      if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
+      if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]'))
+        return true;
 
-        // sinon on retente
-        tick(n - 1);
-      }, 250);
+      // ids/class disqus fréquents
+      if (el.id && el.id.startsWith("dsq-")) return true;
+      if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
+
+      // descendants
+      if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
+
+      return false;
     };
 
-    tick(triesLeft);
-  } catch {}
-}
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (isDisqusRelatedNode(m.target)) return;
 
-
-  function injectDisqusGuestTip() {
-    try {
-      const consent = getDisqusConsent();
-
-      // Marker H2
-      const hs = document.querySelectorAll("h1,h2,h3");
-      let marker = null;
-      for (const h of hs) {
-        if ((h.textContent || "").trim() === "💬 Commentaires") { marker = h; break; }
-      }
-      if (!marker) return;
-
-      const thread = document.getElementById("disqus_thread");
-      const hasDisqusIframe = !!thread?.querySelector?.('iframe[src*="disqus.com"]');
-
-      // Si pas OK -> supprimer tip
-      if (consent !== true || !thread || !hasDisqusIframe) {
-        document.querySelectorAll(".festiv-disqus-guest-tip").forEach((n) => n.remove());
-        marker.dataset.festivDisqusGuestTipDone = "0";
-        return;
-      }
-
-      if (marker.dataset.festivDisqusGuestTipDone === "1") return;
-      marker.dataset.festivDisqusGuestTipDone = "1";
-
-      if (!document.getElementById("festiv-disqus-guest-tip-style")) {
-        const style = document.createElement("style");
-        style.id = "festiv-disqus-guest-tip-style";
-        style.textContent = `
-          .festiv-disqus-guest-tip{
-            width: min(980px, calc(100% - 24px));
-            margin: 10px 0 14px 0;
-            padding: 12px 14px;
-            border-radius: 12px;
-            line-height: 1.4;
-            font-size: 14px;
-            background: rgba(255,255,255,0.85);
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            backdrop-filter: blur(8px);
-          }
-          .dark-mode .festiv-disqus-guest-tip{
-            background: rgba(15,15,15,0.72);
-            border: 1px solid rgba(255,255,255,0.12);
-            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-          }
-          .festiv-disqus-guest-tip b{font-weight:700;}
-        `;
-        document.head.appendChild(style);
-      }
-
-      const box = document.createElement("div");
-      box.className = "festiv-disqus-guest-tip";
-      box.innerHTML = `
-        <b>Commenter sans créer de compte ?</b>
-        Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
-        Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
-      `;
-      marker.insertAdjacentElement("afterend", box);
-    } catch (e) {
-      console.error("[festiv20] injectDisqusGuestTip error:", e);
-    }
-  }
-
-  function initDisqus(force = false) {
-    try {
-      document.documentElement.setAttribute("lang", "fr");
-
-      // Marker H2
-      const hs = document.querySelectorAll("h1,h2,h3");
-      let marker = null;
-      for (const h of hs) {
-        if ((h.textContent || "").trim() === "💬 Commentaires") {
-          marker = h;
-          break;
+        for (const n of m.addedNodes || []) {
+          if (isDisqusRelatedNode(n)) return;
         }
       }
-      if (!marker) return;
 
-      const consent = getDisqusConsent();
-      const existingWrap = document.querySelector(".festiv-disqus-wrap");
+      clearTimeout(t);
+      t = setTimeout(runAll, 80);
+    });
 
-      // CookieHub pas prêt -> retenter
-if (consent === null) {
-  scheduleInitDisqusRetry("cookiehub-not-ready", 24);
-  return;
-}
-
-
-      // Refus -> placeholder
-      if (consent === false) {
-        if (!existingWrap) {
-          const wrap = document.createElement("div");
-          wrap.className = "festiv-disqus-wrap";
-          wrap.innerHTML = `
-            <div class="festiv-disqus-consent">
-              <p style="margin:0 0 10px 0;">Pour afficher les commentaires (Disqus), merci d’accepter les cookies correspondants.</p>
-              <button type="button" class="festiv-disqus-consent-btn">⚙️ Gérer mes cookies</button>
-            </div>
-          `;
-          marker.insertAdjacentElement("afterend", wrap);
-
-          wrap.querySelector(".festiv-disqus-consent-btn")?.addEventListener("click", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            try {
-              if (window.cookiehub?.openSettings) window.cookiehub.openSettings();
-              else if (window.cookiehub?.openDialog) window.cookiehub.openDialog();
-            } catch {}
-          });
-        }
-        // cleanup
-        document.getElementById("disqus_thread")?.remove();
-        return;
-      }
-
-      // Consent OK -> retire placeholder
-      document.querySelector(".festiv-disqus-consent")?.remove();
-
-      // crée #disqus_thread si absent
-      if (!document.getElementById("disqus_thread")) {
-        const wrap = existingWrap || document.createElement("div");
-        wrap.className = "festiv-disqus-wrap";
-
-        const thread = document.createElement("div");
-        thread.id = "disqus_thread";
-        wrap.appendChild(thread);
-
-        if (!existingWrap) marker.insertAdjacentElement("afterend", wrap);
-      }
-
-      const pageUrl = window.location.href.split("#")[0];
-      const pageId = window.location.pathname;
-      const pageKey = pageId + "||" + pageUrl;
-
-      // anti-flicker: déjà OK pour cette page
-      if (!force && window.__FESTIV_DISQUS_KEY === pageKey && window.__FESTIV_DISQUS_READY) {
-        return;
-      }
-
-      const disqusConfig = function () {
-        this.page.url = pageUrl;
-        this.page.identifier = pageId;
-        this.language = "fr";
-      };
-
-      // Si Disqus déjà chargé -> reset (mais pas si focus dans iframe)
-      if (window.DISQUS && typeof window.DISQUS.reset === "function") {
-        try {
-          const ae = document.activeElement;
-          if (!force && ae && ae.tagName === "IFRAME") return;
-        } catch {}
-
-        window.__FESTIV_DISQUS_KEY = pageKey;
-        window.__FESTIV_DISQUS_READY = true;
-
-        window.DISQUS.reset({ reload: true, config: disqusConfig });
-        setTimeout(patchDisqusAgeGateFR, 300);
-        setTimeout(patchDisqusAgeGateFR, 900);
-        return;
-      }
-
-      // Premier chargement (ou script déjà là mais DISQUS pas prêt)
-      window.disqus_config = disqusConfig;
-
-      const srcBase = "https://festivounans.disqus.com/embed.js";
-      if (!window.DISQUS) {
-        const s = document.createElement("script");
-        s.src = srcBase + "?t=" + Date.now(); // cache-bust
-        s.async = true;
-        s.setAttribute("data-timestamp", String(+new Date()));
-        (document.head || document.body).appendChild(s);
-      }
-
-      window.__FESTIV_DISQUS_KEY = pageKey;
-      window.__FESTIV_DISQUS_READY = true;
-
-      setTimeout(patchDisqusAgeGateFR, 600);
-      setTimeout(patchDisqusAgeGateFR, 1400);
-    } catch (e) {
-      console.error("[festiv20] initDisqus error:", e);
-    }
-  }
-
-  function refreshDisqusTheme() {
-    try {
-      if (!document.getElementById("disqus_thread")) return;
-
-      if (window.__FESTIV_DISQUS_REFRESH_T) clearTimeout(window.__FESTIV_DISQUS_REFRESH_T);
-      window.__FESTIV_DISQUS_REFRESH_T = setTimeout(() => {
-        try {
-          initDisqus(true);
-          // retenter tip (iframe arrive après)
-          injectDisqusGuestTip();
-          setTimeout(injectDisqusGuestTip, 600);
-          setTimeout(injectDisqusGuestTip, 1200);
-        } catch {}
-      }, 150);
-    } catch (e) {
-      console.error("[festiv20] refreshDisqusTheme error:", e);
-    }
-  }
-
-  window.__festivInitDisqus = initDisqus;
-
-  function bindCookieHubForDisqus() {
-    try {
-      if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
-      window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
-
-      const rerunHard = () => {
-        setTimeout(() => { try { initDisqus(true); } catch {} }, 50);
-        setTimeout(() => { try { initDisqus(true); } catch {} }, 250);
-
-        // tip : attendre le rendu iframe
-        setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 350);
-        setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 900);
-        setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 1600);
-      };
-
-      const CH = window.cookiehub;
-      if (CH && typeof CH.on === "function") {
-        CH.on("onAllow", rerunHard);
-        CH.on("onStatusChange", rerunHard);
-        CH.on("onRevoke", rerunHard);
-      } else {
-        // fallback : retente après load
-        scheduleInitDisqusRetry();
-      }
-    } catch (e) {
-      console.error("[festiv20] bindCookieHubForDisqus error:", e);
-    }
-  }
-
- // =========================================
-// runAll (load + rebuild DOM)
-// =========================================
-function runAll() {
-  if (window.__FESTIV_RUNALL_LOCK) return;
-  window.__FESTIV_RUNALL_LOCK = true;
-
-  try {
-    // Theme / syncs
-    applySavedTheme();
-    syncMeteoblueTheme();
-    setTimeout(syncMeteoblueTheme, 300);
-
-    // UI tweaks
-    makeLogoClickable();
-    formatDates();
-    createFooterColumns();
-    addCopyright();
-    tweakCover();
-    setupTableScrollUX();
-    shortcodeRetour();
-    bindNotionButtons();
-    fixInternalAnchors();
-    hideGenericCalloutIcons();
-    setupFaqAnimation();
-    localizeSearchUI();
-    setupBackToTop();
-
-    // listeners
-    bindSystemThemeListener();
-    bindCalendarI18nHooks();
-    translateNotionCalendar();
-
-    // theme toggle
-    initThemeToggle();
-
-    // Fillout
-    shortcodeContactForm();
-    shortcodeInscriptionForm();
-
-    // Disqus (idempotent)
-    initDisqus(false);
-
-    // Tip (s'affiche seulement si l'iframe Disqus est vraiment là)
-    injectDisqusGuestTip();
-
-    // Boot de sécurité : si CookieHub/marker arrivent après, on retente sans casser Disqus
-    scheduleInitDisqusRetry("runAll", 24);
-
-  } finally {
-    window.__FESTIV_RUNALL_LOCK = false;
-  }
-}
-
-// petits retours internes
-setTimeout(fixInternalAnchors, 500);
-setTimeout(fixInternalAnchors, 1500);
-
-onReady(() => {
-  log("loaded ✅");
-
-  bindCookieHubForDisqus();
-
-  runAll();
-
-  // sécurité : CookieHub / marker peuvent finir après le load
-  scheduleInitDisqusRetry("onReady", 24);
-
-  // Observer global : relance runAll si Simple.ink reconstruit le DOM
-  // mais ignore tout ce qui vient de Disqus
-  let t = null;
-
-  const isDisqusRelatedNode = (node) => {
-    if (!node || node.nodeType !== 1) return false;
-    const el = node;
-
-    if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
-
-    if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
-    if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]')) return true;
-
-    if (el.id && el.id.startsWith("dsq-")) return true;
-    if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
-
-    if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
-
-    return false;
-  };
-
-  const observer = new MutationObserver((mutations) => {
-    for (const m of mutations) {
-      if (isDisqusRelatedNode(m.target)) return;
-      for (const n of m.addedNodes || []) {
-        if (isDisqusRelatedNode(n)) return;
-      }
-    }
-    clearTimeout(t);
-    t = setTimeout(runAll, 80);
+    observer.observe(document.body, { childList: true, subtree: true });
   });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-});
 })();
