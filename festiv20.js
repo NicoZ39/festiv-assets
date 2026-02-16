@@ -1257,53 +1257,7 @@ function syncMeteoblueTheme(tries = 20) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
-// =========================================
-// reCAPTCHA (Disqus) — empêche le popup d'être tronqué
-// (mesure le popup et le "nudge" dans le viewport)
-// =========================================
-function nudgeRecaptchaIntoView() {
-  try {
-    const iframes = [...document.querySelectorAll('iframe[src*="recaptcha"]')];
-    const bf = iframes.find(f => (f.getAttribute("src") || "").includes("bframe"));
-    if (!bf) return;
 
-    const r = bf.getBoundingClientRect();
-    const vw = window.innerWidth || document.documentElement.clientWidth;
-    const PAD = 12;
-
-    let dx = 0;
-    if (r.right > vw - PAD) dx -= (r.right - (vw - PAD));
-    if (r.left < PAD)       dx += (PAD - r.left);
-
-    if (dx !== 0) {
-      const base = bf.dataset.festivBaseTransform || (bf.style.transform || "");
-      if (!bf.dataset.festivBaseTransform) bf.dataset.festivBaseTransform = base;
-      bf.style.transform = `${bf.dataset.festivBaseTransform} translateX(${Math.round(dx)}px)`;
-    }
-  } catch (e) {
-    console.error("[festiv20] nudgeRecaptchaIntoView error:", e);
-  }
-}
-
-function bindRecaptchaNudge() {
-  try {
-    if (window.__FESTIV_RECAPTCHA_NUDGE_BOUND) return;
-    window.__FESTIV_RECAPTCHA_NUDGE_BOUND = true;
-
-    const obs = new MutationObserver(() => nudgeRecaptchaIntoView());
-    obs.observe(document.body, { childList: true, subtree: true });
-
-    window.addEventListener("resize", () => nudgeRecaptchaIntoView(), { passive: true });
-
-    document.addEventListener("click", () => {
-      setTimeout(nudgeRecaptchaIntoView, 50);
-      setTimeout(nudgeRecaptchaIntoView, 250);
-      setTimeout(nudgeRecaptchaIntoView, 600);
-    }, true);
-  } catch (e) {
-    console.error("[festiv20] bindRecaptchaNudge error:", e);
-  }
-}
 
 
 
@@ -1335,7 +1289,6 @@ setTimeout(syncMeteoblueTheme, 300);
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
-      bindRecaptchaNudge();
 
       // ✅ listener OS (protégé par flag)
       bindSystemThemeListener();
