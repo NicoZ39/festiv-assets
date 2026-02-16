@@ -1307,7 +1307,7 @@ try {
   // =========================================
   // CookieHub -> retenter Disqus si changement consentement
   // =========================================
-  ffunction bindCookieHubForDisqus() {
+  function bindCookieHubForDisqus() {
   try {
     if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
     window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
