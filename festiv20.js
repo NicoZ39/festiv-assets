@@ -1051,10 +1051,14 @@
   // =========================================
   function injectDisqusGuestTip() {
   try {
+    // ✅ n'affiche pas le tip si pas de consentement Disqus
     const CH = window.cookiehub;
     const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing");
+    if (!consentOk) return;
 
-    // marker H2
+    // ✅ et seulement si le module Disqus est présent (évite le tip "à vide")
+    if (!document.getElementById("disqus_thread")) return;
+
     const hs = document.querySelectorAll("h1,h2,h3");
     let marker = null;
     for (const h of hs) {
@@ -1064,15 +1068,6 @@
       }
     }
     if (!marker) return;
-
-    // ✅ si pas de consentement OU pas de disqus_thread : on supprime le tip s'il existe et on stop
-    const hasThread = !!document.getElementById("disqus_thread");
-    if (!consentOk || !hasThread) {
-      const existing = marker.parentElement?.querySelector?.(".festiv-disqus-guest-tip");
-      if (existing) existing.remove();
-      marker.dataset.festivDisqusGuestTipDone = "0";
-      return;
-    }
 
     // évite la ré-injection à chaque runAll
     if (marker.dataset.festivDisqusGuestTipDone === "1") return;
