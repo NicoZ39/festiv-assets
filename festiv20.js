@@ -1093,17 +1093,32 @@ function scheduleDisqusConsentRecheck() {
   window.__FESTIV_DISQUS_CONSENT_POLLING = true;
 
   let tries = 0;
-  const MAX_TRIES = 80; // ~12s
+  const MAX_TRIES = 80;   // ~12s
   const DELAY = 150;
+
+  // si on voit "false" 10 fois d'affilée, on considère que c'est un refus réel
+  let stableFalseCount = 0;
 
   const tick = () => {
     tries++;
-    const consent = getDisqusConsentStatus();
+
+    const consent = getDisqusConsentStatus(); // true/false/null
 
     if (consent === true) {
       window.__FESTIV_DISQUS_CONSENT_POLLING = false;
       try { initDisqus(true); } catch {}
       return;
+    }
+
+    if (consent === false) {
+      stableFalseCount++;
+      if (stableFalseCount >= 10) {
+        window.__FESTIV_DISQUS_CONSENT_POLLING = false;
+        return;
+      }
+    } else {
+      // null => pas prêt, on reset le compteur de faux stables
+      stableFalseCount = 0;
     }
 
     if (tries >= MAX_TRIES) {
@@ -1165,7 +1180,9 @@ function scheduleDisqusConsentRecheck() {
           });
         }
 
-        if (consentStatus === null) scheduleDisqusConsentRecheck();
+        // CookieHub peut être "pas prêt" même si ça renvoie false au tout début du load
+scheduleDisqusConsentRecheck();
+
         return;
       }
 
