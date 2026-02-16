@@ -2,9 +2,6 @@
   const locale = "fr-FR";
   const DEBUG = true;
 
-  // =========================================
-  // Utils
-  // =========================================
   function log(...args) {
     if (DEBUG) console.log("[festiv20]", ...args);
   }
@@ -24,6 +21,7 @@
   // =========================================
   // THEME (auto système + override manuel)
   // =========================================
+
   function getSavedTheme() {
     try {
       const v = localStorage.getItem("festiv-theme"); // "dark" | "light" | null
@@ -45,20 +43,29 @@
   }
 
   function getEffectiveTheme() {
-    return getSavedTheme() || getSystemTheme();
+    return getSavedTheme() || getSystemTheme(); // ✅ auto si rien de sauvegardé
   }
 
   function applyTheme(theme) {
-    const isDark = theme === "dark";
-    document.documentElement.classList.toggle("dark-mode", isDark);
-    document.documentElement.classList.add("festiv-theme-ready");
+  const isDark = theme === "dark";
+  document.documentElement.classList.toggle("dark-mode", isDark);
 
-    const wrap = document.getElementById("festiv-theme-toggle");
-    if (wrap) {
-      wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
-      wrap.classList.toggle("is-dark", isDark);
-    }
+  // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
+  document.documentElement.classList.add("festiv-theme-ready");
+
+  // si le bouton existe déjà, on le resync
+  const wrap = document.getElementById("festiv-theme-toggle");
+  if (wrap) {
+    wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+    wrap.classList.toggle("is-dark", isDark);
   }
+
+    // ✅ si Disqus est présent (page commentaires), on resync
+  if (document.getElementById("disqus_thread")) {
+    setTimeout(() => { try { refreshDisqusTheme(); } catch {} }, 50);
+  }
+}
+
 
   function applySavedTheme() {
     try {
@@ -68,6 +75,28 @@
     }
   }
 
+  // ✅ si l’OS change de thème : on suit, mais seulement si pas d’override manuel
+  function bindSystemThemeListener() {
+    try {
+      if (window.__FESTIV_SYS_THEME_BOUND) return;
+      window.__FESTIV_SYS_THEME_BOUND = true;
+
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      const onChange = () => {
+        if (!getSavedTheme()) {
+          applySavedTheme();       // suit l’OS
+          syncAutoIndicator();     // met à jour le badge AUTO
+        }
+      };
+
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange); // Safari old
+    } catch (e) {
+      console.error("[festiv20] bindSystemThemeListener error:", e);
+    }
+  }
+
+  // ===== INDICATEUR AUTO (badge + tooltip) =====
   function isAutoMode() {
     return !getSavedTheme();
   }
@@ -79,33 +108,13 @@
 
       const auto = isAutoMode();
       wrap.classList.toggle("is-auto", auto);
+
+      // Tooltip dynamique
       wrap.setAttribute(
         "title",
         auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
       );
     } catch {}
-  }
-
-  function bindSystemThemeListener() {
-    try {
-      if (window.__FESTIV_SYS_THEME_BOUND) return;
-      window.__FESTIV_SYS_THEME_BOUND = true;
-
-      const mq = window.matchMedia("(prefers-color-scheme: dark)");
-      const onChange = () => {
-        if (!getSavedTheme()) {
-          applySavedTheme();
-          syncAutoIndicator();
-          syncMeteoblueTheme();
-          refreshDisqus(); // si Disqus est là
-        }
-      };
-
-      if (mq.addEventListener) mq.addEventListener("change", onChange);
-      else if (mq.addListener) mq.addListener(onChange);
-    } catch (e) {
-      console.error("[festiv20] bindSystemThemeListener error:", e);
-    }
   }
 
   // =========================================
@@ -124,6 +133,10 @@
         wrap.setAttribute("aria-label", "Changer de thème");
         wrap.setAttribute("aria-pressed", "false");
 
+        // (Le title sera géré par syncAutoIndicator)
+        wrap.setAttribute("title", "Clic : changer le thème • Double-clic : Auto");
+
+        // ✅ switch iOS + icônes SVG (moon / sun) centrées
         wrap.innerHTML = `
           <span class="festiv-switch__track" aria-hidden="true">
             <span class="festiv-switch__knob" aria-hidden="true">
@@ -145,7 +158,9 @@
 
         // CLIC = toggle manuel => sauvegarde
         wrap.addEventListener("click", (e) => {
+          // ✅ ignore le click déclenché juste après un dblclick
           if (Date.now() < ignoreClickUntil) return;
+
           e.preventDefault();
           e.stopPropagation();
 
@@ -157,36 +172,43 @@
             localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
           } catch {}
 
-          syncAutoIndicator();
-          syncMeteoblueTheme();
-          setTimeout(syncMeteoblueTheme, 300);
-          setTimeout(syncMeteoblueTheme, 1200);
+         syncAutoIndicator();
 
-          refreshDisqus();
-          setTimeout(refreshDisqus, 400);
-          setTimeout(refreshDisqus, 1200);
+        // ✅ Meteoblue : sync tout de suite + re-sync (iPhone / lazy)
+        syncMeteoblueTheme();
+        setTimeout(syncMeteoblueTheme, 300);
+        setTimeout(syncMeteoblueTheme, 1200);
+
+        // ✅ Disqus : forcer le thème à se recalculer sans refresh page
+        refreshDisqusTheme();
+        setTimeout(refreshDisqusTheme, 350);
+        setTimeout(refreshDisqusTheme, 1200);
+
         });
 
-        // DOUBLE-CLIC = retour AUTO
+        // DOUBLE-CLIC = retour AUTO (suit l’OS) => supprime la sauvegarde
         wrap.addEventListener("dblclick", (e) => {
           e.preventDefault();
           e.stopPropagation();
 
+          // bloque le click “fantôme” juste après le dblclick
           ignoreClickUntil = Date.now() + 350;
 
           try { localStorage.removeItem("festiv-theme"); } catch {}
           applySavedTheme();
           syncAutoIndicator();
 
-          syncMeteoblueTheme();
-          refreshDisqus();
-          setTimeout(refreshDisqus, 400);
-          setTimeout(refreshDisqus, 1200);
+          // ✅ Disqus : idem
+          refreshDisqusTheme();
+          setTimeout(refreshDisqusTheme, 350);
+          setTimeout(refreshDisqusTheme, 1200);
         });
 
         document.body.appendChild(wrap);
+        syncAutoIndicator();
       }
 
+      // Sync état à chaque runAll (navigation interne)
       const isDarkNow = document.documentElement.classList.contains("dark-mode");
       wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
       wrap.classList.toggle("is-dark", isDarkNow);
@@ -197,7 +219,7 @@
     }
   }
 
-  // Appliquer le thème le plus tôt possible
+  // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
   applySavedTheme();
   bindSystemThemeListener();
 
@@ -225,39 +247,42 @@
     }
   }
 
-  // =========================================
-  // 2) Dates FR (callouts, tableaux, textes)
-  // =========================================
+  // Parse date depuis texte (EN / FR / ISO) + support "dès 06h00"
   function parseDateFromText(text) {
     const t = (text || "").trim();
 
+    // ISO: 2026-05-14, 2026-05-14T06:00
     const iso = t.match(/\b(\d{4}-\d{2}-\d{2})(?:[T\s](\d{2}:\d{2}))?\b/);
     if (iso) {
       const d = new Date(iso[0].replace(" ", "T"));
       if (!isNaN(d)) return d;
     }
 
+    // Slash: 2026/01/30 ou 2025/05/8
     const slash = t.match(/\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b/);
     if (slash) {
       const year = Number(slash[1]);
-      const month = Number(slash[2]) - 1;
+      const month = Number(slash[2]) - 1; // 0-11
       const day = Number(slash[3]);
       const d = new Date(year, month, day);
       if (!isNaN(d)) return d;
     }
 
+    // EN: "May 14, 2026" + optional time "06:00"
     const en = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
     if (en) {
       const d = new Date(en[0]);
       if (!isNaN(d)) return d;
     }
 
+    // EN sans virgule: "Jan 30 2026" + optional time "06:00"
     const en2 = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2}\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
     if (en2) {
       const d = new Date(en2[1] + (en2[2] ? " " + en2[2] : ""));
       if (!isNaN(d)) return d;
     }
 
+    // FR: "14 mai 2026" + optional "dès 06h00" / "à 6h00"
     const fr = t
       .replace(/^⏰\s*/g, "")
       .match(/\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i);
@@ -283,6 +308,7 @@
     return null;
   }
 
+  // 2) Format dates (callout + simple table + texte simple)
   function formatDates() {
     try {
       const els = document.querySelectorAll([
@@ -344,9 +370,7 @@
     }
   }
 
-  // =========================================
-  // 3) Footer
-  // =========================================
+  // 3) Footer colonnes + copyright
   function createFooterColumns() {
     try {
       const footer = document.querySelector("footer.styles_main_footer__LoNow");
@@ -402,9 +426,7 @@
     }
   }
 
-  // =========================================
   // 4) Cover
-  // =========================================
   function tweakCover() {
     try {
       const img = document.querySelector(".notion-page-cover-wrapper img");
@@ -417,9 +439,7 @@
     }
   }
 
-  // =========================================
-  // 5) Hint scroll tables
-  // =========================================
+  // 5) Indicateurs scroll horizontal pour les tables (robuste)
   function setupTableScrollUX() {
     try {
       const tables = document.querySelectorAll(".notion-collection .notion-table");
@@ -429,21 +449,54 @@
         if (table.dataset.festivUxBound === "1") return;
         table.dataset.festivUxBound = "1";
 
-        if (!table.previousElementSibling || !table.previousElementSibling.classList.contains("festiv-table-hint")) {
+        if (
+          !table.previousElementSibling ||
+          !table.previousElementSibling.classList.contains("festiv-table-hint")
+        ) {
           const hint = document.createElement("div");
           hint.className = "festiv-table-hint";
           hint.textContent = "👉 Faites glisser le tableau horizontalement";
           table.parentNode.insertBefore(hint, table);
         }
+
+        const candidates = [
+          table,
+          table.querySelector(".notion-table-view"),
+          table.querySelector(".notion-table-body"),
+        ].filter(Boolean);
+
+        const scroller =
+          candidates.find((el) => el.scrollWidth > el.clientWidth + 2) || candidates[0];
+
+        const update = () => {
+          const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+          const EPS = 2;
+
+          const canLeft = scroller.scrollLeft > EPS;
+          const canRight = scroller.scrollLeft < (maxScrollLeft - EPS);
+
+          table.classList.toggle("festiv-can-scroll-left", canLeft);
+          table.classList.toggle("festiv-can-scroll-right", canRight);
+
+          if (maxScrollLeft <= EPS) {
+            table.classList.remove("festiv-can-scroll-left", "festiv-can-scroll-right");
+          }
+        };
+
+        scroller.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update, { passive: true });
+
+        update();
+        setTimeout(update, 200);
+        setTimeout(update, 800);
+        setTimeout(update, 1500);
       });
     } catch (e) {
       console.error("[festiv20] setupTableScrollUX error:", e);
     }
   }
 
-  // =========================================
-  // 6) Shortcode [retour]
-  // =========================================
+  // 6) Shortcode [retour] => bouton retour (anti "clic fantôme")
   function shortcodeRetour() {
     try {
       const pageBornAt = (window.__FESTIV_PAGE_BORN_AT ||= Date.now());
@@ -485,7 +538,9 @@
           return;
         }
 
-        const parts = (node.textContent || "").split("[retour]");
+        const safe = node.textContent;
+        const parts = safe.split("[retour]");
+
         node.textContent = "";
         parts.forEach((part, i) => {
           if (part) node.appendChild(document.createTextNode(part));
@@ -497,9 +552,7 @@
     }
   }
 
-  // =========================================
-  // 7) Mapping boutons Notion -> URLs
-  // =========================================
+  // 7) Mapping des boutons Notion -> navigation contrôlée
   function bindNotionButtons() {
     try {
       if (window.__FESTIV_NOTION_BTNS_BOUND) return;
@@ -513,18 +566,22 @@
         "👉 S’inscrire comme exposant": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a"
       };
 
-      document.addEventListener("click", (e) => {
-        const btn = e.target.closest?.("button.notion-button");
-        if (!btn) return;
+      document.addEventListener(
+        "click",
+        (e) => {
+          const btn = e.target.closest?.("button.notion-button");
+          if (!btn) return;
 
-        const label = (btn.textContent || "").trim();
-        const url = BUTTON_LINKS[label];
-        if (!url) return;
+          const label = (btn.textContent || "").trim();
+          const url = BUTTON_LINKS[label];
+          if (!url) return;
 
-        e.preventDefault();
-        e.stopPropagation();
-        window.location.assign(url);
-      }, true);
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.assign(url);
+        },
+        true
+      );
 
       if (DEBUG) console.log("[festiv20] Notion buttons bound ✅");
     } catch (e) {
@@ -532,9 +589,7 @@
     }
   }
 
-  // =========================================
-  // 8) Fix anchors target _blank internes
-  // =========================================
+  // 8) Corrige les <a target="_blank"> internes => même onglet
   function fixInternalAnchors() {
     try {
       const anchors = document.querySelectorAll("a[href]");
@@ -544,7 +599,11 @@
         if (href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
 
         let url;
-        try { url = new URL(href, window.location.href); } catch { return; }
+        try {
+          url = new URL(href, window.location.href);
+        } catch {
+          return;
+        }
 
         const isInternal =
           url.origin === window.location.origin ||
@@ -563,9 +622,6 @@
     }
   }
 
-  // =========================================
-  // 9) Callout icon “Page” → hide
-  // =========================================
   function hideGenericCalloutIcons() {
     try {
       document
@@ -580,9 +636,7 @@
     }
   }
 
-  // =========================================
-  // 10) FAQ accordion anim
-  // =========================================
+  // FAQ : accordion + animation ouverture/fermeture + espace progressif
   function setupFaqAnimation() {
     try {
       if (window.__FESTIV_FAQ_ANIM_BOUND) return;
@@ -592,7 +646,10 @@
 
       const closeWithAnim = (details) => {
         const content = details.querySelector(":scope > div");
-        if (!content) { details.removeAttribute("open"); return; }
+        if (!content) {
+          details.removeAttribute("open");
+          return;
+        }
         if (!details.hasAttribute("open")) return;
 
         const h = content.scrollHeight;
@@ -621,9 +678,10 @@
 
         content.style.height = "0px";
         content.style.paddingTop = "0px";
-        content.getBoundingClientRect();
+        content.getBoundingClientRect(); // force reflow
 
         const h = content.scrollHeight;
+
         content.style.paddingTop = TOP_SPACE + "px";
         content.style.height = h + TOP_SPACE + "px";
 
@@ -635,27 +693,31 @@
         content.addEventListener("transitionend", onEnd);
       };
 
-      document.addEventListener("click", (e) => {
-        const summary = e.target.closest("summary");
-        if (!summary) return;
+      document.addEventListener(
+        "click",
+        (e) => {
+          const summary = e.target.closest("summary");
+          if (!summary) return;
 
-        const details = summary.parentElement;
-        if (!details || !details.matches("details.notion-toggle")) return;
+          const details = summary.parentElement;
+          if (!details || !details.matches("details.notion-toggle")) return;
 
-        e.preventDefault();
+          e.preventDefault();
 
-        const isOpen = details.hasAttribute("open");
-        if (isOpen) {
-          closeWithAnim(details);
-          return;
-        }
+          const isOpen = details.hasAttribute("open");
+          if (isOpen) {
+            closeWithAnim(details);
+            return;
+          }
 
-        document.querySelectorAll("details.notion-toggle[open]").forEach((d) => {
-          if (d !== details) closeWithAnim(d);
-        });
+          document.querySelectorAll("details.notion-toggle[open]").forEach((d) => {
+            if (d !== details) closeWithAnim(d);
+          });
 
-        openWithAnim(details);
-      }, true);
+          openWithAnim(details);
+        },
+        true
+      );
 
       if (DEBUG) console.log("[festiv20] FAQ anim+accordion ✅");
     } catch (e) {
@@ -663,9 +725,7 @@
     }
   }
 
-  // =========================================
-  // 11) i18n Search simple.ink -> FR
-  // =========================================
+  // i18n "Search" simple.ink -> FR (sans MutationObserver)
   function localizeSearchUI() {
     try {
       const FR = {
@@ -708,30 +768,37 @@
       if (!window.__FESTIV_SEARCH_I18N_BOUND) {
         window.__FESTIV_SEARCH_I18N_BOUND = true;
 
-        document.addEventListener("click", (e) => {
-          const btn = e.target.closest?.(".notion-search-button");
-          if (!btn) return;
-          setTimeout(translateModal, 0);
-          setTimeout(translateModal, 50);
-          setTimeout(translateModal, 200);
-        }, true);
+        document.addEventListener(
+          "click",
+          (e) => {
+            const btn = e.target.closest?.(".notion-search-button");
+            if (!btn) return;
 
-        document.addEventListener("keydown", (e) => {
-          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
             setTimeout(translateModal, 0);
             setTimeout(translateModal, 50);
             setTimeout(translateModal, 200);
-          }
-        }, false);
+          },
+          true
+        );
+
+        document.addEventListener(
+          "keydown",
+          (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+              setTimeout(translateModal, 0);
+              setTimeout(translateModal, 50);
+              setTimeout(translateModal, 200);
+            }
+          },
+          false
+        );
       }
     } catch (e) {
       console.error("[festiv20] localizeSearchUI error:", e);
     }
   }
 
-  // =========================================
-  // 12) Back-to-top
-  // =========================================
+  // 9) Back-to-top button (visible seulement après scroll)
   function setupBackToTop() {
     try {
       if (window.__FESTIV_BACKTOTOP_BOUND) return;
@@ -742,17 +809,24 @@
       btn.className = "festiv-backtotop";
       btn.setAttribute("aria-label", "Revenir en haut");
       btn.innerHTML = "↑";
+
       document.body.appendChild(btn);
 
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+      const scrollToTop = () => {
+        const behavior = reduceMotion.matches ? "auto" : "smooth";
+        window.scrollTo({ top: 0, left: 0, behavior });
+      };
+
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.scrollTo({ top: 0, left: 0, behavior: reduceMotion.matches ? "auto" : "smooth" });
+        scrollToTop();
       });
 
       const THRESHOLD = 220;
+
       const update = () => {
         const y = window.scrollY || document.documentElement.scrollTop || 0;
         btn.classList.toggle("is-visible", y > THRESHOLD);
@@ -766,19 +840,36 @@
     }
   }
 
-  // =========================================
-  // 13) Calendrier Notion FR
-  // =========================================
+  // 8bis) Traduire le calendrier Notion (mois, jours, Today)
   function translateNotionCalendar() {
     try {
       const monthMap = {
-        January: "Janvier", February: "Février", March: "Mars", April: "Avril",
-        May: "Mai", June: "Juin", July: "Juillet", August: "Août",
-        September: "Septembre", October: "Octobre", November: "Novembre", December: "Décembre",
+        January: "Janvier",
+        February: "Février",
+        March: "Mars",
+        April: "Avril",
+        May: "Mai",
+        June: "Juin",
+        July: "Juillet",
+        August: "Août",
+        September: "Septembre",
+        October: "Octobre",
+        November: "Novembre",
+        December: "Décembre",
       };
 
-      const dayMap = { Mon: "Lun", Tue: "Mar", Wed: "Mer", Thur: "Jeu", Thu: "Jeu", Fri: "Ven", Sat: "Sam", Sun: "Dim" };
+      const dayMap = {
+        Mon: "Lun",
+        Tue: "Mar",
+        Wed: "Mer",
+        Thur: "Jeu",
+        Thu: "Jeu",
+        Fri: "Ven",
+        Sat: "Sam",
+        Sun: "Dim",
+      };
 
+      // Titre du mois: "February 2026" -> "Février 2026"
       const headerTitle = document.querySelector(".notion-calendar-header-title");
       if (headerTitle) {
         const parts = headerTitle.textContent.trim().split(/\s+/);
@@ -787,11 +878,13 @@
         }
       }
 
+      // Jours: Mon Tue Wed...
       document.querySelectorAll(".notion-calendar-body-title span").forEach((el) => {
         const k = el.textContent.trim();
         if (dayMap[k]) el.textContent = dayMap[k];
       });
 
+      // Bouton Today -> Aujourd’hui
       document.querySelectorAll(".notion-calendar-header-controls span").forEach((el) => {
         if (el.textContent.trim() === "Today") el.textContent = "Aujourd’hui";
       });
@@ -800,285 +893,301 @@
     }
   }
 
+  // Pour que ça reste traduit après navigation (flèches mois / Today)
   function bindCalendarI18nHooks() {
     try {
       if (window.__FESTIV_CAL_I18N_BOUND) return;
       window.__FESTIV_CAL_I18N_BOUND = true;
 
-      document.addEventListener("click", () => {
-        setTimeout(translateNotionCalendar, 0);
-        setTimeout(translateNotionCalendar, 80);
-        setTimeout(translateNotionCalendar, 200);
-      }, true);
+      document.addEventListener(
+        "click",
+        () => {
+          setTimeout(translateNotionCalendar, 0);
+          setTimeout(translateNotionCalendar, 80);
+          setTimeout(translateNotionCalendar, 200);
+        },
+        true
+      );
     } catch (e) {
       console.error("[festiv20] bindCalendarI18nHooks error:", e);
     }
   }
 
   // =========================================
-  // 14) Fillout shortcodes
+  // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
   // =========================================
-  function ensureFilloutScriptOnce() {
-    const SRC = "https://server.fillout.com/embed/v1/";
-    const already = [...document.scripts].some((s) => (s.src || "") === SRC);
-    if (!already) {
-      const s = document.createElement("script");
-      s.src = SRC;
-      s.async = true;
-      document.head.appendChild(s);
-    }
-  }
-
-  function shortcodeFillout(tag, formId, minHeight = 520) {
-    const nodes = document.querySelectorAll(".notion-text, .notion-callout-text .notion-text, .notion-paragraph");
-    let found = false;
-
-    nodes.forEach((node) => {
-      const key = `festivFilloutDone_${tag}`;
-      if (node.dataset[key] === "1") return;
-
-      const txt = (node.textContent || "").trim();
-      if (!txt.includes(tag)) return;
-
-      node.dataset[key] = "1";
-      found = true;
-
-      const mount = document.createElement("div");
-      mount.className = "festiv-fillout";
-      mount.style.width = "100%";
-      mount.style.minHeight = String(minHeight) + "px";
-      mount.setAttribute("data-fillout-id", formId);
-      mount.setAttribute("data-fillout-embed-type", "standard");
-      mount.setAttribute("data-fillout-inherit-parameters", "");
-      mount.setAttribute("data-fillout-dynamic-resize", "");
-
-      if (txt === tag) {
-        node.textContent = "";
-        node.appendChild(mount);
-        return;
-      }
-
-      const parts = (node.textContent || "").split(tag);
-      node.textContent = "";
-      parts.forEach((part, i) => {
-        if (part) node.appendChild(document.createTextNode(part));
-        if (i < parts.length - 1) node.appendChild(mount.cloneNode(true));
-      });
-    });
-
-    if (found) ensureFilloutScriptOnce();
-  }
-
   function shortcodeContactForm() {
-    shortcodeFillout("[contact-form]", "tZMYfrqCWAus", 520);
-  }
-
-  function shortcodeInscriptionForm() {
-    shortcodeFillout("[inscription-form]", "jYPEHAqG3Lus", 520);
-  }
-
-  // =========================================
-  // 15) Meteoblue theme sync
-  // =========================================
-  function syncMeteoblueTheme(tries = 20) {
     try {
-      const isDark = document.documentElement.classList.contains("dark-mode");
+      const FILL0UT_ID = "tZMYfrqCWAus";
 
-      const iframe = document.querySelector(
-        'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
       );
 
-      if (!iframe) {
-        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-        return;
-      }
+      let found = false;
 
-      const srcAttr = iframe.getAttribute("src");
-      const dataSrcAttr = iframe.getAttribute("data-src");
-      const current = srcAttr || dataSrcAttr || "";
-      if (!current) {
-        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-        return;
-      }
+      nodes.forEach((node) => {
+        if (node.dataset.festivContactFormDone === "1") return;
 
-      let url;
-      try { url = new URL(current, window.location.href); } catch { return; }
+        const txt = (node.textContent || "").trim();
+        if (!txt.includes("[contact-form]")) return;
 
-      url.searchParams.set("layout", isDark ? "dark" : "bright");
-      const next = url.toString();
+        node.dataset.festivContactFormDone = "1";
+        found = true;
 
-      if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
-      if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
-    } catch (e) {
-      console.error("[festiv20] syncMeteoblueTheme error:", e);
-    }
-  }
+        const mount = document.createElement("div");
+        mount.className = "festiv-fillout";
+        mount.style.width = "100%";
+        mount.style.minHeight = "520px";
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
+        mount.setAttribute("data-fillout-embed-type", "standard");
+        mount.setAttribute("data-fillout-inherit-parameters", "");
+        mount.setAttribute("data-fillout-dynamic-resize", "");
 
-  // =========================================
-  // 16) DISQUS + CookieHub (SPA friendly)
-  // =========================================
-  function findDisqusMarker() {
-    const hs = document.querySelectorAll("h1,h2,h3");
-    for (const h of hs) {
-      if ((h.textContent || "").trim() === "💬 Commentaires") return h;
-    }
-    return null;
-  }
-
-  function cookieConsentOk() {
-    // ⚠️ adapte la catégorie si besoin: "analytics" au lieu de "marketing"
-    const CH = window.cookiehub;
-    if (!CH || typeof CH.hasConsented !== "function") return true;
-    return CH.hasConsented("marketing");
-  }
-
-  function ensureDisqusPlaceholder(marker) {
-    const existingWrap = document.querySelector(".festiv-disqus-wrap");
-    if (existingWrap) return existingWrap;
-
-    const wrap = document.createElement("div");
-    wrap.className = "festiv-disqus-wrap";
-    wrap.innerHTML = `
-      <div class="festiv-disqus-consent">
-        <p style="margin:0 0 10px 0;">
-          Pour afficher les commentaires (Disqus), merci d’accepter les cookies correspondants.
-        </p>
-        <button type="button" class="festiv-disqus-consent-btn">⚙️ Gérer mes cookies</button>
-      </div>
-    `;
-    marker.insertAdjacentElement("afterend", wrap);
-
-    wrap.querySelector(".festiv-disqus-consent-btn")?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      try {
-        if (window.cookiehub?.openSettings) window.cookiehub.openSettings();
-        else if (window.cookiehub?.openDialog) window.cookiehub.openDialog();
-      } catch {}
-    });
-
-    return wrap;
-  }
-
-  // Best effort: ne marche QUE si le texte est dans le DOM accessible (pas dans un iframe)
-  function patchDisqusAgeGateFR() {
-    try {
-      const root = document.querySelector("#disqus_thread");
-      if (!root) return;
-
-      let changed = 0;
-      root.querySelectorAll("label, span, div, p, button").forEach((el) => {
-        const t = (el.textContent || "").trim();
-        if (/18\s+or\s+older/i.test(t)) {
-          el.textContent = t
-            .replace(/Acknowledge\s+/i, "")
-            .replace(/I am 18 or older/i, "J’ai 18 ans ou plus");
-          changed++;
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[contact-form]") {
+          node.textContent = "";
+          node.appendChild(mount);
+          return;
         }
+
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[contact-form]");
+        node.textContent = "";
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(mount.cloneNode(true));
+        });
       });
 
-      if (DEBUG) console.log("[festiv20] Disqus age gate patch changed:", changed);
-    } catch {}
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
+        }
+      }
+    } catch (e) {
+      console.error("[festiv20] shortcodeContactForm error:", e);
+    }
   }
 
-  function disqusConfigFn() {
-    this.page.url = window.location.href.split("#")[0];
-    this.page.identifier = window.location.pathname;
-    this.language = "fr";
+  // =========================================
+  // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
+  // =========================================
+  function shortcodeInscriptionForm() {
+    try {
+      const FILL0UT_ID = "jYPEHAqG3Lus";
+
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+      );
+
+      let found = false;
+
+      nodes.forEach((node) => {
+        if (node.dataset.festivInscriptionFormDone === "1") return;
+
+        const txt = (node.textContent || "").trim();
+        if (!txt.includes("[inscription-form]")) return;
+
+        node.dataset.festivInscriptionFormDone = "1";
+        found = true;
+
+        const mount = document.createElement("div");
+        mount.className = "festiv-fillout";
+        mount.style.width = "100%";
+        mount.style.minHeight = "520px";
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
+        mount.setAttribute("data-fillout-embed-type", "standard");
+        mount.setAttribute("data-fillout-inherit-parameters", "");
+        mount.setAttribute("data-fillout-dynamic-resize", "");
+
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[inscription-form]") {
+          node.textContent = "";
+          node.appendChild(mount);
+          return;
+        }
+
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[inscription-form]");
+        node.textContent = "";
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(mount.cloneNode(true));
+        });
+      });
+
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
+        }
+      }
+    } catch (e) {
+      console.error("[festiv20] shortcodeInscriptionForm error:", e);
+    }
   }
+
+  // =========================================
+  // DISQUS (uniquement si H2 "💬 Commentaires")
+  // + respecte CookieHub + SPA-friendly
+  // =========================================
 
   function initDisqus() {
     try {
+      // (optionnel mais propre) indique au site qu'on est en FR
       document.documentElement.setAttribute("lang", "fr");
 
-      const marker = findDisqusMarker();
+      // 1) Cherche le marqueur
+      const hs = document.querySelectorAll("h1,h2,h3");
+      let marker = null;
+      for (const h of hs) {
+        if ((h.textContent || "").trim() === "💬 Commentaires") {
+          marker = h;
+          break;
+        }
+      }
       if (!marker) return;
 
-      // Consent CMP
-      if (!cookieConsentOk()) {
-        ensureDisqusPlaceholder(marker);
+      // 2) Consent CookieHub (souvent: "marketing")
+      const CH = window.cookiehub;
+      const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing"); // si besoin: "analytics"
+
+      const existingWrap = document.querySelector(".festiv-disqus-wrap");
+
+      // 3) Pas de consentement → placeholder
+      if (!consentOk) {
+        if (!existingWrap) {
+          const wrap = document.createElement("div");
+          wrap.className = "festiv-disqus-wrap";
+          wrap.innerHTML = `
+            <div class="festiv-disqus-consent">
+              <p style="margin:0 0 10px 0;">Pour afficher les commentaires (Disqus), merci d’accepter les cookies correspondants.</p>
+              <button type="button" class="festiv-disqus-consent-btn">⚙️ Gérer mes cookies</button>
+            </div>
+          `;
+          marker.insertAdjacentElement("afterend", wrap);
+
+          wrap.querySelector(".festiv-disqus-consent-btn")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+              if (window.cookiehub?.openSettings) window.cookiehub.openSettings();
+              else if (window.cookiehub?.openDialog) window.cookiehub.openDialog();
+            } catch {}
+          });
+        }
         return;
       }
 
-      // Consent OK => retire le placeholder si présent
+      // 4) Consent OK → retire le placeholder
       document.querySelector(".festiv-disqus-consent")?.remove();
 
-      // Conteneur
-      let wrap = document.querySelector(".festiv-disqus-wrap");
-      if (!wrap) {
-        wrap = document.createElement("div");
-        wrap.className = "festiv-disqus-wrap";
-        marker.insertAdjacentElement("afterend", wrap);
-      }
-
+      // 5) Crée le conteneur Disqus si absent
       if (!document.getElementById("disqus_thread")) {
+        const wrap = existingWrap || document.createElement("div");
+        wrap.className = "festiv-disqus-wrap";
+
         const thread = document.createElement("div");
         thread.id = "disqus_thread";
         wrap.appendChild(thread);
+
+        if (!existingWrap) marker.insertAdjacentElement("afterend", wrap);
       }
 
-      // Déjà chargé => reset SPA
+      // 6) Config Disqus
+      const disqusConfig = function () {
+        this.page.url = window.location.href.split("#")[0];
+        this.page.identifier = window.location.pathname;
+        this.language = "fr";
+      };
+
+      // 7) Si déjà chargé → reset SPA propre
       if (window.DISQUS && typeof window.DISQUS.reset === "function") {
-        window.DISQUS.reset({ reload: true, config: disqusConfigFn });
-        setTimeout(patchDisqusAgeGateFR, 400);
-        setTimeout(patchDisqusAgeGateFR, 1200);
-        setTimeout(patchDisqusAgeGateFR, 2500);
+        window.DISQUS.reset({ reload: true, config: disqusConfig });
+
+        // patch FR après rendu (2 tentatives)
+        setTimeout(patchDisqusAgeGateFR, 300);
+        setTimeout(patchDisqusAgeGateFR, 900);
         return;
       }
 
-      // Premier chargement
-      window.disqus_config = disqusConfigFn;
+      // 8) Premier chargement
+      window.disqus_config = disqusConfig;
 
-      const shortname = "festivounans"; // ✅ ton shortname
       const already = [...document.scripts].some((s) =>
-        (s.src || "").includes(`${shortname}.disqus.com/embed.js`)
+        (s.src || "").includes("festivounans.disqus.com/embed.js")
       );
 
       if (!already) {
         const s = document.createElement("script");
-        s.src = `https://${shortname}.disqus.com/embed.js`;
+        s.src = "https://festivounans.disqus.com/embed.js";
         s.setAttribute("data-timestamp", String(+new Date()));
         (document.head || document.body).appendChild(s);
       }
 
-      setTimeout(patchDisqusAgeGateFR, 700);
-      setTimeout(patchDisqusAgeGateFR, 1500);
-      setTimeout(patchDisqusAgeGateFR, 3000);
+      // patch FR après rendu (2 tentatives)
+      setTimeout(patchDisqusAgeGateFR, 600);
+      setTimeout(patchDisqusAgeGateFR, 1400);
     } catch (e) {
       console.error("[festiv20] initDisqus error:", e);
     }
   }
-
-  function refreshDisqus() {
+    // 🔁 Force Disqus à se recharger (utile quand on change de thème sans refresh)
+  function refreshDisqusTheme() {
     try {
       if (!document.getElementById("disqus_thread")) return;
+
+      const disqusConfig = function () {
+        this.page.url = window.location.href.split("#")[0];
+        this.page.identifier = window.location.pathname;
+        this.language = "fr";
+      };
+
       if (window.DISQUS && typeof window.DISQUS.reset === "function") {
-        window.DISQUS.reset({ reload: true, config: disqusConfigFn });
-        setTimeout(patchDisqusAgeGateFR, 500);
-        setTimeout(patchDisqusAgeGateFR, 1600);
+        window.DISQUS.reset({ reload: true, config: disqusConfig });
+
+        // patch FR + laisser le temps à Disqus de rerender
+        setTimeout(patchDisqusAgeGateFR, 400);
+        setTimeout(patchDisqusAgeGateFR, 1100);
       }
     } catch (e) {
-      console.error("[festiv20] refreshDisqus error:", e);
+      console.error("[festiv20] refreshDisqusTheme error:", e);
     }
   }
 
-  // Exposé pour les callbacks CookieHub dans Simple.ink
+  // expose pour CookieHub callbacks (Simple.ink)
   window.__festivInitDisqus = initDisqus;
 
+  // =========================================
+  // CookieHub → si l'utilisateur change son choix,
+  // on retente initDisqus() sans refresh.
+  // =========================================
   function bindCookieHubForDisqus() {
     try {
       if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
       window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
 
       const rerun = () => {
-        setTimeout(() => { try { initDisqus(); } catch {} }, 80);
-        setTimeout(() => { try { initDisqus(); } catch {} }, 350);
-        setTimeout(() => { try { initDisqus(); } catch {} }, 900);
+        setTimeout(() => { try { initDisqus(); } catch {} }, 50);
+        setTimeout(() => { try { initDisqus(); } catch {} }, 250);
       };
 
-      // Focus: super fiable après fermeture du panneau cookies
+      // Fallback fiable : quand la page reprend le focus
       window.addEventListener("focus", rerun);
 
+      // Si CookieHub expose une API d'events (selon version)
       const CH = window.cookiehub;
       if (CH && typeof CH.on === "function") {
         CH.on("onAllow", rerun);
@@ -1090,18 +1199,64 @@
     }
   }
 
+function syncMeteoblueTheme(tries = 20) {
+  try {
+    const isDark = document.documentElement.classList.contains("dark-mode");
+
+    // ✅ match large (langue variable / chemins variables)
+    const iframe = document.querySelector(
+      'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
+    );
+
+    if (!iframe) {
+      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
+      return;
+    }
+
+    const srcAttr = iframe.getAttribute("src");
+    const dataSrcAttr = iframe.getAttribute("data-src");
+    const current = srcAttr || dataSrcAttr || "";
+    if (!current) {
+      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
+      return;
+    }
+
+    let url;
+    try {
+      url = new URL(current, window.location.href);
+    } catch {
+      return;
+    }
+
+    url.searchParams.set("layout", isDark ? "dark" : "bright");
+    const next = url.toString();
+
+    // ✅ met à jour les deux (iOS/lazy)
+    if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
+    if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
+
+    // ✅ iOS/Simple.ink peut réécrire le src après coup → re-sync “tardive”
+    if (tries === 20) {
+      setTimeout(() => syncMeteoblueTheme(3), 900);
+      setTimeout(() => syncMeteoblueTheme(3), 2500);
+    }
+  } catch (e) {
+    console.error("[festiv20] syncMeteoblueTheme error:", e);
+  }
+}
+
   // =========================================
-  // runAll
+  // runAll (appelé au load + à chaque rebuild DOM)
   // =========================================
   function runAll() {
     if (window.__FESTIV_RUNALL_LOCK) return;
     window.__FESTIV_RUNALL_LOCK = true;
 
     try {
-      document.documentElement.setAttribute("lang", "fr");
-
+      // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
       applySavedTheme();
-
+      syncMeteoblueTheme();
+setTimeout(syncMeteoblueTheme, 300);
       makeLogoClickable();
       formatDates();
       createFooterColumns();
@@ -1116,44 +1271,52 @@
       localizeSearchUI();
       setupBackToTop();
 
+      // ✅ listener OS (protégé par flag)
       bindSystemThemeListener();
 
+      // ✅ calendrier FR
       bindCalendarI18nHooks();
       translateNotionCalendar();
 
+      // ✅ bouton toggle + icône + badge AUTO à jour
       initThemeToggle();
 
+      // ✅ Fillout natif (auto-resize)
       shortcodeContactForm();
       shortcodeInscriptionForm();
 
-      syncMeteoblueTheme();
-      setTimeout(syncMeteoblueTheme, 300);
+     // ✅ Disqus (si H2 "💬 Commentaires")
+document.documentElement.setAttribute("lang", "fr");
+initDisqus();
 
-      initDisqus();
+      
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
   }
 
-  // =========================================
-  // Boot + Observer (ignore Disqus changes)
-  // =========================================
+  // Petits retours internes
   setTimeout(fixInternalAnchors, 500);
   setTimeout(fixInternalAnchors, 1500);
 
   onReady(() => {
     log("loaded ✅");
 
+    // ✅ CookieHub → retenter Disqus après changement de consentement
     bindCookieHubForDisqus();
+
+    // ✅ run initial
     runAll();
 
+    // ✅ observer global : relance runAll si Simple.ink reconstruit le DOM,
+    // mais IGNORE tout ce qui vient de Disqus (sinon boucle infinie).
     let t = null;
     const observer = new MutationObserver((mutations) => {
-      // Ignore mutations provenant de Disqus (évite boucle infinie)
       for (const m of mutations) {
         const target = m.target;
-        if (target && target.closest && target.closest("#disqus_thread, .festiv-disqus-wrap")) return;
-
+        if (target && target.closest && target.closest("#disqus_thread, .festiv-disqus-wrap")) {
+          return;
+        }
         for (const n of m.addedNodes || []) {
           if (n.nodeType === 1) {
             const el = n;
