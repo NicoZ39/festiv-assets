@@ -1038,6 +1038,66 @@
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
+  // =========================================
+// NOTICE "Commenter en invité / anonyme" (sous H2 💬 Commentaires)
+// =========================================
+function injectDisqusGuestTip() {
+  try {
+    const hs = document.querySelectorAll("h1,h2,h3");
+    let marker = null;
+    for (const h of hs) {
+      if ((h.textContent || "").trim() === "💬 Commentaires") {
+        marker = h;
+        break;
+      }
+    }
+    if (!marker) return;
+
+    // évite la ré-injection à chaque runAll
+    if (marker.dataset.festivDisqusGuestTipDone === "1") return;
+    marker.dataset.festivDisqusGuestTipDone = "1";
+
+    // styles 1 seule fois
+    if (!document.getElementById("festiv-disqus-guest-tip-style")) {
+      const style = document.createElement("style");
+      style.id = "festiv-disqus-guest-tip-style";
+      style.textContent = `
+        .festiv-disqus-guest-tip{
+          width: min(980px, calc(100% - 24px));
+          margin: 10px 0 14px 0;
+          padding: 12px 14px;
+          border-radius: 12px;
+          line-height: 1.4;
+          font-size: 14px;
+          background: rgba(255,255,255,0.85);
+          border: 1px solid rgba(0,0,0,0.08);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+          backdrop-filter: blur(8px);
+        }
+        .dark-mode .festiv-disqus-guest-tip{
+          background: rgba(15,15,15,0.72);
+          border: 1px solid rgba(255,255,255,0.12);
+          box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+        }
+        .festiv-disqus-guest-tip b{font-weight:700;}
+      `;
+      document.head.appendChild(style);
+    }
+
+    const box = document.createElement("div");
+    box.className = "festiv-disqus-guest-tip";
+    box.innerHTML = `
+      <b>Astuce :</b>
+      Pour commenter en tant qu'invité ou anonyme : sélectionnez la discussion, puis le champ « Nom ».
+      Cochez la case « Je préfère poster en tant qu'invité » pour soumettre votre commentaire sans vous connecter ni créer de compte.
+    `;
+
+    // injecte juste après le titre
+    marker.insertAdjacentElement("afterend", box);
+  } catch (e) {
+    console.error("[festiv20] injectDisqusGuestTip error:", e);
+  }
+}
 
   // =========================================
   // DISQUS (uniquement si H2 "💬 Commentaires")
@@ -1244,24 +1304,7 @@ function syncMeteoblueTheme(tries = 20) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
-function patchDisqusAgeGateFR() {
-  try {
-    const root = document.querySelector("#disqus_thread");
-    if (!root) return;
 
-    const nodes = root.querySelectorAll("label, span, div, p, button");
-
-    nodes.forEach((el) => {
-      const t = (el.textContent || "").trim();
-
-      if (t === "Acknowledge I am 18 or older") {
-        el.textContent = "J’ai 18 ans ou plus";
-      }
-    });
-  } catch (e) {
-    console.error("[festiv20] patchDisqusAgeGateFR error:", e);
-  }
-}
 
 
   // =========================================
@@ -1307,8 +1350,9 @@ function patchDisqusAgeGateFR() {
 
      // ✅ Disqus (si H2 "💬 Commentaires")
 document.documentElement.setAttribute("lang", "fr");
+injectDisqusGuestTip();
 initDisqus();
-patchDisqusAgeGateFR();
+
       
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
