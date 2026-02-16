@@ -1257,6 +1257,24 @@ function syncMeteoblueTheme(tries = 20) {
     console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
 }
+function patchDisqusAgeGateFR() {
+  try {
+    const root = document.querySelector("#disqus_thread");
+    if (!root) return;
+
+    root.querySelectorAll("label, span, div, p, button").forEach((el) => {
+      const t = (el.textContent || "").trim();
+
+      // Match large : toutes les variantes qu’on voit passer
+      if (/18\s+or\s+older/i.test(t)) {
+        // Remplace uniquement la partie anglaise connue
+        el.textContent = t
+          .replace(/Acknowledge\s+/i, "")          // enlève "Acknowledge "
+          .replace(/I am 18 or older/i, "J’ai 18 ans ou plus");
+      }
+    });
+  } catch {}
+}
 
 
 
@@ -1291,6 +1309,7 @@ setTimeout(syncMeteoblueTheme, 300);
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
+      patchDisqusAgeGateFR();
 
       // ✅ listener OS (protégé par flag)
       bindSystemThemeListener();
