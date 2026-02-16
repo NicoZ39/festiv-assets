@@ -1493,8 +1493,9 @@
 
       initThemeToggle();
 
-      shortcodeFillout("[contact-form]", "tZMYfrqCWAus");
-      shortcodeFillout("[inscription-form]", "jYPEHAqG3Lus");
+      shortcodeContactForm();
+      shortcodeInscriptionForm();
+
 
       injectDisqusGuestTip();
       initDisqus(false);
