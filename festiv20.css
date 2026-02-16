@@ -213,19 +213,6 @@ h1.notion-title{ font-weight: 900 !important; }
   -webkit-text-fill-color: transparent !important;
   font-weight: inherit !important;
 }
-
-/* Ton H2 spécial + ton bloc texte spécial */
-h2.notion-h.notion-h1.notion-h-indent-0
-.notion-block-d7029277b8c843ac99308fa4128ed384[data-id=d7029277b8c843ac99308fa4128ed384]
-a.notion-h-title b{
-  font-size: 50px !important;
-  font-family: Poppins, serif !important;
-  font-weight: 900 !important;
-  font-style: normal !important;
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
-  line-height: 1 !important;
-}
 .notion-block-34d20cdc7b5a4441b1710f343c7a71f5 b{
   font-size: 50px !important;
   font-family: Caprasimo, serif !important;
