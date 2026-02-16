@@ -1046,46 +1046,30 @@ function getDisqusConsentStatus() {
   const CH = window.cookiehub;
 
   if (!CH) return null;
+
+  // ✅ CookieHub pas prêt => on ne conclut rien
+  if (typeof CH.isReady === "function" && !CH.isReady()) return null;
+
+  // ✅ Si l'utilisateur n'a pas encore répondu, alors pas de consentement
+  if (typeof CH.hasAnswered === "function" && !CH.hasAnswered()) return false;
+
   if (typeof CH.hasConsented !== "function") return null;
 
-  // ✅ On privilégie les catégories “classiques” (souvent acceptées au premier clic)
-  const PRIMARY = ["preferences", "functional", "analytics", "statistics", "performance"];
-
-  // Marketing / Ads en dernier recours (souvent NON acceptés au premier clic)
-  const SECONDARY = ["marketing", "advertising", "ads"];
+  // Mets Disqus dans une (ou plusieurs) catégories chez CookieHub.
+  // Ici on accepte si AU MOINS une de ces catégories est autorisée.
+  const CATS_OK = ["preferences", "functional", "analytics", "statistics", "performance", "marketing"];
 
   try {
-    // 1) Si CookieHub supporte hasConsented() sans argument et renvoie true => OK
-    try {
-      const any = CH.hasConsented();
-      if (any === true) return true;
-    } catch {}
-
-    // 2) Test des catégories principales
-    let sawFalse = false;
-
-    for (const c of PRIMARY) {
-      try {
-        const v = CH.hasConsented(c);
-        if (v === true) return true;
-        if (v === false) sawFalse = true;
-      } catch {}
+    for (const c of CATS_OK) {
+      const v = CH.hasConsented(c);
+      if (v === true) return true;
     }
-
-    // 3) Puis secondaires (mais on ne veut pas bloquer Disqus dessus)
-    for (const c of SECONDARY) {
-      try {
-        const v = CH.hasConsented(c);
-        if (v === true) return true;
-        if (v === false) sawFalse = true;
-      } catch {}
-    }
-
-    return sawFalse ? false : null;
+    return false;
   } catch {
     return null;
   }
 }
+
 
 
 function scheduleDisqusConsentRecheck() {
@@ -1093,32 +1077,17 @@ function scheduleDisqusConsentRecheck() {
   window.__FESTIV_DISQUS_CONSENT_POLLING = true;
 
   let tries = 0;
-  const MAX_TRIES = 80;   // ~12s
+  const MAX_TRIES = 120; // ~18s
   const DELAY = 150;
-
-  // si on voit "false" 10 fois d'affilée, on considère que c'est un refus réel
-  let stableFalseCount = 0;
 
   const tick = () => {
     tries++;
-
     const consent = getDisqusConsentStatus(); // true/false/null
 
     if (consent === true) {
       window.__FESTIV_DISQUS_CONSENT_POLLING = false;
       try { initDisqus(true); } catch {}
       return;
-    }
-
-    if (consent === false) {
-      stableFalseCount++;
-      if (stableFalseCount >= 10) {
-        window.__FESTIV_DISQUS_CONSENT_POLLING = false;
-        return;
-      }
-    } else {
-      // null => pas prêt, on reset le compteur de faux stables
-      stableFalseCount = 0;
     }
 
     if (tries >= MAX_TRIES) {
@@ -1131,6 +1100,7 @@ function scheduleDisqusConsentRecheck() {
 
   setTimeout(tick, 50);
 }
+
 
 
   // =========================================
@@ -1180,11 +1150,9 @@ function scheduleDisqusConsentRecheck() {
           });
         }
 
-        // CookieHub peut être "pas prêt" même si ça renvoie false au tout début du load
-scheduleDisqusConsentRecheck();
-
-        return;
-      }
+        scheduleDisqusConsentRecheck();
+  return;
+}
 
       // 4) consent ok => retire placeholder
       document.querySelector(".festiv-disqus-consent")?.remove();
