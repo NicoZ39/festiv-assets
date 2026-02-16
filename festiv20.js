@@ -1048,28 +1048,32 @@ function getDisqusConsentStatus() {
   if (!CH) return null;
   if (typeof CH.hasConsented !== "function") return null;
 
-  const CATS = [
-    "marketing",
-    "advertising",
-    "ads",
-    "analytics",
-    "statistics",
-    "performance",
-    "preferences",
-    "functional",
-    "necessary",
-  ];
+  // ✅ On privilégie les catégories “classiques” (souvent acceptées au premier clic)
+  const PRIMARY = ["preferences", "functional", "analytics", "statistics", "performance"];
+
+  // Marketing / Ads en dernier recours (souvent NON acceptés au premier clic)
+  const SECONDARY = ["marketing", "advertising", "ads"];
 
   try {
-    // Certaines configs supportent hasConsented() sans argument
+    // 1) Si CookieHub supporte hasConsented() sans argument et renvoie true => OK
     try {
       const any = CH.hasConsented();
       if (any === true) return true;
     } catch {}
 
+    // 2) Test des catégories principales
     let sawFalse = false;
 
-    for (const c of CATS) {
+    for (const c of PRIMARY) {
+      try {
+        const v = CH.hasConsented(c);
+        if (v === true) return true;
+        if (v === false) sawFalse = true;
+      } catch {}
+    }
+
+    // 3) Puis secondaires (mais on ne veut pas bloquer Disqus dessus)
+    for (const c of SECONDARY) {
       try {
         const v = CH.hasConsented(c);
         if (v === true) return true;
@@ -1082,6 +1086,7 @@ function getDisqusConsentStatus() {
     return null;
   }
 }
+
 
 function scheduleDisqusConsentRecheck() {
   if (window.__FESTIV_DISQUS_CONSENT_POLLING) return;
