@@ -1267,23 +1267,17 @@ function nudgeRecaptchaIntoView() {
     const bf = iframes.find(f => (f.getAttribute("src") || "").includes("bframe"));
     if (!bf) return;
 
-    // Position actuelle
     const r = bf.getBoundingClientRect();
     const vw = window.innerWidth || document.documentElement.clientWidth;
-
-    // Calcule le décalage nécessaire
-    let dx = 0;
     const PAD = 12;
 
+    let dx = 0;
     if (r.right > vw - PAD) dx -= (r.right - (vw - PAD));
     if (r.left < PAD)       dx += (PAD - r.left);
 
     if (dx !== 0) {
-      // On applique un translateX additionnel sans casser le reste
-      // (on garde une éventuelle transform existante)
       const base = bf.dataset.festivBaseTransform || (bf.style.transform || "");
       if (!bf.dataset.festivBaseTransform) bf.dataset.festivBaseTransform = base;
-
       bf.style.transform = `${bf.dataset.festivBaseTransform} translateX(${Math.round(dx)}px)`;
     }
   } catch (e) {
@@ -1296,16 +1290,11 @@ function bindRecaptchaNudge() {
     if (window.__FESTIV_RECAPTCHA_NUDGE_BOUND) return;
     window.__FESTIV_RECAPTCHA_NUDGE_BOUND = true;
 
-    // Quand Google injecte / modifie le popup
-    const obs = new MutationObserver(() => {
-      nudgeRecaptchaIntoView();
-    });
+    const obs = new MutationObserver(() => nudgeRecaptchaIntoView());
     obs.observe(document.body, { childList: true, subtree: true });
 
-    // Quand on resize / zoom
     window.addEventListener("resize", () => nudgeRecaptchaIntoView(), { passive: true });
 
-    // Petit polling court (car Google peut repositionner après coup)
     document.addEventListener("click", () => {
       setTimeout(nudgeRecaptchaIntoView, 50);
       setTimeout(nudgeRecaptchaIntoView, 250);
@@ -1315,6 +1304,7 @@ function bindRecaptchaNudge() {
     console.error("[festiv20] bindRecaptchaNudge error:", e);
   }
 }
+
 
 
 
