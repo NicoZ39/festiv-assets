@@ -1054,31 +1054,30 @@
     const CH = window.cookiehub;
     const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing");
 
-    // marker H2
+    // Marker H2
     const hs = document.querySelectorAll("h1,h2,h3");
     let marker = null;
     for (const h of hs) {
-      if ((h.textContent || "").trim() === "💬 Commentaires") {
-        marker = h;
-        break;
-      }
+      if ((h.textContent || "").trim() === "💬 Commentaires") { marker = h; break; }
     }
     if (!marker) return;
 
-    // ✅ si pas de consentement OU pas de disqus_thread : on supprime le tip s'il existe et on stop
-    const hasThread = !!document.getElementById("disqus_thread");
-    if (!consentOk || !hasThread) {
-      const existing = marker.parentElement?.querySelector?.(".festiv-disqus-guest-tip");
-      if (existing) existing.remove();
+    // ✅ Disqus réellement chargé = iframe Disqus présente dans le thread
+    const thread = document.getElementById("disqus_thread");
+    const hasDisqusIframe = !!thread?.querySelector?.('iframe[src*="disqus.com"]');
+
+    // Si pas OK -> on retire le tip s'il existe
+    if (!consentOk || !thread || !hasDisqusIframe) {
+      document.querySelectorAll(".festiv-disqus-guest-tip").forEach((n) => n.remove());
       marker.dataset.festivDisqusGuestTipDone = "0";
       return;
     }
 
-    // évite la ré-injection à chaque runAll
+    // Déjà injecté ?
     if (marker.dataset.festivDisqusGuestTipDone === "1") return;
     marker.dataset.festivDisqusGuestTipDone = "1";
 
-    // styles 1 seule fois
+    // Styles 1 seule fois
     if (!document.getElementById("festiv-disqus-guest-tip-style")) {
       const style = document.createElement("style");
       style.id = "festiv-disqus-guest-tip-style";
@@ -1118,6 +1117,7 @@
     console.error("[festiv20] injectDisqusGuestTip error:", e);
   }
 }
+
 
 
 
@@ -1260,15 +1260,15 @@ try {
         return;
       }
 
-      // 8) Premier chargement / ou script présent mais DISQUS pas prêt
+      // 8) Premier chargement
 window.disqus_config = disqusConfig;
 
 const srcBase = "https://festivounans.disqus.com/embed.js";
 
-// ✅ si DISQUS n'est pas là, on (ré)injecte toujours un script "fresh"
+// ✅ Si DISQUS n'est pas prêt, on (ré)injecte un script "fresh" (cache-bust)
 if (!window.DISQUS) {
   const s = document.createElement("script");
-  s.src = srcBase + "?t=" + Date.now(); // cache-bust
+  s.src = srcBase + "?t=" + Date.now();
   s.async = true;
   s.setAttribute("data-timestamp", String(+new Date()));
   (document.head || document.body).appendChild(s);
@@ -1279,6 +1279,7 @@ window.__FESTIV_DISQUS_READY = true;
 
 setTimeout(patchDisqusAgeGateFR, 600);
 setTimeout(patchDisqusAgeGateFR, 1400);
+
 
     } catch (e) {
       console.error("[festiv20] initDisqus error:", e);
@@ -1461,8 +1462,12 @@ setTimeout(patchDisqusAgeGateFR, 1400);
 
       // Disqus (idempotent = safe)
       document.documentElement.setAttribute("lang", "fr");
-      initDisqus(false);
-      injectDisqusGuestTip();
+      iinitDisqus(false);
+injectDisqusGuestTip();
+setTimeout(injectDisqusGuestTip, 600);
+setTimeout(injectDisqusGuestTip, 1200);
+setTimeout(injectDisqusGuestTip, 2000);
+
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
