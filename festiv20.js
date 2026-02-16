@@ -1038,20 +1038,16 @@
     } catch {}
   }
 
-  // =========================================
-  // DISQUS — consent CookieHub (true/false/null)
-  // null = CookieHub pas prêt (au refresh)
-  // =========================================
-  function getDisqusConsentStatus() {
+ // =========================================
+// DISQUS — consent CookieHub (true/false/null)
+// null = CookieHub pas prêt (au refresh)
+// =========================================
+function getDisqusConsentStatus() {
   const CH = window.cookiehub;
 
-  // CookieHub pas encore présent
   if (!CH) return null;
-
-  // API pas encore prête
   if (typeof CH.hasConsented !== "function") return null;
 
-  // Catégories possibles selon config CookieHub
   const CATS = [
     "marketing",
     "advertising",
@@ -1061,22 +1057,18 @@
     "performance",
     "preferences",
     "functional",
-    "necessary"
+    "necessary",
   ];
 
   try {
-    // 1) Certaines configs supportent hasConsented() sans argument
-    // (si ça renvoie true => OK)
+    // Certaines configs supportent hasConsented() sans argument
     try {
       const any = CH.hasConsented();
       if (any === true) return true;
-      if (any === false) {
-        // on ne conclut pas refusé, car parfois "sans argument" = autre chose
-      }
     } catch {}
 
-    // 2) Test multi catégories
     let sawFalse = false;
+
     for (const c of CATS) {
       try {
         const v = CH.hasConsented(c);
@@ -1085,29 +1077,18 @@
       } catch {}
     }
 
-    // Si on a réussi à lire au moins un false, on considère que CookieHub est prêt
-    // mais que le user n'a pas consenti à ces catégories.
-    // Sinon, on considère "pas prêt" (null).
     return sawFalse ? false : null;
   } catch {
     return null;
   }
 }
 
-
-    // Si on a pu lire des "false" au moins une fois : on considère refusé
-    // Sinon : CookieHub pas prêt / état non lisible
-    return sawFalse ? false : null;
-  } catch {
-    return null;
-  }
-}
 function scheduleDisqusConsentRecheck() {
   if (window.__FESTIV_DISQUS_CONSENT_POLLING) return;
   window.__FESTIV_DISQUS_CONSENT_POLLING = true;
 
   let tries = 0;
-  const MAX_TRIES = 80; // ~12 secondes
+  const MAX_TRIES = 80; // ~12s
   const DELAY = 150;
 
   const tick = () => {
@@ -1130,6 +1111,7 @@ function scheduleDisqusConsentRecheck() {
 
   setTimeout(tick, 50);
 }
+
 
   // =========================================
   // DISQUS — init idempotent (anti-flicker)
