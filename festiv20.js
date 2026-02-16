@@ -1223,6 +1223,17 @@
 
       // 7) Disqus déjà chargé → reset seulement si (page change ou force)
       if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+        // ✅ si l'utilisateur est en train de taper dans un champ Disqus, ne pas reset
+try {
+  const ae = document.activeElement;
+  if (ae && ae.tagName === "IFRAME") {
+    // on est probablement focus dans Disqus => surtout ne pas reset
+    if (!force) return;
+    // même en force, on évite si on est en focus iframe
+    return;
+  }
+} catch {}
+
         window.__FESTIV_DISQUS_KEY = pageKey;
         window.__FESTIV_DISQUS_READY = true;
 
@@ -1296,37 +1307,43 @@
   // =========================================
   // CookieHub -> retenter Disqus si changement consentement
   // =========================================
-  function bindCookieHubForDisqus() {
-    try {
-      if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
-      window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
+  ffunction bindCookieHubForDisqus() {
+  try {
+    if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
+    window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
 
-      const rerun = () => {
-        // si l'utilisateur vient d'accepter, on peut forcer une init
-        setTimeout(() => {
-          try {
-            initDisqus(true);
-          } catch {}
-        }, 50);
-        setTimeout(() => {
-          try {
-            initDisqus(true);
-          } catch {}
-        }, 250);
-      };
+    const rerunSoft = () => {
+      // ✅ soft: ne force pas => pas de reset si déjà OK
+      setTimeout(() => { try { initDisqus(false); } catch {} }, 50);
+      setTimeout(() => { try { initDisqus(false); } catch {} }, 250);
+    };
 
-      window.addEventListener("focus", rerun);
+    const rerunHard = () => {
+      // ✅ hard: seulement quand CookieHub dit "changement"
+      setTimeout(() => { try { initDisqus(true); } catch {} }, 50);
+      setTimeout(() => { try { initDisqus(true); } catch {} }, 250);
+    };
 
-      const CH = window.cookiehub;
-      if (CH && typeof CH.on === "function") {
-        CH.on("onAllow", rerun);
-        CH.on("onStatusChange", rerun);
-        CH.on("onRevoke", rerun);
-      }
-    } catch (e) {
-      console.error("[festiv20] bindCookieHubForDisqus error:", e);
+    // ❌ IMPORTANT : on enlève le fallback "focus"
+    // (ça se déclenche à chaque sortie d’iframe Disqus => flicker)
+    // window.addEventListener("focus", rerun);
+
+    const CH = window.cookiehub;
+    if (CH && typeof CH.on === "function") {
+      // uniquement sur vrais events CookieHub
+      CH.on("onAllow", rerunHard);
+      CH.on("onStatusChange", rerunHard);
+      CH.on("onRevoke", rerunHard);
+    } else {
+      // fallback ultra soft si aucune API event (mais pas via focus)
+      // on tente une fois au chargement, pas plus
+      rerunSoft();
     }
+  } catch (e) {
+    console.error("[festiv20] bindCookieHubForDisqus error:", e);
   }
+}
+
 
   // =========================================
   // Meteoblue theme sync
