@@ -1297,30 +1297,41 @@ details.notion-toggle[open] > div {
     min-height: 650px;
   }
 }
-/* ===== Disqus reset (anti conflit iframe) ===== */
-/* Disqus plus large (évite reCAPTCHA tronqué) */
-.festiv-disqus-wrap{width:100%;max-width:900px;margin:24px auto 0}
-
-
-#disqus_thread{width:100%!important;min-height:300px}
-#disqus_thread iframe{display:block!important;width:1px!important;min-width:100%!important;max-width:100%!important}
-.dark-mode #disqus_thread iframe{filter:none!important}
-
-/* ===== Placeholder consent ===== */
-.festiv-disqus-consent{
-  border: 1px solid rgba(0,0,0,.12);
-  border-radius: 14px;
-  padding: 14px 14px;
+/* ===== Disqus: container propre ===== */
+.festiv-disqus-wrap{
+  width: 100%;
+  max-width: 900px;
+  margin: 24px auto 0;
 }
-.dark-mode .festiv-disqus-consent{
-  border-color: rgba(255,255,255,.16);
+
+#disqus_thread{
+  width: 100% !important;
+  min-height: 300px;
 }
-.festiv-disqus-consent-btn{
-  border: 0;
-  border-radius: 999px;
-  padding: 10px 14px;
-  cursor: pointer;
+
+/* ✅ Ne cibler QUE les iframes Disqus (pas reCAPTCHA) */
+#disqus_thread iframe[src*="disqus.com"]{
+  display: block !important;
+  width: 1px !important;       /* hack responsive ok */
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: auto;
 }
+
+/* ✅ reCAPTCHA : ne pas le contraindre à 100% du module Disqus */
+#disqus_thread iframe[src*="recaptcha"],
+#disqus_thread iframe[src*="google.com/recaptcha"],
+#disqus_thread iframe[src*="recaptcha.net"]{
+  width: auto !important;
+  min-width: initial !important;
+  max-width: none !important;
+}
+
+/* Si tu as des filtres dark-mode sur les iframes, on neutralise Disqus */
+.dark-mode #disqus_thread iframe[src*="disqus.com"]{
+  filter: none !important;
+}
+
 
 /* Bloc Meteoblue : wrapper + iframe */
 html { color-scheme: light dark; }
