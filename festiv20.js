@@ -258,6 +258,62 @@
       }
     });
   }
+// =========================
+// DISQUS — mini tip "invité"
+// =========================
+function injectDisqusGuestTip() {
+  try {
+    const marker =
+      [...document.querySelectorAll("h1,h2,h3")]
+        .find(h => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null;
+
+    if (!marker) return;
+
+    // évite doublons
+    if (marker.dataset.festivDisqusGuestTipDone === "1") return;
+    marker.dataset.festivDisqusGuestTipDone = "1";
+
+    // style (1x)
+    if (!document.getElementById("festiv-disqus-guest-tip-style")) {
+      const style = document.createElement("style");
+      style.id = "festiv-disqus-guest-tip-style";
+      style.textContent = `
+        .festiv-disqus-guest-tip{
+          width: min(980px, calc(100% - 24px));
+          margin: 10px 0 14px 0;
+          padding: 12px 14px;
+          border-radius: 12px;
+          line-height: 1.4;
+          font-size: 14px;
+          background: rgba(255,255,255,0.85);
+          border: 1px solid rgba(0,0,0,0.08);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+          backdrop-filter: blur(8px);
+        }
+        .dark-mode .festiv-disqus-guest-tip{
+          background: rgba(15,15,15,0.72);
+          border: 1px solid rgba(255,255,255,0.12);
+          box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+        }
+        .festiv-disqus-guest-tip b{font-weight:700;}
+      `;
+      document.head.appendChild(style);
+    }
+
+    // box (inséré juste après le titre)
+    const box = document.createElement("div");
+    box.className = "festiv-disqus-guest-tip";
+    box.innerHTML = `
+      <b>Commenter sans créer de compte ?</b>
+      Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
+      Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
+    `;
+
+    marker.insertAdjacentElement("afterend", box);
+  } catch (e) {
+    console.error("[festiv20] injectDisqusGuestTip error:", e);
+  }
+}
 
   // =========================
   // DISQUS — CookieHub consent (true/false/null)
@@ -687,6 +743,7 @@
       initThemeToggle();
 
       // Disqus
+       injectDisqusGuestTip();
       initDisqus(false);
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
