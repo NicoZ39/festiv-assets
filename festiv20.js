@@ -1094,26 +1094,42 @@
   }
 
   // Retenter initDisqus après load si CookieHub pas prêt
-  function scheduleInitDisqusRetry(triesLeft = 12) {
-    try {
-      if (window.__FESTIV_DISQUS_RETRY_SCHEDULED) return;
-      window.__FESTIV_DISQUS_RETRY_SCHEDULED = true;
+  function scheduleInitDisqusRetry(reason = "boot", triesLeft = 24) {
+  try {
+    // on garde juste 1 timer actif
+    if (window.__FESTIV_DISQUS_BOOT_T) clearTimeout(window.__FESTIV_DISQUS_BOOT_T);
 
-      const tick = (n) => {
-        if (n <= 0) {
-          window.__FESTIV_DISQUS_RETRY_SCHEDULED = false;
-          return;
-        }
-        setTimeout(() => {
-          try { initDisqus(false); } catch {}
-          try { injectDisqusGuestTip(); } catch {}
-          tick(n - 1);
-        }, 250);
-      };
+    const tick = (n) => {
+      if (n <= 0) return;
 
-      tick(triesLeft);
-    } catch {}
-  }
+      window.__FESTIV_DISQUS_BOOT_T = setTimeout(() => {
+        try {
+          // 1) essaye d'init
+          initDisqus(false);
+
+          // 2) essaye d'injecter le tip (ne s'injecte que si Disqus iframe est là)
+          injectDisqusGuestTip();
+
+          // 3) condition d'arrêt : thread + iframe Disqus présents
+          const thread = document.getElementById("disqus_thread");
+          const hasIframe = !!thread?.querySelector?.('iframe[src*="disqus.com"]');
+
+          // 4) ou condition d'arrêt : placeholder visible (refus cookies)
+          const hasPlaceholder = !!document.querySelector(".festiv-disqus-consent");
+
+          if (hasIframe || hasPlaceholder) return; // ✅ stop
+
+        } catch {}
+
+        // sinon on retente
+        tick(n - 1);
+      }, 250);
+    };
+
+    tick(triesLeft);
+  } catch {}
+}
+
 
   function injectDisqusGuestTip() {
     try {
@@ -1198,10 +1214,11 @@
       const existingWrap = document.querySelector(".festiv-disqus-wrap");
 
       // CookieHub pas prêt -> retenter
-      if (consent === null) {
-        scheduleInitDisqusRetry();
-        return;
-      }
+if (consent === null) {
+  scheduleInitDisqusRetry("cookiehub-not-ready", 24);
+  return;
+}
+
 
       // Refus -> placeholder
       if (consent === false) {
@@ -1348,105 +1365,106 @@
     }
   }
 
-  // =========================================
-  // runAll (load + rebuild DOM)
-  // =========================================
-  function runAll() {
-    if (window.__FESTIV_RUNALL_LOCK) return;
-    window.__FESTIV_RUNALL_LOCK = true;
+ // =========================================
+// runAll (load + rebuild DOM)
+// =========================================
+function runAll() {
+  if (window.__FESTIV_RUNALL_LOCK) return;
+  window.__FESTIV_RUNALL_LOCK = true;
 
-    try {
-      // Theme / syncs
-      applySavedTheme();
-      syncMeteoblueTheme();
-      setTimeout(syncMeteoblueTheme, 300);
+  try {
+    // Theme / syncs
+    applySavedTheme();
+    syncMeteoblueTheme();
+    setTimeout(syncMeteoblueTheme, 300);
 
-      // UI tweaks
-      makeLogoClickable();
-      formatDates();
-      createFooterColumns();
-      addCopyright();
-      tweakCover();
-      setupTableScrollUX();
-      shortcodeRetour();
-      bindNotionButtons();
-      fixInternalAnchors();
-      hideGenericCalloutIcons();
-      setupFaqAnimation();
-      localizeSearchUI();
-      setupBackToTop();
+    // UI tweaks
+    makeLogoClickable();
+    formatDates();
+    createFooterColumns();
+    addCopyright();
+    tweakCover();
+    setupTableScrollUX();
+    shortcodeRetour();
+    bindNotionButtons();
+    fixInternalAnchors();
+    hideGenericCalloutIcons();
+    setupFaqAnimation();
+    localizeSearchUI();
+    setupBackToTop();
 
-      // listeners
-      bindSystemThemeListener();
-      bindCalendarI18nHooks();
-      translateNotionCalendar();
+    // listeners
+    bindSystemThemeListener();
+    bindCalendarI18nHooks();
+    translateNotionCalendar();
 
-      // theme toggle
-      initThemeToggle();
+    // theme toggle
+    initThemeToggle();
 
-      // Fillout
-      shortcodeContactForm();
-      shortcodeInscriptionForm();
+    // Fillout
+    shortcodeContactForm();
+    shortcodeInscriptionForm();
 
-      // Disqus (idempotent)
-      initDisqus(false);
+    // Disqus (idempotent)
+    initDisqus(false);
 
-      // Tip (attendre l'iframe)
-      injectDisqusGuestTip();
-      setTimeout(injectDisqusGuestTip, 600);
-      setTimeout(injectDisqusGuestTip, 1200);
-      setTimeout(injectDisqusGuestTip, 2000);
-    } finally {
-      window.__FESTIV_RUNALL_LOCK = false;
-    }
+    // Tip (s'affiche seulement si l'iframe Disqus est vraiment là)
+    injectDisqusGuestTip();
+
+    // Boot de sécurité : si CookieHub/marker arrivent après, on retente sans casser Disqus
+    scheduleInitDisqusRetry("runAll", 24);
+
+  } finally {
+    window.__FESTIV_RUNALL_LOCK = false;
   }
+}
 
-  // petits retours internes
-  setTimeout(fixInternalAnchors, 500);
-  setTimeout(fixInternalAnchors, 1500);
+// petits retours internes
+setTimeout(fixInternalAnchors, 500);
+setTimeout(fixInternalAnchors, 1500);
 
-  onReady(() => {
-    log("loaded ✅");
+onReady(() => {
+  log("loaded ✅");
 
-    bindCookieHubForDisqus();
+  bindCookieHubForDisqus();
 
-    runAll();
+  runAll();
 
-    // sécurité : CookieHub peut finir après le load
-    scheduleInitDisqusRetry();
+  // sécurité : CookieHub / marker peuvent finir après le load
+  scheduleInitDisqusRetry("onReady", 24);
 
-    // Observer global : relance runAll si Simple.ink reconstruit le DOM
-    // mais ignore tout ce qui vient de Disqus
-    let t = null;
+  // Observer global : relance runAll si Simple.ink reconstruit le DOM
+  // mais ignore tout ce qui vient de Disqus
+  let t = null;
 
-    const isDisqusRelatedNode = (node) => {
-      if (!node || node.nodeType !== 1) return false;
-      const el = node;
+  const isDisqusRelatedNode = (node) => {
+    if (!node || node.nodeType !== 1) return false;
+    const el = node;
 
-      if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
+    if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
 
-      if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
-      if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]')) return true;
+    if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
+    if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]')) return true;
 
-      if (el.id && el.id.startsWith("dsq-")) return true;
-      if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
+    if (el.id && el.id.startsWith("dsq-")) return true;
+    if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
 
-      if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
+    if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
 
-      return false;
-    };
+    return false;
+  };
 
-    const observer = new MutationObserver((mutations) => {
-      for (const m of mutations) {
-        if (isDisqusRelatedNode(m.target)) return;
-        for (const n of m.addedNodes || []) {
-          if (isDisqusRelatedNode(n)) return;
-        }
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (isDisqusRelatedNode(m.target)) return;
+      for (const n of m.addedNodes || []) {
+        if (isDisqusRelatedNode(n)) return;
       }
-      clearTimeout(t);
-      t = setTimeout(runAll, 80);
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
+    }
+    clearTimeout(t);
+    t = setTimeout(runAll, 80);
   });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+});
 })();
