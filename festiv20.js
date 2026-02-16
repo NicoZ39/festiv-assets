@@ -918,51 +918,46 @@
     }
   }
 
+ // =========================================
+  // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
   // =========================================
-  // 11) Shortcodes Fillout
-  // =========================================
-  function ensureFilloutScript() {
-    const SRC = "https://server.fillout.com/embed/v1/";
-    const already = [...document.scripts].some((s) => s.src === SRC);
-    if (!already) {
-      const s = document.createElement("script");
-      s.src = SRC;
-      s.async = true;
-      document.head.appendChild(s);
-    }
-  }
-
-  function shortcodeFillout(tag, filloutId) {
+  function shortcodeContactForm() {
     try {
-      const nodes = document.querySelectorAll(".notion-text, .notion-callout-text .notion-text, .notion-paragraph");
+      const FILL0UT_ID = "tZMYfrqCWAus";
+
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+      );
+
       let found = false;
 
       nodes.forEach((node) => {
-        const key = "festivFilloutDone_" + tag;
-        if (node.dataset[key] === "1") return;
+        if (node.dataset.festivContactFormDone === "1") return;
 
         const txt = (node.textContent || "").trim();
-        if (!txt.includes(tag)) return;
+        if (!txt.includes("[contact-form]")) return;
 
-        node.dataset[key] = "1";
+        node.dataset.festivContactFormDone = "1";
         found = true;
 
         const mount = document.createElement("div");
         mount.className = "festiv-fillout";
         mount.style.width = "100%";
         mount.style.minHeight = "520px";
-        mount.setAttribute("data-fillout-id", filloutId);
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
         mount.setAttribute("data-fillout-embed-type", "standard");
         mount.setAttribute("data-fillout-inherit-parameters", "");
         mount.setAttribute("data-fillout-dynamic-resize", "");
 
-        if (txt === tag) {
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[contact-form]") {
           node.textContent = "";
           node.appendChild(mount);
           return;
         }
 
-        const parts = (node.textContent || "").split(tag);
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[contact-form]");
         node.textContent = "";
         parts.forEach((part, i) => {
           if (part) node.appendChild(document.createTextNode(part));
@@ -970,11 +965,85 @@
         });
       });
 
-      if (found) ensureFilloutScript();
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
+        }
+      }
     } catch (e) {
-      console.error("[festiv20] shortcodeFillout error:", e);
+      console.error("[festiv20] shortcodeContactForm error:", e);
     }
   }
+
+  // =========================================
+  // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
+  // =========================================
+  function shortcodeInscriptionForm() {
+    try {
+      const FILL0UT_ID = "jYPEHAqG3Lus";
+
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+      );
+
+      let found = false;
+
+      nodes.forEach((node) => {
+        if (node.dataset.festivInscriptionFormDone === "1") return;
+
+        const txt = (node.textContent || "").trim();
+        if (!txt.includes("[inscription-form]")) return;
+
+        node.dataset.festivInscriptionFormDone = "1";
+        found = true;
+
+        const mount = document.createElement("div");
+        mount.className = "festiv-fillout";
+        mount.style.width = "100%";
+        mount.style.minHeight = "520px";
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
+        mount.setAttribute("data-fillout-embed-type", "standard");
+        mount.setAttribute("data-fillout-inherit-parameters", "");
+        mount.setAttribute("data-fillout-dynamic-resize", "");
+
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[inscription-form]") {
+          node.textContent = "";
+          node.appendChild(mount);
+          return;
+        }
+
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[inscription-form]");
+        node.textContent = "";
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(mount.cloneNode(true));
+        });
+      });
+
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
+        }
+      }
+    } catch (e) {
+      console.error("[festiv20] shortcodeInscriptionForm error:", e);
+    }
+  }
+
 
   // =========================================
   // DISQUS — mini tip "invité"
