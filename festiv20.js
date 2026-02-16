@@ -1244,6 +1244,14 @@
 
   // expose pour CookieHub
   window.__festivInitDisqus = initDisqus;
+// Si CookieHub a déclenché des events avant que festiv20.js soit prêt, on les rejoue
+try {
+  const q = window.__festivDisqusQueue || [];
+  window.__festivDisqusQueue = [];
+  q.forEach((force) => {
+    try { initDisqus(!!force); } catch {}
+  });
+} catch {}
 
   // =========================================
   // CookieHub -> retenter Disqus sur changements
