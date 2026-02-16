@@ -1259,6 +1259,36 @@ function syncMeteoblueTheme(tries = 20) {
 }
 
 
+// =========================================
+// reCAPTCHA challenge (bframe) — centrage robuste (anti-troncature)
+// =========================================
+function fixRecaptchaChallengePosition() {
+  const apply = () => {
+    const iframes = document.querySelectorAll('iframe[src*="recaptcha"][src*="bframe"], iframe[src*="google.com/recaptcha"][src*="bframe"], iframe[src*="recaptcha.net"][src*="bframe"], iframe[src*="api2/bframe"]');
+    iframes.forEach((ifr) => {
+      // Force le bframe à être centré dans le viewport
+      ifr.style.setProperty("position", "fixed", "important");
+      ifr.style.setProperty("left", "50%", "important");
+      ifr.style.setProperty("right", "auto", "important");
+      ifr.style.setProperty("top", "50%", "important");
+      ifr.style.setProperty("bottom", "auto", "important");
+      ifr.style.setProperty("transform", "translate(-50%, -50%)", "important");
+      ifr.style.setProperty("max-width", "calc(100vw - 24px)", "important");
+      ifr.style.setProperty("max-height", "calc(100vh - 24px)", "important");
+      ifr.style.setProperty("z-index", "2147483647", "important");
+    });
+  };
+
+  // 1) on applique tout de suite (au cas où déjà présent)
+  apply();
+
+  // 2) on observe les ajouts DOM (reCAPTCHA est injecté à la demande)
+  const obs = new MutationObserver(() => apply());
+  obs.observe(document.documentElement, { childList: true, subtree: true });
+
+  // Option : stop après 60s pour éviter d'observer à vie
+  setTimeout(() => obs.disconnect(), 60000);
+}
 
 
 
@@ -1289,6 +1319,8 @@ setTimeout(syncMeteoblueTheme, 300);
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
+      fixRecaptchaChallengePosition();
+
 
       // ✅ listener OS (protégé par flag)
       bindSystemThemeListener();
