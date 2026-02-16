@@ -43,29 +43,40 @@
   }
 
   function getEffectiveTheme() {
-    return getSavedTheme() || getSystemTheme(); // ✅ auto si rien de sauvegardé
+    return getSavedTheme() || getSystemTheme(); // auto si rien de sauvegardé
   }
 
   function applyTheme(theme) {
-  const isDark = theme === "dark";
-  document.documentElement.classList.toggle("dark-mode", isDark);
+    try {
+      const isDark = theme === "dark";
 
-  // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
-  document.documentElement.classList.add("festiv-theme-ready");
+      // ✅ garde-fou: si thème identique, ne rien refaire
+      if (
+        window.__FESTIV_LAST_THEME === theme &&
+        document.documentElement.classList.contains("festiv-theme-ready")
+      ) {
+        return;
+      }
+      window.__FESTIV_LAST_THEME = theme;
 
-  // si le bouton existe déjà, on le resync
-  const wrap = document.getElementById("festiv-theme-toggle");
-  if (wrap) {
-    wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
-    wrap.classList.toggle("is-dark", isDark);
+      document.documentElement.classList.toggle("dark-mode", isDark);
+
+      // ✅ anti-flash : on retire le "cloak" dès que le thème est posé
+      document.documentElement.classList.add("festiv-theme-ready");
+
+      // si le bouton existe déjà, on le resync
+      const wrap = document.getElementById("festiv-theme-toggle");
+      if (wrap) {
+        wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+        wrap.classList.toggle("is-dark", isDark);
+      }
+
+      // ⚠️ IMPORTANT : on NE refresh PAS Disqus ici.
+      // (sinon, applySavedTheme() appelé par runAll/observer => flicker + reset)
+    } catch (e) {
+      console.error("[festiv20] applyTheme error:", e);
+    }
   }
-
-    // ✅ si Disqus est présent (page commentaires), on resync
-  if (document.getElementById("disqus_thread")) {
-    setTimeout(() => { try { refreshDisqusTheme(); } catch {} }, 50);
-  }
-}
-
 
   function applySavedTheme() {
     try {
@@ -84,8 +95,8 @@
       const mq = window.matchMedia("(prefers-color-scheme: dark)");
       const onChange = () => {
         if (!getSavedTheme()) {
-          applySavedTheme();       // suit l’OS
-          syncAutoIndicator();     // met à jour le badge AUTO
+          applySavedTheme();
+          syncAutoIndicator();
         }
       };
 
@@ -109,10 +120,11 @@
       const auto = isAutoMode();
       wrap.classList.toggle("is-auto", auto);
 
-      // Tooltip dynamique
       wrap.setAttribute(
         "title",
-        auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
+        auto
+          ? "Auto : suit le thème de ton appareil"
+          : "Thème forcé • Double-clic : revenir en Auto"
       );
     } catch {}
   }
@@ -132,11 +144,8 @@
         wrap.className = "festiv-switch";
         wrap.setAttribute("aria-label", "Changer de thème");
         wrap.setAttribute("aria-pressed", "false");
-
-        // (Le title sera géré par syncAutoIndicator)
         wrap.setAttribute("title", "Clic : changer le thème • Double-clic : Auto");
 
-        // ✅ switch iOS + icônes SVG (moon / sun) centrées
         wrap.innerHTML = `
           <span class="festiv-switch__track" aria-hidden="true">
             <span class="festiv-switch__knob" aria-hidden="true">
@@ -158,7 +167,6 @@
 
         // CLIC = toggle manuel => sauvegarde
         wrap.addEventListener("click", (e) => {
-          // ✅ ignore le click déclenché juste après un dblclick
           if (Date.now() < ignoreClickUntil) return;
 
           e.preventDefault();
@@ -172,33 +180,35 @@
             localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
           } catch {}
 
-         syncAutoIndicator();
+          // mémorise le thème pour éviter un applyTheme "inutile" derrière
+          window.__FESTIV_LAST_THEME = isDark ? "dark" : "light";
 
-        // ✅ Meteoblue : sync tout de suite + re-sync (iPhone / lazy)
-        syncMeteoblueTheme();
-        setTimeout(syncMeteoblueTheme, 300);
-        setTimeout(syncMeteoblueTheme, 1200);
+          syncAutoIndicator();
 
-        // ✅ Disqus : forcer le thème à se recalculer sans refresh page
-        refreshDisqusTheme();
-        setTimeout(refreshDisqusTheme, 350);
-        setTimeout(refreshDisqusTheme, 1200);
+          // Meteoblue
+          syncMeteoblueTheme();
+          setTimeout(syncMeteoblueTheme, 300);
+          setTimeout(syncMeteoblueTheme, 1200);
 
+          // ✅ Disqus : refresh volontaire (pas via applyTheme/runAll)
+          refreshDisqusTheme();
+          setTimeout(refreshDisqusTheme, 350);
+          setTimeout(refreshDisqusTheme, 1200);
         });
 
-        // DOUBLE-CLIC = retour AUTO (suit l’OS) => supprime la sauvegarde
+        // DOUBLE-CLIC = retour AUTO (suit l’OS)
         wrap.addEventListener("dblclick", (e) => {
           e.preventDefault();
           e.stopPropagation();
-
-          // bloque le click “fantôme” juste après le dblclick
           ignoreClickUntil = Date.now() + 350;
 
-          try { localStorage.removeItem("festiv-theme"); } catch {}
+          try {
+            localStorage.removeItem("festiv-theme");
+          } catch {}
+
           applySavedTheme();
           syncAutoIndicator();
 
-          // ✅ Disqus : idem
           refreshDisqusTheme();
           setTimeout(refreshDisqusTheme, 350);
           setTimeout(refreshDisqusTheme, 1200);
@@ -208,7 +218,6 @@
         syncAutoIndicator();
       }
 
-      // Sync état à chaque runAll (navigation interne)
       const isDarkNow = document.documentElement.classList.contains("dark-mode");
       wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
       wrap.classList.toggle("is-dark", isDarkNow);
@@ -219,7 +228,7 @@
     }
   }
 
-  // 🔥 IMPORTANT : appliquer le thème le plus tôt possible
+  // 🔥 appliquer le thème le plus tôt possible
   applySavedTheme();
   bindSystemThemeListener();
 
@@ -247,45 +256,44 @@
     }
   }
 
-  // Parse date depuis texte (EN / FR / ISO) + support "dès 06h00"
+  // =========================================
+  // 2) Dates FR
+  // =========================================
   function parseDateFromText(text) {
     const t = (text || "").trim();
 
-    // ISO: 2026-05-14, 2026-05-14T06:00
     const iso = t.match(/\b(\d{4}-\d{2}-\d{2})(?:[T\s](\d{2}:\d{2}))?\b/);
     if (iso) {
       const d = new Date(iso[0].replace(" ", "T"));
       if (!isNaN(d)) return d;
     }
 
-    // Slash: 2026/01/30 ou 2025/05/8
     const slash = t.match(/\b(\d{4})\/(\d{1,2})\/(\d{1,2})\b/);
     if (slash) {
       const year = Number(slash[1]);
-      const month = Number(slash[2]) - 1; // 0-11
+      const month = Number(slash[2]) - 1;
       const day = Number(slash[3]);
       const d = new Date(year, month, day);
       if (!isNaN(d)) return d;
     }
 
-    // EN: "May 14, 2026" + optional time "06:00"
     const en = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2},\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
     if (en) {
       const d = new Date(en[0]);
       if (!isNaN(d)) return d;
     }
 
-    // EN sans virgule: "Jan 30 2026" + optional time "06:00"
     const en2 = t.match(/\b([A-Za-z]{3,9}\s+\d{1,2}\s+\d{4})(?:\s+(\d{2}:\d{2}))?\b/);
     if (en2) {
       const d = new Date(en2[1] + (en2[2] ? " " + en2[2] : ""));
       if (!isNaN(d)) return d;
     }
 
-    // FR: "14 mai 2026" + optional "dès 06h00" / "à 6h00"
     const fr = t
       .replace(/^⏰\s*/g, "")
-      .match(/\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i);
+      .match(
+        /\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i
+      );
 
     if (fr) {
       const day = Number(fr[1]);
@@ -293,8 +301,18 @@
       const year = Number(fr[3]);
 
       const months = {
-        janvier: 0, février: 1, mars: 2, avril: 3, mai: 4, juin: 5,
-        juillet: 6, août: 7, septembre: 8, octobre: 9, novembre: 10, décembre: 11
+        janvier: 0,
+        février: 1,
+        mars: 2,
+        avril: 3,
+        mai: 4,
+        juin: 5,
+        juillet: 6,
+        août: 7,
+        septembre: 8,
+        octobre: 9,
+        novembre: 10,
+        décembre: 11,
       };
 
       const time = t.match(/\b(?:dès|à)\s*(\d{1,2})h(\d{2})\b/i);
@@ -308,18 +326,19 @@
     return null;
   }
 
-  // 2) Format dates (callout + simple table + texte simple)
   function formatDates() {
     try {
-      const els = document.querySelectorAll([
-        ".notion-property-date",
-        ".notion-collection-card .notion-property-date",
-        ".notion-collection-card .notion-property .notion-text",
-        ".notion-collection .notion-table-cell .notion-property-date",
-        ".notion-collection .notion-table-cell .notion-text",
-        ".notion-callout-text .notion-text",
-        ".notion-simple-table-cell"
-      ].join(","));
+      const els = document.querySelectorAll(
+        [
+          ".notion-property-date",
+          ".notion-collection-card .notion-property-date",
+          ".notion-collection-card .notion-property .notion-text",
+          ".notion-collection .notion-table-cell .notion-property-date",
+          ".notion-collection .notion-table-cell .notion-text",
+          ".notion-callout-text .notion-text",
+          ".notion-simple-table-cell",
+        ].join(",")
+      );
 
       els.forEach((el) => {
         if (el.dataset.festivDateDone === "1") return;
@@ -337,7 +356,9 @@
           /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||
           /\b\d{4}\/\d{1,2}\/\d{1,2}\b/.test(raw) ||
           /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||
-          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw);
+          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(
+            raw
+          );
 
         if (!looksLikeDate) return;
 
@@ -352,8 +373,7 @@
         });
 
         const hasTime =
-          /\b(\d{2}:\d{2})\b/.test(raw) ||
-          /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
+          /\b(\d{2}:\d{2})\b/.test(raw) || /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
 
         const formatted = hasTime
           ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}`
@@ -370,7 +390,9 @@
     }
   }
 
+  // =========================================
   // 3) Footer colonnes + copyright
+  // =========================================
   function createFooterColumns() {
     try {
       const footer = document.querySelector("footer.styles_main_footer__LoNow");
@@ -426,7 +448,9 @@
     }
   }
 
+  // =========================================
   // 4) Cover
+  // =========================================
   function tweakCover() {
     try {
       const img = document.querySelector(".notion-page-cover-wrapper img");
@@ -439,7 +463,9 @@
     }
   }
 
-  // 5) Indicateurs scroll horizontal pour les tables (robuste)
+  // =========================================
+  // 5) Tables scroll UX
+  // =========================================
   function setupTableScrollUX() {
     try {
       const tables = document.querySelectorAll(".notion-collection .notion-table");
@@ -449,10 +475,7 @@
         if (table.dataset.festivUxBound === "1") return;
         table.dataset.festivUxBound = "1";
 
-        if (
-          !table.previousElementSibling ||
-          !table.previousElementSibling.classList.contains("festiv-table-hint")
-        ) {
+        if (!table.previousElementSibling || !table.previousElementSibling.classList.contains("festiv-table-hint")) {
           const hint = document.createElement("div");
           hint.className = "festiv-table-hint";
           hint.textContent = "👉 Faites glisser le tableau horizontalement";
@@ -465,15 +488,14 @@
           table.querySelector(".notion-table-body"),
         ].filter(Boolean);
 
-        const scroller =
-          candidates.find((el) => el.scrollWidth > el.clientWidth + 2) || candidates[0];
+        const scroller = candidates.find((el) => el.scrollWidth > el.clientWidth + 2) || candidates[0];
 
         const update = () => {
           const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
           const EPS = 2;
 
           const canLeft = scroller.scrollLeft > EPS;
-          const canRight = scroller.scrollLeft < (maxScrollLeft - EPS);
+          const canRight = scroller.scrollLeft < maxScrollLeft - EPS;
 
           table.classList.toggle("festiv-can-scroll-left", canLeft);
           table.classList.toggle("festiv-can-scroll-right", canRight);
@@ -496,14 +518,13 @@
     }
   }
 
-  // 6) Shortcode [retour] => bouton retour (anti "clic fantôme")
+  // =========================================
+  // 6) Shortcode [retour]
+  // =========================================
   function shortcodeRetour() {
     try {
       const pageBornAt = (window.__FESTIV_PAGE_BORN_AT ||= Date.now());
-
-      const nodes = document.querySelectorAll(
-        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
-      );
+      const nodes = document.querySelectorAll(".notion-text, .notion-callout-text .notion-text, .notion-paragraph");
 
       nodes.forEach((node) => {
         if (node.dataset.festivRetourDone === "1") return;
@@ -522,7 +543,6 @@
           btn.addEventListener("click", (e) => {
             e.preventDefault();
             e.stopPropagation();
-
             if (Date.now() - pageBornAt < 900) return;
 
             if (window.history.length > 1) window.history.back();
@@ -552,7 +572,9 @@
     }
   }
 
-  // 7) Mapping des boutons Notion -> navigation contrôlée
+  // =========================================
+  // 7) Notion buttons mapping
+  // =========================================
   function bindNotionButtons() {
     try {
       if (window.__FESTIV_NOTION_BTNS_BOUND) return;
@@ -563,7 +585,7 @@
         "👉 Voir les prochains événements": "https://festiv-ounans.thesimple.ink/d0b436d5-a1e1-428d-8bd7-6845ab0654de",
         "🌶️ Participer au jeu du piment": "https://festiv-ounans.thesimple.ink/2fb6ae9a-98f2-8198-b110-c772434e56b8",
         "👉 Voir tous les événements": "https://festiv-ounans.thesimple.ink/d0b436d5-a1e1-428d-8bd7-6845ab0654de",
-        "👉 S’inscrire comme exposant": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a"
+        "👉 S’inscrire comme exposant": "https://festiv-ounans.thesimple.ink/1a46ae9a-98f2-80b4-8cfa-f0f3981dd64a",
       };
 
       document.addEventListener(
@@ -589,7 +611,9 @@
     }
   }
 
-  // 8) Corrige les <a target="_blank"> internes => même onglet
+  // =========================================
+  // 8) Corrige les liens internes target=_blank
+  // =========================================
   function fixInternalAnchors() {
     try {
       const anchors = document.querySelectorAll("a[href]");
@@ -605,9 +629,7 @@
           return;
         }
 
-        const isInternal =
-          url.origin === window.location.origin ||
-          url.hostname.endsWith(".thesimple.ink");
+        const isInternal = url.origin === window.location.origin || url.hostname.endsWith(".thesimple.ink");
 
         if (isInternal) {
           a.removeAttribute("target");
@@ -624,19 +646,19 @@
 
   function hideGenericCalloutIcons() {
     try {
-      document
-        .querySelectorAll('.notion-callout > svg.notion-page-icon[alt="Page"]')
-        .forEach((svg) => {
-          const callout = svg.closest(".notion-callout");
-          if (callout) callout.classList.add("festiv-callout-noicon");
-          svg.remove();
-        });
+      document.querySelectorAll('.notion-callout > svg.notion-page-icon[alt="Page"]').forEach((svg) => {
+        const callout = svg.closest(".notion-callout");
+        if (callout) callout.classList.add("festiv-callout-noicon");
+        svg.remove();
+      });
     } catch (e) {
       console.error("[festiv20] hideGenericCalloutIcons error:", e);
     }
   }
 
-  // FAQ : accordion + animation ouverture/fermeture + espace progressif
+  // =========================================
+  // FAQ accordion anim
+  // =========================================
   function setupFaqAnimation() {
     try {
       if (window.__FESTIV_FAQ_ANIM_BOUND) return;
@@ -678,7 +700,7 @@
 
         content.style.height = "0px";
         content.style.paddingTop = "0px";
-        content.getBoundingClientRect(); // force reflow
+        content.getBoundingClientRect();
 
         const h = content.scrollHeight;
 
@@ -725,7 +747,9 @@
     }
   }
 
-  // i18n "Search" simple.ink -> FR (sans MutationObserver)
+  // =========================================
+  // i18n Search
+  // =========================================
   function localizeSearchUI() {
     try {
       const FR = {
@@ -798,7 +822,9 @@
     }
   }
 
-  // 9) Back-to-top button (visible seulement après scroll)
+  // =========================================
+  // 9) Back-to-top
+  // =========================================
   function setupBackToTop() {
     try {
       if (window.__FESTIV_BACKTOTOP_BOUND) return;
@@ -813,7 +839,6 @@
       document.body.appendChild(btn);
 
       const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
       const scrollToTop = () => {
         const behavior = reduceMotion.matches ? "auto" : "smooth";
         window.scrollTo({ top: 0, left: 0, behavior });
@@ -826,7 +851,6 @@
       });
 
       const THRESHOLD = 220;
-
       const update = () => {
         const y = window.scrollY || document.documentElement.scrollTop || 0;
         btn.classList.toggle("is-visible", y > THRESHOLD);
@@ -840,7 +864,9 @@
     }
   }
 
-  // 8bis) Traduire le calendrier Notion (mois, jours, Today)
+  // =========================================
+  // 10) Calendrier Notion FR
+  // =========================================
   function translateNotionCalendar() {
     try {
       const monthMap = {
@@ -869,7 +895,6 @@
         Sun: "Dim",
       };
 
-      // Titre du mois: "February 2026" -> "Février 2026"
       const headerTitle = document.querySelector(".notion-calendar-header-title");
       if (headerTitle) {
         const parts = headerTitle.textContent.trim().split(/\s+/);
@@ -878,13 +903,11 @@
         }
       }
 
-      // Jours: Mon Tue Wed...
       document.querySelectorAll(".notion-calendar-body-title span").forEach((el) => {
         const k = el.textContent.trim();
         if (dayMap[k]) el.textContent = dayMap[k];
       });
 
-      // Bouton Today -> Aujourd’hui
       document.querySelectorAll(".notion-calendar-header-controls span").forEach((el) => {
         if (el.textContent.trim() === "Today") el.textContent = "Aujourd’hui";
       });
@@ -893,7 +916,6 @@
     }
   }
 
-  // Pour que ça reste traduit après navigation (flèches mois / Today)
   function bindCalendarI18nHooks() {
     try {
       if (window.__FESTIV_CAL_I18N_BOUND) return;
@@ -914,15 +936,12 @@
   }
 
   // =========================================
-  // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
+  // 11) Shortcodes Fillout
   // =========================================
   function shortcodeContactForm() {
     try {
       const FILL0UT_ID = "tZMYfrqCWAus";
-
-      const nodes = document.querySelectorAll(
-        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
-      );
+      const nodes = document.querySelectorAll(".notion-text, .notion-callout-text .notion-text, .notion-paragraph");
 
       let found = false;
 
@@ -944,14 +963,12 @@
         mount.setAttribute("data-fillout-inherit-parameters", "");
         mount.setAttribute("data-fillout-dynamic-resize", "");
 
-        // Si le bloc ne contient QUE le shortcode -> on remplace tout
         if (txt === "[contact-form]") {
           node.textContent = "";
           node.appendChild(mount);
           return;
         }
 
-        // Sinon on conserve le texte autour et on injecte au bon endroit
         const parts = (node.textContent || "").split("[contact-form]");
         node.textContent = "";
         parts.forEach((part, i) => {
@@ -960,7 +977,6 @@
         });
       });
 
-      // Charger le script Fillout une seule fois (seulement si besoin)
       if (found) {
         const SRC = "https://server.fillout.com/embed/v1/";
         const already = [...document.scripts].some((s) => s.src === SRC);
@@ -976,16 +992,10 @@
     }
   }
 
-  // =========================================
-  // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
-  // =========================================
   function shortcodeInscriptionForm() {
     try {
       const FILL0UT_ID = "jYPEHAqG3Lus";
-
-      const nodes = document.querySelectorAll(
-        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
-      );
+      const nodes = document.querySelectorAll(".notion-text, .notion-callout-text .notion-text, .notion-paragraph");
 
       let found = false;
 
@@ -1007,14 +1017,12 @@
         mount.setAttribute("data-fillout-inherit-parameters", "");
         mount.setAttribute("data-fillout-dynamic-resize", "");
 
-        // Si le bloc ne contient QUE le shortcode -> on remplace tout
         if (txt === "[inscription-form]") {
           node.textContent = "";
           node.appendChild(mount);
           return;
         }
 
-        // Sinon on conserve le texte autour et on injecte au bon endroit
         const parts = (node.textContent || "").split("[inscription-form]");
         node.textContent = "";
         parts.forEach((part, i) => {
@@ -1023,7 +1031,6 @@
         });
       });
 
-      // Charger le script Fillout une seule fois (seulement si besoin)
       if (found) {
         const SRC = "https://server.fillout.com/embed/v1/";
         const already = [...document.scripts].some((s) => s.src === SRC);
@@ -1038,75 +1045,108 @@
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
-  // =========================================
-// NOTICE "Commenter en invité / anonyme" (sous H2 💬 Commentaires)
-// =========================================
-function injectDisqusGuestTip() {
-  try {
-    const hs = document.querySelectorAll("h1,h2,h3");
-    let marker = null;
-    for (const h of hs) {
-      if ((h.textContent || "").trim() === "💬 Commentaires") {
-        marker = h;
-        break;
-      }
-    }
-    if (!marker) return;
-
-    // évite la ré-injection à chaque runAll
-    if (marker.dataset.festivDisqusGuestTipDone === "1") return;
-    marker.dataset.festivDisqusGuestTipDone = "1";
-
-    // styles 1 seule fois
-    if (!document.getElementById("festiv-disqus-guest-tip-style")) {
-      const style = document.createElement("style");
-      style.id = "festiv-disqus-guest-tip-style";
-      style.textContent = `
-        .festiv-disqus-guest-tip{
-          width: min(980px, calc(100% - 24px));
-          margin: 10px 0 14px 0;
-          padding: 12px 14px;
-          border-radius: 12px;
-          line-height: 1.4;
-          font-size: 14px;
-          background: rgba(255,255,255,0.85);
-          border: 1px solid rgba(0,0,0,0.08);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-          backdrop-filter: blur(8px);
-        }
-        .dark-mode .festiv-disqus-guest-tip{
-          background: rgba(15,15,15,0.72);
-          border: 1px solid rgba(255,255,255,0.12);
-          box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-        }
-        .festiv-disqus-guest-tip b{font-weight:700;}
-      `;
-      document.head.appendChild(style);
-    }
-
-    const box = document.createElement("div");
-    box.className = "festiv-disqus-guest-tip";
-    box.innerHTML = `
-      <b>Commenter sans créer de compte ?</b>
-    Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
-    Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
-    `;
-
-    // injecte juste après le titre
-    marker.insertAdjacentElement("afterend", box);
-  } catch (e) {
-    console.error("[festiv20] injectDisqusGuestTip error:", e);
-  }
-}
 
   // =========================================
-  // DISQUS (uniquement si H2 "💬 Commentaires")
-  // + respecte CookieHub + SPA-friendly
+  // DISQUS — mini tip "invité"
   // =========================================
-
-  function initDisqus() {
+  function injectDisqusGuestTip() {
     try {
-      // (optionnel mais propre) indique au site qu'on est en FR
+      const hs = document.querySelectorAll("h1,h2,h3");
+      let marker = null;
+      for (const h of hs) {
+        if ((h.textContent || "").trim() === "💬 Commentaires") {
+          marker = h;
+          break;
+        }
+      }
+      if (!marker) return;
+
+      if (marker.dataset.festivDisqusGuestTipDone === "1") return;
+      marker.dataset.festivDisqusGuestTipDone = "1";
+
+      if (!document.getElementById("festiv-disqus-guest-tip-style")) {
+        const style = document.createElement("style");
+        style.id = "festiv-disqus-guest-tip-style";
+        style.textContent = `
+          .festiv-disqus-guest-tip{
+            width: min(980px, calc(100% - 24px));
+            margin: 10px 0 14px 0;
+            padding: 12px 14px;
+            border-radius: 12px;
+            line-height: 1.4;
+            font-size: 14px;
+            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            backdrop-filter: blur(8px);
+          }
+          .dark-mode .festiv-disqus-guest-tip{
+            background: rgba(15,15,15,0.72);
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
+          }
+          .festiv-disqus-guest-tip b{font-weight:700;}
+        `;
+        document.head.appendChild(style);
+      }
+
+      const box = document.createElement("div");
+      box.className = "festiv-disqus-guest-tip";
+      box.innerHTML = `
+        <b>Commenter sans créer de compte ?</b>
+        Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
+        Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
+      `;
+
+      marker.insertAdjacentElement("afterend", box);
+    } catch (e) {
+      console.error("[festiv20] injectDisqusGuestTip error:", e);
+    }
+  }
+
+  // =========================================
+  // DISQUS — patch texte "18+"
+  // =========================================
+  function patchDisqusAgeGateFR() {
+    try {
+      const FROM = "Acknowledge I am 18 or older";
+      const TO = "Je confirme avoir 18 ans ou plus";
+
+      // best-effort dans le DOM courant (si jamais Disqus le rend hors iframe)
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      const touched = new Set();
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (!n || !n.nodeValue) continue;
+        if (touched.has(n)) continue;
+        if (n.nodeValue.includes(FROM)) {
+          n.nodeValue = n.nodeValue.replaceAll(FROM, TO);
+          touched.add(n);
+        }
+      }
+
+      // best-effort si une iframe est accessible (rare, souvent cross-origin)
+      document.querySelectorAll("iframe").forEach((ifr) => {
+        try {
+          const doc = ifr.contentDocument;
+          if (!doc || !doc.body) return;
+          const w = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null);
+          while (w.nextNode()) {
+            const n = w.currentNode;
+            if (n && n.nodeValue && n.nodeValue.includes(FROM)) {
+              n.nodeValue = n.nodeValue.replaceAll(FROM, TO);
+            }
+          }
+        } catch {}
+      });
+    } catch {}
+  }
+
+  // =========================================
+  // DISQUS — init idempotent (anti-flicker)
+  // =========================================
+  function initDisqus(force = false) {
+    try {
       document.documentElement.setAttribute("lang", "fr");
 
       // 1) Cherche le marqueur
@@ -1120,9 +1160,9 @@ function injectDisqusGuestTip() {
       }
       if (!marker) return;
 
-      // 2) Consent CookieHub (souvent: "marketing")
+      // 2) Consent CookieHub
       const CH = window.cookiehub;
-      const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing"); // si besoin: "analytics"
+      const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing");
 
       const existingWrap = document.querySelector(".festiv-disqus-wrap");
 
@@ -1151,10 +1191,10 @@ function injectDisqusGuestTip() {
         return;
       }
 
-      // 4) Consent OK → retire le placeholder
+      // 4) Consent OK → retire placeholder
       document.querySelector(".festiv-disqus-consent")?.remove();
 
-      // 5) Crée le conteneur Disqus si absent
+      // 5) Crée #disqus_thread si absent
       if (!document.getElementById("disqus_thread")) {
         const wrap = existingWrap || document.createElement("div");
         wrap.className = "festiv-disqus-wrap";
@@ -1166,18 +1206,27 @@ function injectDisqusGuestTip() {
         if (!existingWrap) marker.insertAdjacentElement("afterend", wrap);
       }
 
-      // 6) Config Disqus
+      const pageUrl = window.location.href.split("#")[0];
+      const pageId = window.location.pathname;
+      const pageKey = pageId + "||" + pageUrl;
+
+      // ✅ si déjà OK pour cette page et pas de force → ne rien faire (anti flicker)
+      if (!force && window.__FESTIV_DISQUS_KEY === pageKey && window.__FESTIV_DISQUS_READY) {
+        return;
+      }
+
       const disqusConfig = function () {
-        this.page.url = window.location.href.split("#")[0];
-        this.page.identifier = window.location.pathname;
+        this.page.url = pageUrl;
+        this.page.identifier = pageId;
         this.language = "fr";
       };
 
-      // 7) Si déjà chargé → reset SPA propre
+      // 7) Disqus déjà chargé → reset seulement si (page change ou force)
       if (window.DISQUS && typeof window.DISQUS.reset === "function") {
-        window.DISQUS.reset({ reload: true, config: disqusConfig });
+        window.__FESTIV_DISQUS_KEY = pageKey;
+        window.__FESTIV_DISQUS_READY = true;
 
-        // patch FR après rendu (2 tentatives)
+        window.DISQUS.reset({ reload: true, config: disqusConfig });
         setTimeout(patchDisqusAgeGateFR, 300);
         setTimeout(patchDisqusAgeGateFR, 900);
         return;
@@ -1186,10 +1235,7 @@ function injectDisqusGuestTip() {
       // 8) Premier chargement
       window.disqus_config = disqusConfig;
 
-      const already = [...document.scripts].some((s) =>
-        (s.src || "").includes("festivounans.disqus.com/embed.js")
-      );
-
+      const already = [...document.scripts].some((s) => (s.src || "").includes("festivounans.disqus.com/embed.js"));
       if (!already) {
         const s = document.createElement("script");
         s.src = "https://festivounans.disqus.com/embed.js";
@@ -1197,31 +1243,48 @@ function injectDisqusGuestTip() {
         (document.head || document.body).appendChild(s);
       }
 
-      // patch FR après rendu (2 tentatives)
+      window.__FESTIV_DISQUS_KEY = pageKey;
+      window.__FESTIV_DISQUS_READY = true;
+
       setTimeout(patchDisqusAgeGateFR, 600);
       setTimeout(patchDisqusAgeGateFR, 1400);
     } catch (e) {
       console.error("[festiv20] initDisqus error:", e);
     }
   }
-    // 🔁 Force Disqus à se recharger (utile quand on change de thème sans refresh)
+
+  // 🔁 Refresh volontaire (ex: toggle thème) — garde-fou anti-spam
   function refreshDisqusTheme() {
     try {
       if (!document.getElementById("disqus_thread")) return;
 
-      const disqusConfig = function () {
-        this.page.url = window.location.href.split("#")[0];
-        this.page.identifier = window.location.pathname;
-        this.language = "fr";
-      };
-
-      if (window.DISQUS && typeof window.DISQUS.reset === "function") {
-        window.DISQUS.reset({ reload: true, config: disqusConfig });
-
-        // patch FR + laisser le temps à Disqus de rerender
-        setTimeout(patchDisqusAgeGateFR, 400);
-        setTimeout(patchDisqusAgeGateFR, 1100);
+      // debounce
+      if (window.__FESTIV_DISQUS_REFRESH_T) {
+        clearTimeout(window.__FESTIV_DISQUS_REFRESH_T);
       }
+
+      window.__FESTIV_DISQUS_REFRESH_T = setTimeout(() => {
+        try {
+          const pageUrl = window.location.href.split("#")[0];
+          const pageId = window.location.pathname;
+
+          const disqusConfig = function () {
+            this.page.url = pageUrl;
+            this.page.identifier = pageId;
+            this.language = "fr";
+          };
+
+          if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+            // force = true pour accepter le reset ici
+            window.__FESTIV_DISQUS_KEY = pageId + "||" + pageUrl;
+            window.__FESTIV_DISQUS_READY = true;
+
+            window.DISQUS.reset({ reload: true, config: disqusConfig });
+            setTimeout(patchDisqusAgeGateFR, 400);
+            setTimeout(patchDisqusAgeGateFR, 1100);
+          }
+        } catch {}
+      }, 120);
     } catch (e) {
       console.error("[festiv20] refreshDisqusTheme error:", e);
     }
@@ -1231,8 +1294,7 @@ function injectDisqusGuestTip() {
   window.__festivInitDisqus = initDisqus;
 
   // =========================================
-  // CookieHub → si l'utilisateur change son choix,
-  // on retente initDisqus() sans refresh.
+  // CookieHub -> retenter Disqus si changement consentement
   // =========================================
   function bindCookieHubForDisqus() {
     try {
@@ -1240,14 +1302,21 @@ function injectDisqusGuestTip() {
       window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
 
       const rerun = () => {
-        setTimeout(() => { try { initDisqus(); } catch {} }, 50);
-        setTimeout(() => { try { initDisqus(); } catch {} }, 250);
+        // si l'utilisateur vient d'accepter, on peut forcer une init
+        setTimeout(() => {
+          try {
+            initDisqus(true);
+          } catch {}
+        }, 50);
+        setTimeout(() => {
+          try {
+            initDisqus(true);
+          } catch {}
+        }, 250);
       };
 
-      // Fallback fiable : quand la page reprend le focus
       window.addEventListener("focus", rerun);
 
-      // Si CookieHub expose une API d'events (selon version)
       const CH = window.cookiehub;
       if (CH && typeof CH.on === "function") {
         CH.on("onAllow", rerun);
@@ -1259,66 +1328,66 @@ function injectDisqusGuestTip() {
     }
   }
 
-function syncMeteoblueTheme(tries = 20) {
-  try {
-    const isDark = document.documentElement.classList.contains("dark-mode");
-
-    // ✅ match large (langue variable / chemins variables)
-    const iframe = document.querySelector(
-      'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
-    );
-
-    if (!iframe) {
-      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-      return;
-    }
-
-    const srcAttr = iframe.getAttribute("src");
-    const dataSrcAttr = iframe.getAttribute("data-src");
-    const current = srcAttr || dataSrcAttr || "";
-    if (!current) {
-      if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-      return;
-    }
-
-    let url;
+  // =========================================
+  // Meteoblue theme sync
+  // =========================================
+  function syncMeteoblueTheme(tries = 20) {
     try {
-      url = new URL(current, window.location.href);
-    } catch {
-      return;
+      const isDark = document.documentElement.classList.contains("dark-mode");
+
+      const iframe = document.querySelector(
+        'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
+      );
+
+      if (!iframe) {
+        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
+        return;
+      }
+
+      const srcAttr = iframe.getAttribute("src");
+      const dataSrcAttr = iframe.getAttribute("data-src");
+      const current = srcAttr || dataSrcAttr || "";
+      if (!current) {
+        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
+        return;
+      }
+
+      let url;
+      try {
+        url = new URL(current, window.location.href);
+      } catch {
+        return;
+      }
+
+      url.searchParams.set("layout", isDark ? "dark" : "bright");
+      const next = url.toString();
+
+      if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
+      if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
+
+      if (tries === 20) {
+        setTimeout(() => syncMeteoblueTheme(3), 900);
+        setTimeout(() => syncMeteoblueTheme(3), 2500);
+      }
+    } catch (e) {
+      console.error("[festiv20] syncMeteoblueTheme error:", e);
     }
-
-    url.searchParams.set("layout", isDark ? "dark" : "bright");
-    const next = url.toString();
-
-    // ✅ met à jour les deux (iOS/lazy)
-    if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
-    if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
-
-    // ✅ iOS/Simple.ink peut réécrire le src après coup → re-sync “tardive”
-    if (tries === 20) {
-      setTimeout(() => syncMeteoblueTheme(3), 900);
-      setTimeout(() => syncMeteoblueTheme(3), 2500);
-    }
-  } catch (e) {
-    console.error("[festiv20] syncMeteoblueTheme error:", e);
   }
-}
-
-
 
   // =========================================
-  // runAll (appelé au load + à chaque rebuild DOM)
+  // runAll (load + rebuild DOM)
   // =========================================
   function runAll() {
     if (window.__FESTIV_RUNALL_LOCK) return;
     window.__FESTIV_RUNALL_LOCK = true;
 
     try {
-      // ✅ re-appliquer le thème à chaque runAll (navigation interne / DOM rebuild)
+      // Theme / syncs
       applySavedTheme();
       syncMeteoblueTheme();
       setTimeout(syncMeteoblueTheme, 300);
+
+      // UI tweaks
       makeLogoClickable();
       formatDates();
       createFooterColumns();
@@ -1332,62 +1401,70 @@ function syncMeteoblueTheme(tries = 20) {
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
-      
 
-      // ✅ listener OS (protégé par flag)
+      // listeners
       bindSystemThemeListener();
-
-      // ✅ calendrier FR
       bindCalendarI18nHooks();
       translateNotionCalendar();
 
-      // ✅ bouton toggle + icône + badge AUTO à jour
+      // theme toggle
       initThemeToggle();
 
-      // ✅ Fillout natif (auto-resize)
+      // Fillout
       shortcodeContactForm();
       shortcodeInscriptionForm();
 
-     // ✅ Disqus (si H2 "💬 Commentaires")
-document.documentElement.setAttribute("lang", "fr");
-injectDisqusGuestTip();
-initDisqus();
-
-      
+      // Disqus (idempotent = safe)
+      document.documentElement.setAttribute("lang", "fr");
+      injectDisqusGuestTip();
+      initDisqus(false);
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
     }
   }
 
-  // Petits retours internes
+  // petits retours internes
   setTimeout(fixInternalAnchors, 500);
   setTimeout(fixInternalAnchors, 1500);
 
   onReady(() => {
     log("loaded ✅");
 
-    // ✅ CookieHub → retenter Disqus après changement de consentement
     bindCookieHubForDisqus();
 
-    // ✅ run initial
     runAll();
 
-    // ✅ observer global : relance runAll si Simple.ink reconstruit le DOM,
-    // mais IGNORE tout ce qui vient de Disqus (sinon boucle infinie).
+    // ✅ observer global : relance runAll si Simple.ink reconstruit le DOM
+    // mais ignore tout ce qui vient de Disqus (sinon flicker / reset)
     let t = null;
+
+    const isDisqusRelatedNode = (node) => {
+      if (!node || node.nodeType !== 1) return false;
+      const el = node;
+
+      if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
+
+      // iframes disqus/recaptcha
+      if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
+      if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]'))
+        return true;
+
+      // ids/class disqus fréquents
+      if (el.id && el.id.startsWith("dsq-")) return true;
+      if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
+
+      // descendants
+      if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
+
+      return false;
+    };
+
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
-        const target = m.target;
-        if (target && target.closest && target.closest("#disqus_thread, .festiv-disqus-wrap")) {
-          return;
-        }
+        if (isDisqusRelatedNode(m.target)) return;
+
         for (const n of m.addedNodes || []) {
-          if (n.nodeType === 1) {
-            const el = n;
-            if (el.id === "disqus_thread") return;
-            if (el.closest && el.closest("#disqus_thread, .festiv-disqus-wrap")) return;
-            if (el.querySelector?.('iframe[src*="disqus"]')) return;
-          }
+          if (isDisqusRelatedNode(n)) return;
         }
       }
 
