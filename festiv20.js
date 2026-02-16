@@ -1260,63 +1260,72 @@ function syncMeteoblueTheme(tries = 20) {
 
 
 // =========================================
-// reCAPTCHA — FIX ULTRA ROBUSTE (anti-troncature / anti-transform parents)
+// reCAPTCHA — FIX ULTIME (Shadow DOM + forcing loop)
 // =========================================
 function fixRecaptchaChallengePosition() {
-  const SAVED = new WeakMap();
+  const MATCH_IFRAME = (ifr) => {
+    try {
+      const src = (ifr.getAttribute("src") || "") + " " + (ifr.getAttribute("data-src") || "");
+      const title = (ifr.getAttribute("title") || "");
+      return /recaptcha|google\.com\/recaptcha|recaptcha\.net|api2\/bframe/i.test(src + " " + title);
+    } catch { return false; }
+  };
 
   const isVisible = (el) => {
-    if (!el) return false;
-    const r = el.getBoundingClientRect();
-    if (r.width < 20 || r.height < 20) return false;
-    const cs = getComputedStyle(el);
-    return cs.display !== "none" && cs.visibility !== "hidden" && cs.opacity !== "0";
+    try {
+      const r = el.getBoundingClientRect();
+      if (r.width < 10 || r.height < 10) return false;
+      const cs = getComputedStyle(el);
+      return cs.display !== "none" && cs.visibility !== "hidden" && cs.opacity !== "0";
+    } catch { return false; }
   };
 
-  const saveStyle = (el) => {
-    if (SAVED.has(el)) return;
-    SAVED.set(el, {
-      transform: el.style.transform,
-      filter: el.style.filter,
-      perspective: el.style.perspective,
-      overflow: el.style.overflow,
-      overflowX: el.style.overflowX,
-      overflowY: el.style.overflowY,
-      position: el.style.position,
-      zIndex: el.style.zIndex,
-    });
+  // 🔎 Scan DOM + Shadow DOM (open)
+  const collectAllElementsDeep = (root) => {
+    const out = [];
+    const walk = (node) => {
+      if (!node) return;
+      if (node.nodeType === 1) out.push(node);
+
+      // enfants classiques
+      const kids = node.children ? Array.from(node.children) : [];
+      for (const k of kids) walk(k);
+
+      // shadow root (open)
+      const sr = node.shadowRoot;
+      if (sr) {
+        const srKids = sr.children ? Array.from(sr.children) : [];
+        for (const k of srKids) walk(k);
+      }
+    };
+    walk(root);
+    return out;
   };
 
-  const restoreAll = () => {
-    document.documentElement.classList.remove("festiv-recaptcha-open");
-    for (const [el, prev] of SAVED.entries()) {
-      try {
-        el.style.transform = prev.transform || "";
-        el.style.filter = prev.filter || "";
-        el.style.perspective = prev.perspective || "";
-        el.style.overflow = prev.overflow || "";
-        el.style.overflowX = prev.overflowX || "";
-        el.style.overflowY = prev.overflowY || "";
-        el.style.position = prev.position || "";
-        el.style.zIndex = prev.zIndex || "";
-      } catch {}
-    }
-    // reset
-    try { SAVED.clear?.(); } catch {}
+  const forceCenter = (ifr) => {
+    try {
+      ifr.style.setProperty("position", "fixed", "important");
+      ifr.style.setProperty("left", "50%", "important");
+      ifr.style.setProperty("top", "50%", "important");
+      ifr.style.setProperty("right", "auto", "important");
+      ifr.style.setProperty("bottom", "auto", "important");
+      ifr.style.setProperty("transform", "translate(-50%, -50%)", "important");
+      ifr.style.setProperty("max-width", "calc(100vw - 24px)", "important");
+      ifr.style.setProperty("max-height", "calc(100vh - 24px)", "important");
+      ifr.style.setProperty("z-index", "2147483647", "important");
+    } catch {}
   };
 
-  const hardenAncestors = (iframe) => {
-    let p = iframe.parentElement;
+  // 🔧 Neutralise les ancêtres “casse-fixed” (transform/filter/overflow hidden)
+  const hardenAncestors = (el) => {
+    let p = el && el.parentElement;
     while (p && p !== document.body && p !== document.documentElement) {
       const cs = getComputedStyle(p);
-      const hasBadTransform =
-        cs.transform !== "none" || cs.filter !== "none" || cs.perspective !== "none";
-      const clips =
+      const bad =
+        cs.transform !== "none" || cs.filter !== "none" || cs.perspective !== "none" ||
         cs.overflow === "hidden" || cs.overflowX === "hidden" || cs.overflowY === "hidden";
 
-      if (hasBadTransform || clips) {
-        saveStyle(p);
-        // neutralise ce qui casse le fixed / coupe la popup
+      if (bad) {
         p.style.setProperty("transform", "none", "important");
         p.style.setProperty("filter", "none", "important");
         p.style.setProperty("perspective", "none", "important");
@@ -1328,68 +1337,56 @@ function fixRecaptchaChallengePosition() {
     }
   };
 
-  const centerIframe = (ifr) => {
-    saveStyle(ifr);
-    ifr.style.setProperty("position", "fixed", "important");
-    ifr.style.setProperty("left", "50%", "important");
-    ifr.style.setProperty("top", "50%", "important");
-    ifr.style.setProperty("right", "auto", "important");
-    ifr.style.setProperty("bottom", "auto", "important");
-    ifr.style.setProperty("transform", "translate(-50%, -50%)", "important");
-    ifr.style.setProperty("max-width", "calc(100vw - 24px)", "important");
-    ifr.style.setProperty("max-height", "calc(100vh - 24px)", "important");
-    ifr.style.setProperty("z-index", "2147483647", "important");
-  };
-
   const apply = () => {
-    // cible large : bframe + anchor + toute iframe recaptcha potentielle
-    const iframes = Array.from(
-      document.querySelectorAll(
-        'iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"], iframe[src*="api2/"], iframe[title*="recaptcha" i]'
-      )
-    );
-
-    // On cherche surtout une iframe "challenge" visible (souvent la plus grande)
+    // scan deep
+    const all = collectAllElementsDeep(document.documentElement);
+    const iframes = all.filter((n) => n.tagName === "IFRAME" && MATCH_IFRAME(n));
     const visible = iframes.filter(isVisible);
+
     if (!visible.length) {
-      // si on était en mode "open", on restaure
-      if (document.documentElement.classList.contains("festiv-recaptcha-open")) {
-        restoreAll();
-      }
+      document.documentElement.classList.remove("festiv-recaptcha-open");
       return;
     }
 
-    // active un état global
     document.documentElement.classList.add("festiv-recaptcha-open");
 
-    // On centre TOUTES les iframes visibles recaptcha (safe)
+    // On centre tout ce qui est visible
     visible.forEach((ifr) => {
-      centerIframe(ifr);
+      forceCenter(ifr);
       hardenAncestors(ifr);
     });
+
+    // debug (si DEBUG true en haut de ton fichier)
+    try { console.log("[festiv20] recaptcha iframes visibles:", visible.map(i => i.getAttribute("src"))); } catch {}
   };
 
-  // 1) applique immédiatement
+  // ✅ Apply tout de suite + en boucle (reCAPTCHA remplace les iframes)
   apply();
 
-  // 2) observe DOM + repasse plusieurs fois (recaptcha bouge en plusieurs phases)
-  if (!window.__FESTIV_RECAPTCHA_OBS) {
-    window.__FESTIV_RECAPTCHA_OBS = new MutationObserver(() => {
+  let ticks = 0;
+  const loop = () => {
+    apply();
+    ticks++;
+    if (ticks < 80) requestAnimationFrame(loop); // ~80 frames ≈ 1–2s selon machine
+  };
+  requestAnimationFrame(loop);
+
+  // ✅ Et encore quelques coups “tardifs”
+  setTimeout(apply, 200);
+  setTimeout(apply, 600);
+  setTimeout(apply, 1200);
+
+  // ✅ Observe le DOM (classique) — le loop couvre déjà beaucoup, mais on garde
+  if (!window.__FESTIV_RECAPTCHA_OBS2) {
+    window.__FESTIV_RECAPTCHA_OBS2 = new MutationObserver(() => {
       apply();
       setTimeout(apply, 50);
       setTimeout(apply, 200);
     });
-    window.__FESTIV_RECAPTCHA_OBS.observe(document.documentElement, { childList: true, subtree: true });
+    window.__FESTIV_RECAPTCHA_OBS2.observe(document.documentElement, { childList: true, subtree: true });
   }
-
-  // 3) filet de sécurité: check périodique pendant 30s
-  let n = 0;
-  const iv = setInterval(() => {
-    apply();
-    n++;
-    if (n > 60) clearInterval(iv); // ~30s
-  }, 500);
 }
+
 
 
 
