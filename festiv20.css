@@ -1360,5 +1360,27 @@ html.festiv-recaptcha-open,
 html.festiv-recaptcha-open body{
   overflow: visible !important;
 }
+/* ===== reCAPTCHA / Disqus / overlays : centrer le challenge quoi qu’il arrive ===== */
+iframe[src*="recaptcha"],
+iframe[src*="google.com/recaptcha"],
+iframe[src*="recaptcha.net"],
+iframe[src*="api2/bframe"],
+iframe[title*="recaptcha" i]{
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  max-width: calc(100vw - 24px) !important;
+  max-height: calc(100vh - 24px) !important;
+  z-index: 2147483647 !important;
+}
+
+/* éviter que des parents coupent la popup */
+html.festiv-recaptcha-open,
+html.festiv-recaptcha-open body{
+  overflow: visible !important;
+}
 
 
