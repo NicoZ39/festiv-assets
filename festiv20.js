@@ -1051,14 +1051,10 @@
   // =========================================
   function injectDisqusGuestTip() {
   try {
-    // ✅ n'affiche pas le tip si pas de consentement Disqus
     const CH = window.cookiehub;
     const consentOk = !CH || !CH.hasConsented ? true : CH.hasConsented("marketing");
-    if (!consentOk) return;
 
-    // ✅ et seulement si le module Disqus est présent (évite le tip "à vide")
-    if (!document.getElementById("disqus_thread")) return;
-
+    // marker H2
     const hs = document.querySelectorAll("h1,h2,h3");
     let marker = null;
     for (const h of hs) {
@@ -1068,6 +1064,15 @@
       }
     }
     if (!marker) return;
+
+    // ✅ si pas de consentement OU pas de disqus_thread : on supprime le tip s'il existe et on stop
+    const hasThread = !!document.getElementById("disqus_thread");
+    if (!consentOk || !hasThread) {
+      const existing = marker.parentElement?.querySelector?.(".festiv-disqus-guest-tip");
+      if (existing) existing.remove();
+      marker.dataset.festivDisqusGuestTipDone = "0";
+      return;
+    }
 
     // évite la ré-injection à chaque runAll
     if (marker.dataset.festivDisqusGuestTipDone === "1") return;
@@ -1113,6 +1118,7 @@
     console.error("[festiv20] injectDisqusGuestTip error:", e);
   }
 }
+
 
 
   // =========================================
@@ -1254,22 +1260,26 @@ try {
         return;
       }
 
-      // 8) Premier chargement
-      window.disqus_config = disqusConfig;
+      // 8) Premier chargement / ou script présent mais DISQUS pas prêt
+window.disqus_config = disqusConfig;
 
-      const already = [...document.scripts].some((s) => (s.src || "").includes("festivounans.disqus.com/embed.js"));
-      if (!already) {
-        const s = document.createElement("script");
-        s.src = "https://festivounans.disqus.com/embed.js";
-        s.setAttribute("data-timestamp", String(+new Date()));
-        (document.head || document.body).appendChild(s);
-      }
+const srcBase = "https://festivounans.disqus.com/embed.js";
 
-      window.__FESTIV_DISQUS_KEY = pageKey;
-      window.__FESTIV_DISQUS_READY = true;
+// ✅ si DISQUS n'est pas là, on (ré)injecte toujours un script "fresh"
+if (!window.DISQUS) {
+  const s = document.createElement("script");
+  s.src = srcBase + "?t=" + Date.now(); // cache-bust
+  s.async = true;
+  s.setAttribute("data-timestamp", String(+new Date()));
+  (document.head || document.body).appendChild(s);
+}
 
-      setTimeout(patchDisqusAgeGateFR, 600);
-      setTimeout(patchDisqusAgeGateFR, 1400);
+window.__FESTIV_DISQUS_KEY = pageKey;
+window.__FESTIV_DISQUS_READY = true;
+
+setTimeout(patchDisqusAgeGateFR, 600);
+setTimeout(patchDisqusAgeGateFR, 1400);
+
     } catch (e) {
       console.error("[festiv20] initDisqus error:", e);
     }
@@ -1324,30 +1334,37 @@ try {
     window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
 
     const rerunSoft = () => {
-      // ✅ soft: ne force pas => pas de reset si déjà OK
+      // soft: ne force pas, mais met à jour tip aussi
       setTimeout(() => { try { initDisqus(false); } catch {} }, 50);
       setTimeout(() => { try { initDisqus(false); } catch {} }, 250);
+      setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 350);
     };
 
     const rerunHard = () => {
-      // ✅ hard: seulement quand CookieHub dit "changement"
+      // hard: vrai changement de consentement => force init Disqus
       setTimeout(() => { try { initDisqus(true); } catch {} }, 50);
       setTimeout(() => { try { initDisqus(true); } catch {} }, 250);
+
+      // tip: doit être relancé après acceptation
+      setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 350);
+      setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 900);
     };
 
-    // ❌ IMPORTANT : on enlève le fallback "focus"
-    // (ça se déclenche à chaque sortie d’iframe Disqus => flicker)
-    // window.addEventListener("focus", rerun);
+    const rerunRevoke = () => {
+      // quand on refuse/retire, on remet le placeholder et on retire le tip
+      setTimeout(() => { try { initDisqus(true); } catch {} }, 50);
+      setTimeout(() => { try { initDisqus(true); } catch {} }, 250);
+      setTimeout(() => { try { injectDisqusGuestTip(); } catch {} }, 350); // ta fonction supprime le tip si besoin
+    };
 
     const CH = window.cookiehub;
+
     if (CH && typeof CH.on === "function") {
-      // uniquement sur vrais events CookieHub
       CH.on("onAllow", rerunHard);
       CH.on("onStatusChange", rerunHard);
-      CH.on("onRevoke", rerunHard);
+      CH.on("onRevoke", rerunRevoke);
     } else {
-      // fallback ultra soft si aucune API event (mais pas via focus)
-      // on tente une fois au chargement, pas plus
+      // fallback si pas d’API events
       rerunSoft();
     }
   } catch (e) {
