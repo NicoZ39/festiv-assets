@@ -1043,51 +1043,53 @@
   // null = CookieHub pas prêt (au refresh)
   // =========================================
   function getDisqusConsentStatus() {
-    const CH = window.cookiehub;
-    if (!CH) return null;
-    if (typeof CH.hasConsented === "function") {
+  const CH = window.cookiehub;
+
+  // CookieHub pas encore là
+  if (!CH) return null;
+
+  // si hasConsented n'existe pas encore => pas prêt
+  if (typeof CH.hasConsented !== "function") return null;
+
+  // Catégories possibles selon paramétrage CookieHub
+  const CATS = [
+    "marketing",
+    "advertising",
+    "ads",
+    "analytics",
+    "statistics",
+    "performance",
+    "preferences",
+    "functional"
+  ];
+
+  try {
+    // 1) Certains setups supportent hasConsented() sans argument
+    // (si ça marche et renvoie true => OK)
+    try {
+      const any = CH.hasConsented();
+      if (any === true) return true;
+    } catch {}
+
+    // 2) Sinon on teste plusieurs catégories
+    let sawFalse = false;
+    for (const c of CATS) {
       try {
-        const v = CH.hasConsented("marketing");
+        const v = CH.hasConsented(c);
         if (v === true) return true;
-        if (v === false) return false;
-        return null;
+        if (v === false) sawFalse = true;
       } catch {
-        return null;
+        // ignore
       }
     }
+
+    // Si on a pu lire des "false" au moins une fois : on considère refusé
+    // Sinon : CookieHub pas prêt / état non lisible
+    return sawFalse ? false : null;
+  } catch {
     return null;
   }
-
-  function scheduleDisqusConsentRecheck() {
-    if (window.__FESTIV_DISQUS_CONSENT_POLLING) return;
-    window.__FESTIV_DISQUS_CONSENT_POLLING = true;
-
-    let tries = 0;
-    const MAX_TRIES = 40; // ~6s
-    const DELAY = 150;
-
-    const tick = () => {
-      tries++;
-      const consent = getDisqusConsentStatus();
-
-      if (consent === true) {
-        window.__FESTIV_DISQUS_CONSENT_POLLING = false;
-        try {
-          initDisqus(true);
-        } catch {}
-        return;
-      }
-
-      if (tries >= MAX_TRIES) {
-        window.__FESTIV_DISQUS_CONSENT_POLLING = false;
-        return;
-      }
-
-      setTimeout(tick, DELAY);
-    };
-
-    setTimeout(tick, 50);
-  }
+}
 
   // =========================================
   // DISQUS — init idempotent (anti-flicker)
@@ -1413,6 +1415,11 @@ try {
   // =========================================
   onReady(() => {
     log("loaded ✅");
+// Au refresh : CookieHub peut mettre un peu de temps à exposer hasConsented()
+// -> on retente Disqus doucement
+setTimeout(() => { try { initDisqus(false); } catch {} }, 400);
+setTimeout(() => { try { initDisqus(false); } catch {} }, 1200);
+setTimeout(() => { try { initDisqus(false); } catch {} }, 2500);
 
     // petits retours internes
     setTimeout(fixInternalAnchors, 500);
