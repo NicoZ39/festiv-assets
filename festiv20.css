@@ -226,21 +226,20 @@ a.notion-h-title b{
   padding-bottom: 0 !important;
   line-height: 1 !important;
 }
-div.notion-text.notion-block-34d20cdc7b5a4441b1710f343c7a71f5 b{
+.notion-block-34d20cdc7b5a4441b1710f343c7a71f5 b{
   font-size: 50px !important;
   font-family: Caprasimo, serif !important;
   font-weight: 400 !important;
-  font-style: normal !important;
   line-height: 1.2 !important;
-  padding-top: 0 !important;
   padding-bottom: .1em !important;
-  background: linear-gradient(to right, #ff7034, #ff3e9d);
-  -webkit-background-clip: text;
-  background-clip: text;
+  background: linear-gradient(to right, #ff7034, #ff3e9d) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
   color: transparent !important;
-  -webkit-text-fill-color: transparent;
-  display: inline-block;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block !important;
 }
+
 
 /* =========================================================
    5) Cover
