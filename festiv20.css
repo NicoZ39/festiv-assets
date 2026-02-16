@@ -1355,5 +1355,10 @@ html.dark-mode { color-scheme: dark; }
   color-scheme: light !important;
 }
 
+/* reCAPTCHA ouvert : on évite tout clipping global */
+html.festiv-recaptcha-open,
+html.festiv-recaptcha-open body{
+  overflow: visible !important;
+}
 
 
