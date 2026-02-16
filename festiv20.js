@@ -1087,9 +1087,9 @@ function injectDisqusGuestTip() {
     const box = document.createElement("div");
     box.className = "festiv-disqus-guest-tip";
     box.innerHTML = `
-      <b>Astuce :</b>
-      Pour commenter en tant qu'invité ou anonyme : sélectionnez la discussion, puis le champ « Nom ».
-      Cochez la case « Je préfère poster en tant qu'invité » pour soumettre votre commentaire sans vous connecter ni créer de compte.
+      <b>Commenter sans créer de compte ?</b>
+    Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
+    Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
     `;
 
     // injecte juste après le titre
