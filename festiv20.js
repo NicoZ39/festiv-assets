@@ -1249,19 +1249,20 @@ function patchDisqusAgeGateFR() {
     const root = document.querySelector("#disqus_thread");
     if (!root) return;
 
-    root.querySelectorAll("label, span, div, p, button").forEach((el) => {
+    const nodes = root.querySelectorAll("label, span, div, p, button");
+
+    nodes.forEach((el) => {
       const t = (el.textContent || "").trim();
 
-      // Match large : toutes les variantes qu’on voit passer
-      if (/18\s+or\s+older/i.test(t)) {
-        // Remplace uniquement la partie anglaise connue
-        el.textContent = t
-          .replace(/Acknowledge\s+/i, "")          // enlève "Acknowledge "
-          .replace(/I am 18 or older/i, "J’ai 18 ans ou plus");
+      if (t === "Acknowledge I am 18 or older") {
+        el.textContent = "J’ai 18 ans ou plus";
       }
     });
-  } catch {}
+  } catch (e) {
+    console.error("[festiv20] patchDisqusAgeGateFR error:", e);
+  }
 }
+
 
   // =========================================
   // runAll (appelé au load + à chaque rebuild DOM)
@@ -1288,7 +1289,7 @@ function patchDisqusAgeGateFR() {
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
-      patchDisqusAgeGateFR();
+      
 
       // ✅ listener OS (protégé par flag)
       bindSystemThemeListener();
@@ -1307,7 +1308,7 @@ function patchDisqusAgeGateFR() {
      // ✅ Disqus (si H2 "💬 Commentaires")
 document.documentElement.setAttribute("lang", "fr");
 initDisqus();
-
+patchDisqusAgeGateFR();
       
     } finally {
       window.__FESTIV_RUNALL_LOCK = false;
