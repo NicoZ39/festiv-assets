@@ -1162,4 +1162,43 @@ iframe[data-src*="meteoblue.com"]{
     grid-template-columns: 1fr !important;
   }
 }
+/* ===== PATCH: colonnes fixes (évite les rangées qui "flottent") ===== */
+
+/* Rangées impaires -> 3 portraits fixes */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row{
+  grid-template-columns: repeat(3, max-content) !important;
+}
+
+/* Rangées paires -> 2 portraits fixes */
+.notion-block-d5097585faf9476f83460d4af5abce48.notion-row,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row{
+  grid-template-columns: repeat(2, max-content) !important;
+}
+
+/* chaque carte prend juste la place nécessaire */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-column,
+.notion-block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-column,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-column,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-column,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-column,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column{
+  width: auto !important;
+}
+/* ===== Hover halo jaune (style logo) ===== */
+@media (hover:hover){
+  .notion-block-24ff6e81db664b7f8f6a11ec5b402210 .notion-column:hover img,
+  .notion-block-d5097585faf9476f83460d4af5abce48 .notion-column:hover img,
+  .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-column:hover img,
+  .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column:hover img,
+  .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-column:hover img,
+  .notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column:hover img{
+    box-shadow:
+      0 12px 26px rgba(0,0,0,.30),
+      0 0 0 3px rgba(255, 193, 7, .70);
+    transition: box-shadow 220ms ease, transform 220ms ease !important;
+  }
+}
 
