@@ -1459,6 +1459,34 @@
       console.error("[festiv20] syncMeteoblueTheme error:", e);
     }
   }
+function () {
+  function applyH1Gradient() {
+    if (document.getElementById("festiv-h1-gradient-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "festiv-h1-gradient-style";
+    style.textContent = `
+      /* FIX Bullet : H1 page (notion-title) en dégradé */
+      html body h1.notion-title{
+        background-image: linear-gradient(to right, #ff8a00, #e52e71) !important;
+        background-size: 100% 100% !important;
+        background-repeat: no-repeat !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        color: transparent !important;
+        -webkit-text-fill-color: transparent !important;
+        display: inline-block !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyH1Gradient);
+  } else {
+    applyH1Gradient();
+  }
+}
 
   // =========================================
   // runAll (load + rebuild DOM)
@@ -1486,7 +1514,7 @@
       setupFaqAnimation();
       localizeSearchUI();
       setupBackToTop();
-
+applyH1Gradient()
       bindSystemThemeListener();
       bindCalendarI18nHooks();
       translateNotionCalendar();
