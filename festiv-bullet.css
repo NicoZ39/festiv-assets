@@ -165,3 +165,52 @@ a.notion-button .notion-button-label{
   line-height: 1.15 !important;
   display: block !important;
 }
+@import url(https://fonts.googleapis.com/css2?family=Caprasimo:wght@400&display=swap);
+/* SLOGAN — "Des événements pour tous..." */
+#block-34d20cdc7b5a4441b1710f343c7a71f5 b,
+.notion-block-34d20cdc7b5a4441b1710f343c7a71f5 b {
+  font-size: 50px !important;
+  font-family: Caprasimo, cursive !important;
+  font-weight: 400 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.5px !important;
+
+  background: linear-gradient(to right, #ff7034, #ff3e9d) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+
+  display: inline-block !important;
+}
+
+/* Neutralise la teinte "notion-gray" qui peut gêner */
+#block-34d20cdc7b5a4441b1710f343c7a71f5 .notion-gray,
+.notion-block-34d20cdc7b5a4441b1710f343c7a71f5 .notion-gray {
+  color: inherit !important;
+}
+/* =========================================================
+   6) Espacements (version Bullet actuelle)
+========================================================= */
+
+/* Bloc row (marges haut/bas) */
+#block-a24a44da57c7443c9cc2828a48bf66a6,
+.notion-block-a24a44da57c7443c9cc2828a48bf66a6 {
+  margin-top: 50px !important;
+  margin-bottom: 80px !important;
+}
+
+/* Texte d’intro (taille) */
+#block-2fb6ae9a98f2805fb38dc1fee4758a33,
+.notion-block-2fb6ae9a98f2805fb38dc1fee4758a33 {
+  font-size: 1.6em !important;
+}
+@media (max-width: 768px) {
+  #block-a24a44da57c7443c9cc2828a48bf66a6 {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+  }
+  #block-2fb6ae9a98f2805fb38dc1fee4758a33 {
+    font-size: 1.6em !important;
+  }
+}
