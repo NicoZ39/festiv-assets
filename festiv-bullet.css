@@ -277,3 +277,44 @@ body .notion-page .notion-h-title strong{
   text-align: left;
 }
  
+.notion-callout.notion-teal_background_co {
+  background: #edf3ec !important;
+  undefined: undefined;
+  border: 1px solid rgba(0,0,0,.08) !important;
+  box-shadow: none !important;
+  border-radius: 14px !important;
+  padding: 22px 24px !important;
+}
+.notion-callout.notion-teal_background_co .notion-teal, .notion-callout.notion-teal_background_co .notion-callout-text, .notion-callout.notion-teal_background_co .notion-text {
+  color: #1c6f60 !important;
+  undefined: undefined;
+}
+.notion-callout.notion-teal_background_co .notion-page-icon {
+  font-size: 18px !important;
+}
+@media (prefers-color-scheme: dark) {
+  .notion-callout.notion-teal_background_co {
+    background: #212828 !important;
+    border: 1px solid rgba(255,255,255,.06) !important;
+    box-shadow: 0 12px 32px rgba(0,0,0,.35) !important;
+  }}
+@media (prefers-color-scheme: dark) {
+  .notion-callout.notion-teal_background_co .notion-teal, .notion-callout.notion-teal_background_co .notion-callout-text, .notion-callout.notion-teal_background_co .notion-text {
+    color: #949832 !important;
+    undefined: undefined;
+  }}
+.dark .notion-callout.notion-teal_background_co, .dark-mode .notion-callout.notion-teal_background_co, [data-theme="dark"] .notion-callout.notion-teal_background_co {
+  background: linear-gradient(180deg, #1f2c2c 0%, #1a2525 100%) !important;
+  border: 1px solid rgba(255,255,255,.06) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,.35) !important;
+}
+.dark .notion-callout.notion-teal_background_co .notion-teal, .dark-mode .notion-callout.notion-teal_background_co .notion-teal, [data-theme="dark"] .notion-callout.notion-teal_background_co .notion-teal, .dark .notion-callout.notion-teal_background_co .notion-callout-text, .dark-mode .notion-callout.notion-teal_background_co .notion-callout-text, [data-theme="dark"] .notion-callout.notion-teal_background_co .notion-callout-text {
+  color: #39c8b6 !important;
+}
+.notion-teal {
+  color: #4dab9a;
+}
+
+.notion-callout.co-les-inscriptions-pour-le-.notion-teal_background_co {
+  opacity: 1;
+}
