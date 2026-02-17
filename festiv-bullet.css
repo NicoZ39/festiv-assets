@@ -28,59 +28,7 @@ html.festiv-theme-ready body { opacity: 1; transition: opacity 120ms ease; }
   color: #fff !important;
 }
 
-/* centre uniquement les blocks qui contiennent un bouton */
-.notion-block:has(.notion-button){
-  max-width: 100% !important;
-  display: flex !important;
-  justify-content: center !important;
-}
-/* fallback */
-.notion-block .notion-button{
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
 
-.notion-button{
-  width: auto !important;
-  min-width: 260px !important;
-  max-width: 420px !important;
-  display: flex !important;
-  box-sizing: border-box !important;
-  opacity: 1 !important;
-  margin: 12px auto !important;
-  padding: 14px 24px !important;
-  border-radius: 9999px !important;
-  font-family: Poppins, sans-serif !important;
-  font-size: 16px !important;
-  font-weight: 500 !important;
-  background-color: #00b1ac !important;
-  color: #ffffff !important;
-  text-align: center !important;
-  justify-content: center !important;
-  align-items: center !important;
-  border: none !important;
-  box-shadow: none !important;
-  cursor: pointer !important;
-  transition: transform .15s ease, background-color .2s ease, opacity .2s ease !important;
-}
-.notion-button a,
-.notion-button > div,
-.notion-button > *{
-  width: auto !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-.notion-button span{
-  text-align: center !important;
-  white-space: nowrap;
-}
-.notion-button:hover{
-  background-color: #ff7034 !important;
-  opacity: 1 !important;
-  transform: scale(1.04) !important;
-}
-.notion-button::before{ display: none !important; }
 
 /* =========================================================
    2) Masquages (badges / liens)
