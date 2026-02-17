@@ -1003,3 +1003,160 @@ iframe[data-src*="meteoblue.com"]{
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+
+
+
+/* =========================
+   TEAM — portraits (6 rangées Notion rows/columns)
+   ========================= */
+
+:root{
+  --team-gap: 26px;
+  --team-card: 220px;
+  --team-card-max: 240px;
+  --team-img: 180px;
+  --team-img-md: 160px;
+}
+
+/* Liste des 6 rangées */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row,
+.notion-block-d5097585faf9476f83460d4af5abce48.notion-row,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row{
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: var(--team-gap) !important;
+  max-width: 100% !important;
+  left: 0 !important;
+}
+
+/* On supprime les spacers de Notion */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-spacer,
+.notion-block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-spacer,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-spacer,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-spacer,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-spacer,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-spacer{
+  display: none !important;
+  width: 0 !important;
+}
+
+/* Colonnes = cartes */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-column,
+.notion-block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-column,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-column,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-column,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-column,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column{
+  width: auto !important;                 /* annule calc(33% - …) */
+  flex: 0 1 var(--team-card) !important;
+  max-width: var(--team-card-max) !important;
+  text-align: center !important;
+}
+
+/* Portrait rond + taille uniforme */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210 .notion-asset-wrapper-image img,
+.notion-block-d5097585faf9476f83460d4af5abce48 .notion-asset-wrapper-image img,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-asset-wrapper-image img,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-asset-wrapper-image img,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-asset-wrapper-image img,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-asset-wrapper-image img{
+  width: var(--team-img) !important;
+  height: var(--team-img) !important;
+  object-fit: cover !important;
+  border-radius: 999px !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
+
+/* Nom (h3) : marges propres */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210 h3.notion-h2,
+.notion-block-d5097585faf9476f83460d4af5abce48 h3.notion-h2,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797 h3.notion-h2,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c h3.notion-h2,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f h3.notion-h2,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e h3.notion-h2{
+  margin-top: 12px !important;
+  margin-bottom: 6px !important;
+  line-height: 1.1 !important;
+}
+
+/* Rôle : un chouïa plus lisible (sans changer couleur/typo) */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210 .notion-text,
+.notion-block-d5097585faf9476f83460d4af5abce48 .notion-text,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-text,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-text,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-text,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-text{
+  margin-top: 0 !important;
+  opacity: 0.9 !important;
+}
+
+/* Dernière rangée : masque la colonne vide (souvent un column sans image/texte) */
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column:empty{
+  display: none !important;
+}
+
+/* Si la colonne n'est pas techniquement vide mais ne contient que des blanks/spacers */
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column
+  :where(.notion-blank, .notion-spacer){
+  /* on ne fait rien ici, juste pour lisibilité */
+}
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column:has(.notion-blank):not(:has(img)):not(:has(h1,h2,h3,h4,h5,h6)):not(:has(.notion-text)){
+  display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 900px){
+  :root{
+    --team-card: 200px;
+    --team-img: var(--team-img-md);
+    --team-gap: 18px;
+  }
+}
+@media (max-width: 520px){
+  :root{
+    --team-card: 260px;   /* 1 colonne */
+    --team-card-max: 320px;
+    --team-gap: 16px;
+  }
+}
+/* ===== Alternance 3 / 2 colonnes ===== */
+
+/* Rangées impaires (1,3,5) → 3 colonnes */
+.notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-column,
+.notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-column,
+.notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-column{
+  flex: 0 1 220px !important;
+}
+
+/* Rangées paires (2,4,6) → 2 colonnes */
+.notion-block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-column,
+.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-column,
+.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column{
+  flex: 0 1 260px !important;
+}
+/* ===== Hover effet premium ===== */
+
+.notion-row .notion-column {
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  border-radius: 20px;
+}
+
+.notion-row .notion-column:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+
+/* Zoom doux sur la photo */
+.notion-row .notion-asset-wrapper-image img {
+  transition: transform 0.35s ease !important;
+}
+
+.notion-row .notion-column:hover img {
+  transform: scale(1.05);
+}
+
