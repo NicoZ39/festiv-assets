@@ -1168,15 +1168,6 @@ iframe[data-src*="meteoblue.com"]{
     grid-template-columns: 1fr !important;
   }
 }
-/* Désactive le zoom sur les portraits équipe (option) */
-.notion-block-24ff6e81db664b7f8f6a11ec5b402210 .medium-zoom-image,
-.notion-block-d5097585faf9476f83460d4af5abce48 .medium-zoom-image,
-.notion-block-048f1598dbd54e51b4ac5f2f31811797 .medium-zoom-image,
-.notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .medium-zoom-image,
-.notion-block-1d16ae9a98f280428097e9d01fa9b55f .medium-zoom-image,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .medium-zoom-image{
-  pointer-events: none !important;
-}
 /* Même hauteur pour la zone texte sous photo (option) */
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210 .notion-column,
 .notion-block-d5097585faf9476f83460d4af5abce48 .notion-column,
