@@ -216,3 +216,63 @@ a.notion-button .notion-button-label{
     font-size: 1.6em !important;
   }
 }
+.notion-collection-single-view {
+  display: flex;
+}
+.notion-collection-view-type-icon {
+  display: none !important;
+}
+.notion-collection-header svg.notion-collection-view-type-icon {
+  display: none !important;
+}
+.bullet-navbar-links {
+  font-weight: 700;
+}
+
+
+
+body .notion-page > h1.notion-title{
+  font-family: "Caprasimo", cursive !important;
+  font-weight: 900 !important;
+
+  /* 🔥 important pour que le gradient suive la largeur du texte */
+  display: inline-block !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+
+  background-image: linear-gradient(90deg, #ff8a00 0%, #e52e71 100%) !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+body .notion-page .notion-h-title b,
+body .notion-page .notion-h-title strong{
+  display: inline-block !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+
+  background-image: linear-gradient(90deg, #ff8a00 0%, #e52e71 100%) !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+
+  font-weight: 900 !important;
+}
+
+
+.notion-h {
+  color: #882b6e;
+  font-weight: 900;
+  text-align: left;
+}
