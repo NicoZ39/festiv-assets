@@ -84,3 +84,84 @@ a.notion-button .notion-button-label{
   opacity: 1 !important;
   filter: none !important;
 }
+/* =========================================================
+   8) Gallery cards (ombre, cover)
+========================================================= */
+.notion-gallery .notion-gallery-grid {
+  gap: 24px !important;
+  padding: 12px !important;
+}
+
+.notion-gallery .notion-collection-card {
+  border-radius: 22px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(0,0,0,.05) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05) !important;
+  transition: transform .18s ease, box-shadow .18s ease !important;
+}
+.notion-gallery .notion-collection-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 16px 45px rgba(0,0,0,.10), 0 6px 16px rgba(0,0,0,.06) !important;
+}
+
+.notion-gallery .notion-collection-card-cover {
+  overflow: hidden !important;
+  border-radius: 22px 22px 0 0 !important;
+  height: 230px !important;
+}
+.notion-gallery .notion-collection-card-cover img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: inherit !important;
+  transform: scale(1.02);
+}
+
+.notion-gallery .notion-collection-card-body {
+  padding: 18px 18px 16px !important;
+}
+.notion-gallery .notion-collection-card .notion-property-title {
+  font-size: 20px !important;
+  line-height: 1.3 !important;
+}
+.notion-gallery .notion-collection-card .notion-property-text,
+.notion-gallery .notion-collection-card .notion-property-rich_text {
+  opacity: .92 !important;
+}
+.notion-gallery .notion-property-multi_select-item {
+  border-radius: 999px !important;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+}
+
+/* Ombres non coupées */
+.notion-gallery,
+.notion-gallery-view,
+.notion-gallery-grid,
+.notion-gallery-grid > *,
+.notion-collection,
+.notion-collection-view,
+.notion-collection-content,
+.notion-collection-body,
+.notion-collection-container {
+  overflow: visible !important;
+}
+
+/* Align emoji + titre */
+.notion-gallery .notion-property-title .notion-page-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.notion-gallery .notion-page-title-icon {
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+  font-size: 1.1em !important;
+}
+.notion-gallery .notion-page-title-text {
+  line-height: 1.15 !important;
+  display: block !important;
+}
