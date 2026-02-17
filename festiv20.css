@@ -917,11 +917,27 @@ footer.styles_main_footer__LoNow .styles_logo__JgM3o:hover img{
 }
 
 /* =========================================================
-   19) Meteoblue / color-scheme (1 seule fois)
+   Meteoblue / iOS fix
 ========================================================= */
+
+/* On annonce juste que le site supporte les 2, sans forcer light/dark */
 html { color-scheme: light dark; }
-html:not(.dark-mode) { color-scheme: light; }
-html.dark-mode { color-scheme: dark; }
+
+/* Wrapper autour du widget : on lui donne le fond de ton site (évite le blanc iPhone) */
+.notion-asset-wrapper:has(iframe[src*="meteoblue.com"]),
+.notion-asset-wrapper:has(iframe[data-src*="meteoblue.com"]) {
+  background: #111 !important; /* mets ici la vraie couleur de fond de ton site */
+  border-radius: 14px;
+  overflow: hidden; /* coupe les coins si l'iframe déborde */
+}
+
+/* Iframe : pas d'ombre */
+iframe[src*="meteoblue.com"],
+iframe[data-src*="meteoblue.com"] {
+  background: transparent !important;
+  box-shadow: none !important;
+  display: block;
+}
 
 
 /* =========================================================
