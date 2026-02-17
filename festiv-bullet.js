@@ -1,5 +1,5 @@
 <script>
-  (function setupFaqAnimationBullet() {
+  function setupFaqAnimationBullet() {
     try {
       if (window.__FESTIV_FAQ_ANIM_BOUND) return;
       window.__FESTIV_FAQ_ANIM_BOUND = true;
@@ -147,5 +147,5 @@
     } catch (e) {
       console.error("[festiv] FAQ anim error:", e);
     }
-  })();
+  }();
 </script>
