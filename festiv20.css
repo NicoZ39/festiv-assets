@@ -1120,15 +1120,14 @@ iframe[data-src*="meteoblue.com"] {
   opacity: 0.9 !important;
 }
 
-/* ✅ Dernière rangée TEAM : masque les colonnes vides */
-.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column:empty{
-  display: none !important;
+/* =========================
+   Dernière rangée TEAM — centrage parfait
+   ========================= */
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
+  grid-template-columns: max-content !important;
+  justify-content: center !important;
 }
-/* Si la colonne n'est pas techniquement vide (blanks seulement) */
-.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column
-  :has(.notion-blank):not(:has(img)):not(:has(h1,h2,h3,h4,h5,h6)):not(:has(.notion-text)){
-  display: none !important;
-}
+
 
 /* ===== Hover premium (scopé équipe) ===== */
 @media (hover:hover){
