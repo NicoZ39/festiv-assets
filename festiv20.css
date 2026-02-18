@@ -1560,22 +1560,43 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   background: rgba(0,0,0,.06) !important;
 }
 /* =========================================================
-   EVENTS — Mini accroche sous "Nos événements"
+   EVENTS — Hero accroche (Spoiler alert redesign)
+   Bloc : 2f86ae9a98f280608b14fdd3b05d787a
 ========================================================= */
-.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0{
+
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a{
   text-align: center !important;
-  max-width: 760px !important;
-  margin: 10px auto 26px auto !important;
-  font-size: 1.05rem !important;
-  line-height: 1.45 !important;
-  opacity: .88 !important;
+  margin: 8px auto 6px auto !important;
+  border-bottom: none !important;
 }
-.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0 b,
-.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0 strong{
-  display: block !important;
-  font-size: 1.35rem !important;
-  font-weight: 900 !important;
+
+/* On enlève le look “titre de section” */
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+  text-decoration: none !important;
+  font-weight: 800 !important;
+  font-size: 1.4rem !important;
   letter-spacing: .2px !important;
-  margin-bottom: 6px !import
-  opacity: 1 !important;
+}
+
+/* "Spoiler alert" devient un badge */
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a b:first-of-type{
+  display: inline-block !important;
+  font-size: .75rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: .6px !important;
+  padding: 6px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(0,0,0,.08) !important;
+  margin-right: 8px !important;
+}
+
+/* On enlève les CAPS criardes du reste */
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a b:last-of-type{
+  text-transform: none !important;
+  font-weight: 900 !important;
+}
+
+/* Supprime l’icône ancre hover Notion */
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a .notion-h-title:hover{
+  text-decoration: none !important;
 }
