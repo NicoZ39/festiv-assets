@@ -1255,40 +1255,42 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
    SIGNATURE MANIFESTE
    ========================= */
 
-.notion-block-3096ae9a98f2800a9276cf163d3970c9{
-  border-left: none !important;              /* supprime la barre grise Notion */
+blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+  border-left: none !important;          /* supprime la barre Notion */
+  background: transparent !important;     /* pas d'encadré */
   text-align: center !important;
-  padding: 40px 20px !important;
-  margin: 60px auto !important;
-  max-width: 800px !important;
+  padding: 60px 20px !important;
+  margin: 40px auto 10px auto !important;
+  max-width: 980px !important;
   position: relative;
 }
 
 /* Ligne décorative au-dessus */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
+blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
   content: "";
   display: block;
-  width: 80px;
+  width: 90px;
   height: 3px;
-  margin: 0 auto 30px auto;
+  margin: 0 auto 26px auto;
   background: currentColor;
-  opacity: 0.3;
+  opacity: 0.25;
+  border-radius: 999px;
 }
 
-/* Texte principal */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 b{
-  font-size: clamp(28px, 3vw, 38px) !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.5px;
+/* Texte (ton <b> dans la quote) */
+blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9 > b{
+  display: block;
+  font-size: clamp(28px, 3.2vw, 44px) !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.6px;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  white-space: pre-line; /* garde les retours à la ligne */
 }
 
-/* Espacement entre les lignes */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 .notion-text{
-  margin-top: 8px !important;
-}
-
-/* Effet léger de mise en avant */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9{
-  background: rgba(255,255,255,0.02);
-  border-radius: 20px;
+/* (Option) un peu moins de padding sur mobile */
+@media (max-width: 520px){
+  blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+    padding: 44px 16px !important;
+  }
 }
