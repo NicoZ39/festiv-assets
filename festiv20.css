@@ -1316,73 +1316,43 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   margin: 0 auto !important;
 }
 /* =========================
-   SIGNATURE MANIFESTE — centré + retours "beaux"
+   SIGNATURE MANIFESTE
    ========================= */
 
 .notion-block-3096ae9a98f2800a9276cf163d3970c9{
-  border-left: none !important;
-  background: transparent !important;
-
-  /* vrai centrage */
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
+  border-left: none !important;              /* supprime la barre grise Notion */
   text-align: center !important;
-
-  padding: 60px 20px !important;
-  margin: 40px auto 10px auto !important;
+  padding: 40px 20px !important;
+  margin: 60px auto !important;
+  max-width: 800px !important;
   position: relative;
 }
 
-/* Ligne décorative */
+/* Ligne décorative au-dessus */
 .notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
   content: "";
   display: block;
-  width: 90px;
+  width: 80px;
   height: 3px;
-  margin: 0 auto 26px auto;
+  margin: 0 auto 30px auto;
   background: currentColor;
-  opacity: 0.25;
-  border-radius: 999px;
-}
-
-/* Largeur "lecture" + centrage des enfants */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 > *{
-  width: 100% !important;
-  max-width: 22ch !important;     /* 👈 ajuste (20–26ch) */
-  margin-left: auto !important;
-  margin-right: auto !important;
-  text-align: center !important;
+  opacity: 0.3;
 }
 
 /* Texte principal */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 b,
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 strong{
-  display: block !important;
-  font-size: clamp(28px, 3.2vw, 44px) !important;
-  line-height: 1.18 !important;
-  letter-spacing: -0.6px;
-  font-weight: 800 !important;
-  margin: 0 !important;
-
-  /* équilibre les lignes (super efficace ici) */
-  text-wrap: balance;
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 b{
+  font-size: clamp(28px, 3vw, 38px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px;
 }
 
-/* anti-coupure en plein mot */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9,
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 *{
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-  hyphens: none !important;
+/* Espacement entre les lignes */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 .notion-text{
+  margin-top: 8px !important;
 }
 
-/* Mobile */
-@media (max-width: 520px){
-  .notion-block-3096ae9a98f2800a9276cf163d3970c9{
-    padding: 44px 16px !important;
-  }
-  .notion-block-3096ae9a98f2800a9276cf163d3970c9 > *{
-    max-width: 20ch !important;
-  }
+/* Effet léger de mise en avant */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+  background: rgba(255,255,255,0.02);
+  border-radius: 20px;
 }
