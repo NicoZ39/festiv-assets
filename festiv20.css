@@ -1356,3 +1356,44 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   background: rgba(255,255,255,0.02);
   border-radius: 20px;
 }
+/* =========================
+   SIGNATURE EQUIPE
+   ========================= */
+
+.notion-block-3096ae9a98f28098ac07fff93cdd69ca{
+  border-left: none !important;              /* supprime la barre grise Notion */
+  text-align: center !important;
+  padding: 40px 20px !important;
+  margin: 60px auto !important;
+  max-width: 800px !important;
+  position: relative;
+}
+
+/* Ligne décorative au-dessus */
+.notion-block-3096ae9a98f28098ac07fff93cdd69ca::before{
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 0 auto 30px auto;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* Texte principal */
+.notion-block-3096ae9a98f28098ac07fff93cdd69ca b{
+  font-size: clamp(28px, 3vw, 38px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px;
+}
+
+/* Espacement entre les lignes */
+.notion-block-3096ae9a98f28098ac07fff93cdd69ca .notion-text{
+  margin-top: 8px !important;
+}
+
+/* Effet léger de mise en avant */
+.notion-block-3096ae9a98f28098ac07fff93cdd69ca{
+  background: rgba(255,255,255,0.02);
+  border-radius: 20px;
+}
