@@ -1252,21 +1252,22 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 }
 
 /* =========================
-   SIGNATURE MANIFESTE
+   SIGNATURE MANIFESTE — style "manifeste" (aligné sur la quote)
    ========================= */
 
-blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9{
-  border-left: none !important;          /* supprime la barre Notion */
-  background: transparent !important;     /* pas d'encadré */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+  border-left: none !important;
+  background: transparent !important; /* comme la quote */
   text-align: center !important;
   padding: 60px 20px !important;
   margin: 40px auto 10px auto !important;
   max-width: 980px !important;
   position: relative;
+  border-radius: 0 !important; /* évite l'effet carte */
 }
 
 /* Ligne décorative au-dessus */
-blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
+.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
   content: "";
   display: block;
   width: 90px;
@@ -1277,20 +1278,26 @@ blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
   border-radius: 999px;
 }
 
-/* Texte (ton <b> dans la quote) */
-blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9 > b{
+/* Texte (si ton contenu est dans un <b>) */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 > b,
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 b{
   display: block;
   font-size: clamp(28px, 3.2vw, 44px) !important;
   line-height: 1.18 !important;
   letter-spacing: -0.6px;
   font-weight: 800 !important;
   margin: 0 !important;
-  white-space: pre-line; /* garde les retours à la ligne */
+  white-space: pre-line;
 }
 
-/* (Option) un peu moins de padding sur mobile */
+/* (Optionnel) si tu as des lignes sous le <b> */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 .notion-text{
+  margin-top: 8px !important;
+}
+
+/* Mobile */
 @media (max-width: 520px){
-  blockquote.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+  .notion-block-3096ae9a98f2800a9276cf163d3970c9{
     padding: 44px 16px !important;
   }
 }
