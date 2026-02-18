@@ -1018,7 +1018,7 @@ iframe[data-src*="meteoblue.com"] {
    - 1 colonne sur mobile
    - portraits ronds, taille uniforme
    - hover premium (scopé équipe)
-   - masque les colonnes vides de la dernière rangée
+   - dernière rangée (Sandrine) centrée + sans colonnes vides
    ========================= */
 
 :root{
@@ -1027,20 +1027,11 @@ iframe[data-src*="meteoblue.com"] {
   --team-img-md: 160px;
 }
 
-/* ✅ Liste des rangées TEAM (mise à jour)
-   ⚠️ IMPORTANT : on enlève 1ca6... (qui est la QUOTE maintenant)
-   ✅ et on ajoute 30b6... (la dernière rangée TEAM) */
-:root{
-  --team-rows: 
-    .notion-block-24ff6e81db664b7f8f6a11ec5b402210,
-    .notion-block-d5097585faf9476f83460d4af5abce48,
-    .notion-block-048f1598dbd54e51b4ac5f2f31811797,
-    .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c,
-    .notion-block-1d16ae9a98f280428097e9d01fa9b55f,
-    .notion-block-30b6ae9a98f280819609ff8655d36831;
-}
-
-/* ====== Les 6 rangées ====== */
+/* ====== Les 6 rangées TEAM ======
+   ⚠️ IMPORTANT :
+   - on enlève 1ca6... (c’est la QUOTE maintenant)
+   - la dernière rangée TEAM = 30b6...
+*/
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row,
 .notion-block-d5097585faf9476f83460d4af5abce48.notion-row,
 .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row,
@@ -1056,7 +1047,7 @@ iframe[data-src*="meteoblue.com"] {
   left: 0 !important;
 }
 
-/* On supprime les spacers Notion */
+/* On supprime les spacers Notion (partout dans TEAM) */
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-spacer,
 .notion-block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-spacer,
 .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-spacer,
@@ -1119,28 +1110,6 @@ iframe[data-src*="meteoblue.com"] {
   margin-top: 0 !important;
   opacity: 0.9 !important;
 }
-/* =========================
-   Dernière rangée TEAM — garder uniquement la carte avec photo
-   (évite l’énorme espace)
-   ========================= */
-.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column:not(:has(img)){
-  display: none !important;
-}
-
-/* Centrage parfait (OK) */
-.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
-  grid-template-columns: max-content !important;
-  justify-content: center !important;
-}
-
-/* =========================
-   Dernière rangée TEAM — centrage parfait
-   ========================= */
-.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
-  grid-template-columns: max-content !important;
-  justify-content: center !important;
-}
-
 
 /* ===== Hover premium (scopé équipe) ===== */
 @media (hover:hover){
@@ -1210,7 +1179,7 @@ iframe[data-src*="meteoblue.com"] {
   padding-bottom: 10px;
 }
 
-/* ===== TEAM: désactiver les ancres sur les noms ===== */
+/* TEAM: désactiver les ancres sur les noms */
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210 a.notion-h-title,
 .notion-block-d5097585faf9476f83460d4af5abce48 a.notion-h-title,
 .notion-block-048f1598dbd54e51b4ac5f2f31811797 a.notion-h-title,
@@ -1221,6 +1190,24 @@ iframe[data-src*="meteoblue.com"] {
   cursor: default !important;
   text-decoration: none !important;
 }
+
+/* =========================
+   FIX SPÉCIAL DERNIÈRE RANGÉE (Sandrine)
+   - cache les 2 colonnes vides (blanks)
+   - transforme la rangée en 1 colonne => centrage parfait
+   ========================= */
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row
+  > .notion-column.notion-block-30b6ae9a98f280f6b053c09ef58dedcd,
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row
+  > .notion-column.notion-block-30b6ae9a98f2809ea275c0aa842831f1{
+  display: none !important;
+}
+
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
+  grid-template-columns: max-content !important;
+  justify-content: center !important;
+}
+
 /* =========================
    TEAM QUOTE — style "manifeste" (comme screenshot)
    ========================= */
