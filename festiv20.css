@@ -1242,7 +1242,7 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4{
   background: transparent !important;     /* pas d'encadré */
   text-align: center !important;
   padding: 60px 20px !important;
-  margin: 40px auto 10px auto !important;
+  margin: clamp(140px, 16vw, 240px) auto !important;
   max-width: 980px !important;
   position: relative;
 }
