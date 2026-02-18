@@ -1485,6 +1485,66 @@
       console.error("[festiv20] syncMeteoblueTheme error:", e);
     }
   }
+// =========================================
+// WeatherWidget.io via shortcode Notion
+// Shortcode à mettre dans Notion : {{meteo_ounans}}
+// =========================================
+function setupWeatherWidget() {
+  try {
+    const SHORTCODE = "{{meteo_ounans}}";
+
+    // 1) Trouver un bloc texte qui contient le shortcode
+    // (Simple.ink/Notion rendent le texte dans différents wrappers selon les pages)
+    const candidates = Array.from(document.querySelectorAll(
+      ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
+    ));
+
+    const host = candidates.find(el => (el.textContent || "").includes(SHORTCODE));
+    if (!host) return;
+
+    // 2) Éviter de ré-injecter si déjà fait
+    if (host.querySelector('.weatherwidget-io')) {
+      // on enlève juste le shortcode si encore visible
+      host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
+      return;
+    }
+
+    // 3) Injecter l'ancre WeatherWidget à la place du shortcode
+    // On remplace le texte uniquement (pratique si ton bloc contient autre chose)
+    host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
+
+    const a = document.createElement("a");
+    a.className = "weatherwidget-io";
+    a.href = "https://forecast7.com/fr/46d995d67/ounans/";
+    a.setAttribute("data-label_1", "OUNANS");
+    a.setAttribute("data-label_2", "Météo");
+    a.setAttribute("data-font", "Roboto");
+    a.setAttribute("data-icons", "Climacons Animated");
+    a.setAttribute("data-mode", "Current");
+    a.setAttribute("data-days", "3");
+    a.setAttribute("data-theme", "weather_one");
+    a.textContent = "OUNANS Météo";
+
+    host.appendChild(a);
+
+    // 4) Charger le script une seule fois
+    const SCRIPT_ID = "weatherwidget-io-js";
+    if (!document.getElementById(SCRIPT_ID)) {
+      const s = document.createElement("script");
+      s.id = SCRIPT_ID;
+      s.src = "https://weatherwidget.io/js/widget.min.js";
+      document.head.appendChild(s);
+    }
+
+    // 5) Demander un refresh si la lib est déjà là
+    // (weatherwidget.io expose souvent __weatherwidget_init)
+    if (window.__weatherwidget_init) {
+      window.__weatherwidget_init();
+    }
+  } catch (e) {
+    if (window.DEBUG) console.warn("WeatherWidget setup error:", e);
+  }
+}
 
   // =========================================
   // runAll (load + rebuild DOM)
@@ -1523,7 +1583,7 @@
 
       shortcodeContactForm();
       shortcodeInscriptionForm();
-
+      setupWeatherWidget();
 
       injectDisqusGuestTip();
       initDisqus(false);
