@@ -1442,4 +1442,14 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 .dark-mode .notion-gallery .notion-property-multi_select-item{
   filter: saturate(.9) brightness(.95);
 }
+.weatherwidget-io {
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  box-shadow: 0 15px 40px rgba(0,0,0,.12);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
 
+.weatherwidget-io:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 25px 60px rgba(0,0,0,.18);
+}
