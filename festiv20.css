@@ -1008,6 +1008,32 @@ iframe[data-src*="meteoblue.com"] {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
+/* ==================================================
+   HOME • Les prochains événements (collection ciblée)
+   1 carte = 100% / 2 = 2 colonnes / 3 = 3 colonnes, etc.
+================================================== */
+
+/* 1) La grille de cartes : auto responsive */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9
+.notion-gallery-grid{
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
+  gap: 32px !important;
+  width: 100% !important;
+}
+
+/* 2) Chaque carte prend toute la largeur de sa cellule */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9
+.notion-collection-card{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 3) Neutralise les widths inline éventuels */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9
+.notion-collection-card[style]{
+  width: 100% !important;
+}
 
 
 
@@ -1314,52 +1340,4 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   width: 100% !important;
   max-width: 980px !important;
   margin: 0 auto !important;
-}
-/* =========================
-   SIGNATURE — version section complète
-   (style TOUT ce qui est dans la colonne qui contient le block)
-   ========================= */
-
-/* 1) On vise la colonne/zone qui contient ton block signature */
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9){
-  text-align: center !important;
-}
-
-/* 2) On applique le look "manifeste" à tous les textes de cette zone */
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) .notion-text{
-  font-size: clamp(28px, 3vw, 38px) !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.5px !important;
-  font-weight: 800 !important;
-}
-
-/* 3) Neutralise le gras natif si tu as du <b>/<strong> */
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) b,
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) strong{
-  font-weight: inherit !important;
-}
-
-/* =========================
-   SIGNATURE — version section complète
-   (style TOUT ce qui est dans la colonne qui contient le block)
-   ========================= */
-
-/* 1) On vise la colonne/zone qui contient ton block signature */
-
-.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca),{
-  text-align: center !important;
-}
-
-/* 2) On applique le look "manifeste" à tous les textes de cette zone */
-.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) .notion-tex,t{
-  font-size: clamp(28px, 3vw, 38px) !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.5px !important;
-  font-weight: 800 !important;
-}
-
-/* 3) Neutralise le gras natif si tu as du <b>/<strong> */
-.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) b,
-.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) strong{
-  font-weight: inherit !important;
 }
