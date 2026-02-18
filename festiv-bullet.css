@@ -404,3 +404,204 @@ details.notion-toggle[open] > div {
   width: 100%;
   max-width: 100%;
 }
+:root {
+  --team-gap: 26px;
+  --team-img: 180px;
+  --team-img-md: 160px;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210.notion-row, #block-d5097585faf9476f83460d4af5abce48.notion-row, #block-048f1598dbd54e51b4ac5f2f31811797.notion-row, #block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row, #block-1d16ae9a98f280428097e9d01fa9b55f.notion-row, #block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row, #block-30b6ae9a98f280819609ff8655d36831.notion-row {
+  display: grid !important;
+  gap: var(--team-gap) !important;
+  undefined: undefined;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  justify-content: stretch !important;
+  justify-items: center !important;
+  align-items: start !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  left: 0 !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-spacer, #block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-spacer, #block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-spacer, #block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-spacer, #block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-spacer, #block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-spacer, #block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-spacer {
+  display: none !important;
+  width: 0 !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210.notion-row > .notion-column, #block-d5097585faf9476f83460d4af5abce48.notion-row > .notion-column, #block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-column, #block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-column, #block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-column, #block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column, #block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column {
+  width: auto !important;
+  max-width: none !important;
+  flex: none !important;
+  min-width: 0 !important;
+  undefined: undefined;
+  overflow: visible !important;
+  text-align: center !important;
+  border-radius: 22px;
+  transform: translateZ(0);
+  padding-bottom: 10px;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 .notion-asset-wrapper-image img, #block-d5097585faf9476f83460d4af5abce48 .notion-asset-wrapper-image img, #block-048f1598dbd54e51b4ac5f2f31811797 .notion-asset-wrapper-image img, #block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-asset-wrapper-image img, #block-1d16ae9a98f280428097e9d01fa9b55f .notion-asset-wrapper-image img, #block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-asset-wrapper-image img, #block-30b6ae9a98f280819609ff8655d36831 .notion-asset-wrapper-image img {
+  width: var(--team-img) !important;
+  height: var(--team-img) !important;
+  object-fit: cover !important;
+  border-radius: 999px !important;
+  display: block !important;
+  margin: 0 auto !important;
+  transition: transform 260ms ease, box-shadow 220ms ease !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 h3.notion-h2, #block-d5097585faf9476f83460d4af5abce48 h3.notion-h2, #block-048f1598dbd54e51b4ac5f2f31811797 h3.notion-h2, #block-73db2ca2f4a84ee68a3e5cb8e559894c h3.notion-h2, #block-1d16ae9a98f280428097e9d01fa9b55f h3.notion-h2, #block-1ca6ae9a98f28009bf2fd28e962aae1e h3.notion-h2, #block-30b6ae9a98f280819609ff8655d36831 h3.notion-h2 {
+  margin-top: 12px !important;
+  margin-bottom: 6px !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 h3.notion-h2 > span, #block-d5097585faf9476f83460d4af5abce48 h3.notion-h2 > span, #block-048f1598dbd54e51b4ac5f2f31811797 h3.notion-h2 > span, #block-73db2ca2f4a84ee68a3e5cb8e559894c h3.notion-h2 > span, #block-1d16ae9a98f280428097e9d01fa9b55f h3.notion-h2 > span, #block-1ca6ae9a98f28009bf2fd28e962aae1e h3.notion-h2 > span, #block-30b6ae9a98f280819609ff8655d36831 h3.notion-h2 > span {
+  display: block !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 .notion-text, #block-d5097585faf9476f83460d4af5abce48 .notion-text, #block-048f1598dbd54e51b4ac5f2f31811797 .notion-text, #block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-text, #block-1d16ae9a98f280428097e9d01fa9b55f .notion-text, #block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-text, #block-30b6ae9a98f280819609ff8655d36831 .notion-text {
+  margin-top: 0 !important;
+  opacity: 0.9 !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 .notion-header-anchor, #block-d5097585faf9476f83460d4af5abce48 .notion-header-anchor, #block-048f1598dbd54e51b4ac5f2f31811797 .notion-header-anchor, #block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-header-anchor, #block-1d16ae9a98f280428097e9d01fa9b55f .notion-header-anchor, #block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-header-anchor, #block-30b6ae9a98f280819609ff8655d36831 .notion-header-anchor {
+  display: none !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 a.notion-hash-link, #block-d5097585faf9476f83460d4af5abce48 a.notion-hash-link, #block-048f1598dbd54e51b4ac5f2f31811797 a.notion-hash-link, #block-73db2ca2f4a84ee68a3e5cb8e559894c a.notion-hash-link, #block-1d16ae9a98f280428097e9d01fa9b55f a.notion-hash-link, #block-1ca6ae9a98f28009bf2fd28e962aae1e a.notion-hash-link, #block-30b6ae9a98f280819609ff8655d36831 a.notion-hash-link {
+  display: none !important;
+}
+#block-24ff6e81db664b7f8f6a11ec5b402210 a.notion-h-title, #block-d5097585faf9476f83460d4af5abce48 a.notion-h-title, #block-048f1598dbd54e51b4ac5f2f31811797 a.notion-h-title, #block-73db2ca2f4a84ee68a3e5cb8e559894c a.notion-h-title, #block-1d16ae9a98f280428097e9d01fa9b55f a.notion-h-title, #block-1ca6ae9a98f28009bf2fd28e962aae1e a.notion-h-title, #block-30b6ae9a98f280819609ff8655d36831 a.notion-h-title {
+  pointer-events: none !important;
+  cursor: default !important;
+  text-decoration: none !important;
+}
+@media (hover:hover) {
+  #block-24ff6e81db664b7f8f6a11ec5b402210 .notion-column, #block-d5097585faf9476f83460d4af5abce48 .notion-column, #block-048f1598dbd54e51b4ac5f2f31811797 .notion-column, #block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column, #block-1d16ae9a98f280428097e9d01fa9b55f .notion-column, #block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column, #block-30b6ae9a98f280819609ff8655d36831 .notion-column {
+    transition: transform 220ms ease !important;
+    filter: none !important;
+  }}
+@media (hover:hover) {
+  #block-24ff6e81db664b7f8f6a11ec5b402210 .notion-column:hover, #block-d5097585faf9476f83460d4af5abce48 .notion-column:hover, #block-048f1598dbd54e51b4ac5f2f31811797 .notion-column:hover, #block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column:hover, #block-1d16ae9a98f280428097e9d01fa9b55f .notion-column:hover, #block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column:hover, #block-30b6ae9a98f280819609ff8655d36831 .notion-column:hover {
+    transform: translateY(-6px) scale(1.02);
+  }}
+@media (hover:hover) {
+  #block-24ff6e81db664b7f8f6a11ec5b402210 .notion-column:hover img, #block-d5097585faf9476f83460d4af5abce48 .notion-column:hover img, #block-048f1598dbd54e51b4ac5f2f31811797 .notion-column:hover img, #block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column:hover img, #block-1d16ae9a98f280428097e9d01fa9b55f .notion-column:hover img, #block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column:hover img, #block-30b6ae9a98f280819609ff8655d36831 .notion-column:hover img {
+    transform: scale(1.06);
+    box-shadow: 0 18px 45px rgba(0,0,0,.22) !important;
+  }}
+#block-1ca6ae9a98f280e0a190e4526ecc3cb4.notion-quote {
+  text-align: center !important;
+  padding: 40px 20px !important;
+  margin: 20px auto 0 auto !important;
+  max-width: 800px !important;
+  position: relative;
+  background: transparent !important;
+  undefined: undefined;
+  border-radius: 20px;
+  border-width:;
+  border-style:;
+  border-color:;
+}
+#block-1ca6ae9a98f280e0a190e4526ecc3cb4.notion-quote::before {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 0 auto 22px auto;
+  background: currentColor;
+  opacity: 0.25;
+}
+#block-1ca6ae9a98f280e0a190e4526ecc3cb4.notion-quote b {
+  font-size: clamp(28px, 3vw, 38px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px;
+}
+#block-1ca6ae9a98f280e0a190e4526ecc3cb4.notion-quote b {
+  font-size: clamp(28px, 3vw, 38px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px;
+}
+@media (max-width: 900px) {
+:root {
+  --team-gap: 18px;
+  --team-img: var(--team-img-md);
+}}
+@media (max-width: 900px) {
+  #block-24ff6e81db664b7f8f6a11ec5b402210.notion-row, #block-d5097585faf9476f83460d4af5abce48.notion-row, #block-048f1598dbd54e51b4ac5f2f31811797.notion-row, #block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row, #block-1d16ae9a98f280428097e9d01fa9b55f.notion-row, #block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row, #block-30b6ae9a98f280819609ff8655d36831.notion-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }}
+@media (max-width: 520px) {
+  #block-24ff6e81db664b7f8f6a11ec5b402210.notion-row, #block-d5097585faf9476f83460d4af5abce48.notion-row, #block-048f1598dbd54e51b4ac5f2f31811797.notion-row, #block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row, #block-1d16ae9a98f280428097e9d01fa9b55f.notion-row, #block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row, #block-30b6ae9a98f280819609ff8655d36831.notion-row {
+    grid-template-columns: 1fr !important;
+  }}
+#block-24ff6e81db664b7f8f6a11ec5b402210 {
+  overflow: visible !important;
+}
+#block-d5097585faf9476f83460d4af5abce48 {
+  overflow: visible !important;
+}
+#block-048f1598dbd54e51b4ac5f2f31811797 {
+  overflow: visible !important;
+}
+#block-73db2ca2f4a84ee68a3e5cb8e559894c {
+  overflow: visible !important;
+}
+#block-1d16ae9a98f280428097e9d01fa9b55f {
+  overflow: visible !important;
+}
+#block-1ca6ae9a98f28009bf2fd28e962aae1e {
+  overflow: visible !important;
+}
+#block-30b6ae9a98f280819609ff8655d36831 {
+  overflow: visible !important;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote {
+  background: transparent !important;
+  undefined: undefined;
+  padding: 40px 0 40px 40px !important;
+  margin: 80px auto !important;
+  max-width: 1000px !important;
+  width: 100% !important;
+  text-align: left !important;
+  border-width:;
+  border-style:;
+  border-color:;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote::before {
+  display: none !important;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote b {
+  font-size: clamp(32px, 3.2vw, 46px) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.5px !important;
+}
+.notion-column.notion-block-3096ae9a98f280caae6cd1952ef755f6 {
+  width: min(1100px, 92vw) !important;
+  undefined: undefined;
+  max-width: 92vw !important;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote {
+  background: transparent !important;
+  padding: 40px 0 40px 40px !important;
+  margin: 70px auto !important;
+  max-width: 1100px !important;
+  undefined: undefined;
+  width: 100% !important;
+  text-align: left !important;
+  border-width:;
+  border-style:;
+  border-color:;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote::before {
+  content: none !important;
+  display: none !important;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote {
+  hyphens: none !important;
+}
+#block-3096ae9a98f2800a9276cf163d3970c9.notion-quote b {
+  font-size: clamp(32px, 3.2vw, 46px) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.5px !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+.notion-title {
+  display: none;
+}
