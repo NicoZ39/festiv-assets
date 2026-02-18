@@ -497,6 +497,7 @@ details.notion-toggle[open] > div {
   border-width:;
   border-style:;
   border-color:;
+  border-left: none !important;
 }
 #block-1ca6ae9a98f280e0a190e4526ecc3cb4.notion-quote::before {
   content: "";
