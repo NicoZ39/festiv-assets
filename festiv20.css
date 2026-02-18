@@ -1209,4 +1209,44 @@ iframe[data-src*="meteoblue.com"] {
   cursor: default !important;
   text-decoration: none !important;
 }
+/* =========================
+   SIGNATURE MANIFESTE
+   ========================= */
 
+.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+  border-left: none !important;              /* supprime la barre grise Notion */
+  text-align: center !important;
+  padding: 40px 20px !important;
+  margin: 60px auto !important;
+  max-width: 800px !important;
+  position: relative;
+}
+
+/* Ligne décorative au-dessus */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 0 auto 30px auto;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* Texte principal */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 b{
+  font-size: clamp(28px, 3vw, 38px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px;
+}
+
+/* Espacement entre les lignes */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9 .notion-text{
+  margin-top: 8px !important;
+}
+
+/* Effet léger de mise en avant */
+.notion-block-3096ae9a98f2800a9276cf163d3970c9{
+  background: rgba(255,255,255,0.02);
+  border-radius: 20px;
+}
