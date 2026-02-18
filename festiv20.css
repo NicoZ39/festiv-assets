@@ -1119,6 +1119,19 @@ iframe[data-src*="meteoblue.com"] {
   margin-top: 0 !important;
   opacity: 0.9 !important;
 }
+/* =========================
+   Dernière rangée TEAM — garder uniquement la carte avec photo
+   (évite l’énorme espace)
+   ========================= */
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column:not(:has(img)){
+  display: none !important;
+}
+
+/* Centrage parfait (OK) */
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
+  grid-template-columns: max-content !important;
+  justify-content: center !important;
+}
 
 /* =========================
    Dernière rangée TEAM — centrage parfait
