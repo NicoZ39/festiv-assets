@@ -1413,3 +1413,33 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 .notion-block-30b6ae9a98f280c98bc9df20cf7217e5.notion-quote{
   margin: clamp(260px, 28vw, 520px) auto !important;
 }
+/* =========================================================
+   FIX DARK MODE — fond des vignettes (gallery cards)
+   (tu forçais background:#fff sur .notion-collection-card)
+========================================================= */
+
+.dark-mode .notion-gallery .notion-collection-card{
+  background: rgba(18,18,18,.92) !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.55),
+    0 2px 10px rgba(0,0,0,.35) !important;
+}
+
+/* Zone image : évite le "flash" clair autour des covers */
+.dark-mode .notion-gallery .notion-collection-card-cover{
+  background: #0f0f0f !important;
+}
+
+/* Texte + sous-texte dans la carte */
+.dark-mode .notion-gallery .notion-collection-card .notion-property-title,
+.dark-mode .notion-gallery .notion-collection-card .notion-property-text,
+.dark-mode .notion-gallery .notion-collection-card .notion-property-rich_text{
+  color: rgba(255,255,255,.92) !important;
+}
+
+/* Pastilles multi-select un peu moins flashy en dark */
+.dark-mode .notion-gallery .notion-property-multi_select-item{
+  filter: saturate(.9) brightness(.95);
+}
+
