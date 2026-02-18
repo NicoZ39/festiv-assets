@@ -388,6 +388,32 @@
       console.error("[festiv20] formatDates error:", e);
     }
   }
+  // =========================================
+  // 2bis) Nettoyage Simple.ink: "06:00 (Europe/Paris)" sur les dates
+  // =========================================
+  function cleanupSimpleInkTZInDates() {
+    try {
+      const els = document.querySelectorAll(".notion-property-date");
+
+      els.forEach((el) => {
+        const txt = (el.textContent || "").replace(/\u00A0/g, " ").trim();
+        if (!txt) return;
+
+        // Cas typique Simple.ink : "06:00 (Europe/Paris)" en fin de texte
+        // => on retire l'heure + timezone
+        let next = txt
+          .replace(/\s+\d{1,2}:\d{2}\s*\(\s*[A-Za-z_\/+-]+\s*\)\s*$/i, "")
+          // au cas où il ne reste que "(Europe/Paris)" sans l'heure
+          .replace(/\s*\(\s*[A-Za-z_\/+-]+\s*\)\s*$/i, "")
+          .trim();
+
+        if (next !== txt) el.textContent = next;
+      });
+    } catch (e) {
+      console.error("[festiv20] cleanupSimpleInkTZInDates error:", e);
+    }
+  }
+
 
   // =========================================
   // 3) Footer colonnes + copyright
@@ -1475,6 +1501,8 @@
 
       makeLogoClickable();
       formatDates();
+      cleanupSimpleInkTZInDates();
+
       createFooterColumns();
       addCopyright();
       tweakCover();
@@ -1544,6 +1572,9 @@
 
     bindCookieHubForDisqus();
     runAll();
+    setTimeout(cleanupSimpleInkTZInDates, 120);
+    setTimeout(cleanupSimpleInkTZInDates, 600);
+    setTimeout(cleanupSimpleInkTZInDates, 1500);
 
     let t = null;
     const observer = new MutationObserver((mutations) => {
