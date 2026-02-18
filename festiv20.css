@@ -1210,6 +1210,49 @@ iframe[data-src*="meteoblue.com"] {
   text-decoration: none !important;
 }
 /* =========================
+   TEAM QUOTE — style "manifeste" (comme screenshot)
+   ========================= */
+blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4{
+  border-left: none !important;          /* supprime la barre Notion */
+  background: transparent !important;     /* pas d'encadré */
+  text-align: center !important;
+  padding: 60px 20px !important;
+  margin: 40px auto 10px auto !important;
+  max-width: 980px !important;
+  position: relative;
+}
+
+/* Ligne décorative au-dessus */
+blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4::before{
+  content: "";
+  display: block;
+  width: 90px;
+  height: 3px;
+  margin: 0 auto 26px auto;
+  background: currentColor;
+  opacity: 0.25;
+  border-radius: 999px;
+}
+
+/* Texte (ton <b> dans la quote) */
+blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
+  display: block;
+  font-size: clamp(28px, 3.2vw, 44px) !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.6px;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  white-space: pre-line; /* garde les retours à la ligne */
+}
+
+/* (Option) un peu moins de padding sur mobile */
+@media (max-width: 520px){
+  blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4{
+    padding: 44px 16px !important;
+  }
+}
+
+/* =========================
    SIGNATURE MANIFESTE
    ========================= */
 
