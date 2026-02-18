@@ -1453,3 +1453,129 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   transform: translateY(-4px);
   box-shadow: 0 25px 60px rgba(0,0,0,.18);
 }
+/* =========================================================
+   EVENTS — 🔥 Prochains événements (scopé sur le bloc)
+========================================================= */
+.notion-block-d478c59959434057984428b994645dfd{
+  margin-top: 12px !important;
+}
+/* Header plus net */
+.notion-block-d478c59959434057984428b994645dfd .notion-collection-header{
+  margin-bottom: 12px !important;
+}
+.notion-block-d478c59959434057984428b994645dfd .notion-collection-header span.notion-collection-header{
+  font-weight: 900 !important;
+  letter-spacing: .2px !important;
+}
+/* Grille : plus large + plus aérée */
+.notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  gap: 22px !important;
+}
+/* Cartes premium */
+.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(0,0,0,.07) !important;
+  box-shadow: 0 16px 45px rgba(0,0,0,.10) !important;
+  transition: transform .25s ease, box-shadow .25s ease !important;
+}
+.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover{
+  transform: translateY(-5px) !important;
+  box-shadow: 0 26px 70px rgba(0,0,0,.16) !important;
+}
+/* Cover plus haut (effet affiche) */
+.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
+  height: 220px !important;              /* <- augmente/diminue ici */
+}
+.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover img{
+  height: 100% !important;
+  width: 100% !important;
+  object-fit: cover !important;
+}
+/* Corps : plus confortable */
+.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-body{
+  padding: 14px 14px 16px 14px !important;
+}
+/* Titre plus impactant */
+.notion-block-d478c59959434057984428b994645dfd .notion-property-title b{
+  font-weight: 900 !important;
+  font-size: 1.12rem !important;
+  line-height: 1.15 !important;
+}
+/* Date : plus lisible */
+.notion-block-d478c59959434057984428b994645dfd .notion-property-date{
+  opacity: .88 !important;
+}
+/* “Voir plus…” : on le transforme en mini bouton */
+.notion-block-d478c59959434057984428b994645dfd .notion-property-text .notion-purple b{
+  display: inline-block !important;
+  padding: 8px 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  background: rgba(0,0,0,.03) !important;
+}
+/* Mobile : cover un peu moins haut + cartes full width */
+@media (max-width: 720px){
+  .notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
+    height: 190px !important;
+  }
+  .notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
+    gap: 14px !important;
+    padding: 0 10px !important;
+  }
+}
+.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
+  cursor: pointer !important;
+}
+/* =========================================================
+   PATCH — Prochains événements : header + finesse premium
+========================================================= */
+/* Si Simple injecte un <hr> ou séparateur juste après le header */
+.notion-block-d478c59959434057984428b994645dfd hr,
+.notion-block-d478c59959434057984428b994645dfd .notion-divider{
+  display: none !important;
+}
+/* 2) Cover un peu moins haute (plus “affiche” + équilibre avec le texte) */
+.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
+  height: 205px !important; /* (au lieu de 220) ajuste 190–230 selon ton goût */
+}
+/* 3) Ombres plus “soft premium” */
+.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
+  box-shadow: 0 18px 55px rgba(0,0,0,.12) !important;
+}
+.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover{
+  transform: translateY(-4px) !important;
+  box-shadow: 0 28px 85px rgba(0,0,0,.18) !important;
+}
+/* 4) Bouton “Voir plus…” plus net / plus CTA */
+.notion-block-d478c59959434057984428b994645dfd .notion-property-text .notion-purple b{
+  background: rgba(0,0,0,.04) !important;
+  border: 1px solid rgba(0,0,0,.14) !important;
+  padding: 9px 14px !important;
+}
+.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover
+.notion-property-text .notion-purple b{
+  background: rgba(0,0,0,.06) !important;
+}
+/* =========================================================
+   EVENTS — Mini accroche sous "Nos événements"
+========================================================= */
+.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0{
+  text-align: center !important;
+  max-width: 760px !important;
+  margin: 10px auto 26px auto !important;
+  font-size: 1.05rem !important;
+  line-height: 1.45 !important;
+  opacity: .88 !important;
+}
+.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0 b,
+.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0 strong{
+  display: block !important;
+  font-size: 1.35rem !important;
+  font-weight: 900 !important;
+  letter-spacing: .2px !important;
+  margin-bottom: 6px !import
+  opacity: 1 !important;
+}
