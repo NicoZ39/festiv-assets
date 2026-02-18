@@ -1018,7 +1018,7 @@ iframe[data-src*="meteoblue.com"] {
    - 1 colonne sur mobile
    - portraits ronds, taille uniforme
    - hover premium (scopé équipe)
-   - masque la colonne vide de la dernière rangée
+   - masque les colonnes vides de la dernière rangée
    ========================= */
 
 :root{
@@ -1027,15 +1027,28 @@ iframe[data-src*="meteoblue.com"] {
   --team-img-md: 160px;
 }
 
+/* ✅ Liste des rangées TEAM (mise à jour)
+   ⚠️ IMPORTANT : on enlève 1ca6... (qui est la QUOTE maintenant)
+   ✅ et on ajoute 30b6... (la dernière rangée TEAM) */
+:root{
+  --team-rows: 
+    .notion-block-24ff6e81db664b7f8f6a11ec5b402210,
+    .notion-block-d5097585faf9476f83460d4af5abce48,
+    .notion-block-048f1598dbd54e51b4ac5f2f31811797,
+    .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c,
+    .notion-block-1d16ae9a98f280428097e9d01fa9b55f,
+    .notion-block-30b6ae9a98f280819609ff8655d36831;
+}
+
 /* ====== Les 6 rangées ====== */
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210.notion-row,
 .notion-block-d5097585faf9476f83460d4af5abce48.notion-row,
 .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row{
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
   display: grid !important;
-  grid-template-columns: repeat(3, max-content) !important; /* 3 colonnes fixes */
+  grid-template-columns: repeat(3, max-content) !important;
   justify-content: center !important;
   align-items: start !important;
   gap: var(--team-gap) !important;
@@ -1049,7 +1062,7 @@ iframe[data-src*="meteoblue.com"] {
 .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-spacer,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-spacer,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-spacer,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-spacer{
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-spacer{
   display: none !important;
   width: 0 !important;
 }
@@ -1060,7 +1073,7 @@ iframe[data-src*="meteoblue.com"] {
 .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row > .notion-column,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row > .notion-column,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row > .notion-column,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column{
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column{
   width: auto !important;
   max-width: none !important;
   text-align: center !important;
@@ -1074,7 +1087,7 @@ iframe[data-src*="meteoblue.com"] {
 .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-asset-wrapper-image img,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-asset-wrapper-image img,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-asset-wrapper-image img,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-asset-wrapper-image img{
+.notion-block-30b6ae9a98f280819609ff8655d36831 .notion-asset-wrapper-image img{
   width: var(--team-img) !important;
   height: var(--team-img) !important;
   object-fit: cover !important;
@@ -1090,7 +1103,7 @@ iframe[data-src*="meteoblue.com"] {
 .notion-block-048f1598dbd54e51b4ac5f2f31811797 h3.notion-h2,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c h3.notion-h2,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f h3.notion-h2,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e h3.notion-h2{
+.notion-block-30b6ae9a98f280819609ff8655d36831 h3.notion-h2{
   margin-top: 12px !important;
   margin-bottom: 6px !important;
   line-height: 1.1 !important;
@@ -1102,17 +1115,18 @@ iframe[data-src*="meteoblue.com"] {
 .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-text,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-text,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-text,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-text{
+.notion-block-30b6ae9a98f280819609ff8655d36831 .notion-text{
   margin-top: 0 !important;
   opacity: 0.9 !important;
 }
 
-/* Dernière rangée : masque la colonne vide */
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column:empty{
+/* ✅ Dernière rangée TEAM : masque les colonnes vides */
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column:empty{
   display: none !important;
 }
 /* Si la colonne n'est pas techniquement vide (blanks seulement) */
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row > .notion-column:has(.notion-blank):not(:has(img)):not(:has(h1,h2,h3,h4,h5,h6)):not(:has(.notion-text)){
+.notion-block-30b6ae9a98f280819609ff8655d36831.notion-row > .notion-column
+  :has(.notion-blank):not(:has(img)):not(:has(h1,h2,h3,h4,h5,h6)):not(:has(.notion-text)){
   display: none !important;
 }
 
@@ -1123,7 +1137,7 @@ iframe[data-src*="meteoblue.com"] {
   .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-column,
   .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column,
   .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-column,
-  .notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column{
+  .notion-block-30b6ae9a98f280819609ff8655d36831 .notion-column{
     transition: transform 220ms ease, filter 220ms ease !important;
   }
 
@@ -1132,7 +1146,7 @@ iframe[data-src*="meteoblue.com"] {
   .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-column:hover,
   .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column:hover,
   .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-column:hover,
-  .notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column:hover{
+  .notion-block-30b6ae9a98f280819609ff8655d36831 .notion-column:hover{
     transform: translateY(-6px) scale(1.02);
     filter: drop-shadow(0 12px 26px rgba(0,0,0,.35));
   }
@@ -1142,7 +1156,7 @@ iframe[data-src*="meteoblue.com"] {
   .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-column:hover img,
   .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column:hover img,
   .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-column:hover img,
-  .notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column:hover img{
+  .notion-block-30b6ae9a98f280819609ff8655d36831 .notion-column:hover img{
     transform: scale(1.06);
   }
 }
@@ -1158,7 +1172,7 @@ iframe[data-src*="meteoblue.com"] {
   .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row,
   .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row,
   .notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row,
-  .notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row{
+  .notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
     grid-template-columns: repeat(2, max-content) !important;
   }
 }
@@ -1169,68 +1183,30 @@ iframe[data-src*="meteoblue.com"] {
   .notion-block-048f1598dbd54e51b4ac5f2f31811797.notion-row,
   .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c.notion-row,
   .notion-block-1d16ae9a98f280428097e9d01fa9b55f.notion-row,
-  .notion-block-1ca6ae9a98f28009bf2fd28e962aae1e.notion-row{
+  .notion-block-30b6ae9a98f280819609ff8655d36831.notion-row{
     grid-template-columns: 1fr !important;
   }
 }
+
 /* Même hauteur pour la zone texte sous photo (option) */
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210 .notion-column,
 .notion-block-d5097585faf9476f83460d4af5abce48 .notion-column,
 .notion-block-048f1598dbd54e51b4ac5f2f31811797 .notion-column,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c .notion-column,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f .notion-column,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e .notion-column{
+.notion-block-30b6ae9a98f280819609ff8655d36831 .notion-column{
   padding-bottom: 10px;
 }
+
 /* ===== TEAM: désactiver les ancres sur les noms ===== */
 .notion-block-24ff6e81db664b7f8f6a11ec5b402210 a.notion-h-title,
 .notion-block-d5097585faf9476f83460d4af5abce48 a.notion-h-title,
 .notion-block-048f1598dbd54e51b4ac5f2f31811797 a.notion-h-title,
 .notion-block-73db2ca2f4a84ee68a3e5cb8e559894c a.notion-h-title,
 .notion-block-1d16ae9a98f280428097e9d01fa9b55f a.notion-h-title,
-.notion-block-1ca6ae9a98f28009bf2fd28e962aae1e a.notion-h-title{
-  pointer-events: none !important;   /* désactive le clic */
-  cursor: default !important;        /* pas de curseur "lien" */
-  text-decoration: none !important;  /* retire le soulignement si présent */
-}
-/* =========================
-   SIGNATURE MANIFESTE
-   ========================= */
-
-.notion-block-3096ae9a98f2800a9276cf163d3970c9{
-  border-left: none !important;              /* supprime la barre grise Notion */
-  text-align: center !important;
-  padding: 40px 20px !important;
-  margin: 60px auto !important;
-  max-width: 800px !important;
-  position: relative;
+.notion-block-30b6ae9a98f280819609ff8655d36831 a.notion-h-title{
+  pointer-events: none !important;
+  cursor: default !important;
+  text-decoration: none !important;
 }
 
-/* Ligne décorative au-dessus */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9::before{
-  content: "";
-  display: block;
-  width: 80px;
-  height: 3px;
-  margin: 0 auto 30px auto;
-  background: currentColor;
-  opacity: 0.3;
-}
-
-/* Texte principal */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 b{
-  font-size: clamp(28px, 3vw, 38px) !important;
-  line-height: 1.2 !important;
-  letter-spacing: -0.5px;
-}
-
-/* Espacement entre les lignes */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9 .notion-text{
-  margin-top: 8px !important;
-}
-
-/* Effet léger de mise en avant */
-.notion-block-3096ae9a98f2800a9276cf163d3970c9{
-  background: rgba(255,255,255,0.02);
-  border-radius: 20px;
-}
