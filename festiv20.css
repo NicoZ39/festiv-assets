@@ -1321,14 +1321,12 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
    ========================= */
 
 /* 1) On vise la colonne/zone qui contient ton block signature */
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9),
-.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca){
+.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9){
   text-align: center !important;
 }
 
 /* 2) On applique le look "manifeste" à tous les textes de cette zone */
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) .notion-text,
-.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) .notion-text{
+.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) .notion-text{
   font-size: clamp(28px, 3vw, 38px) !important;
   line-height: 1.2 !important;
   letter-spacing: -0.5px !important;
@@ -1337,9 +1335,31 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 
 /* 3) Neutralise le gras natif si tu as du <b>/<strong> */
 .notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) b,
-.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) strong,
+.notion-column:has(.notion-block-3096ae9a98f2800a9276cf163d3970c9) strong{
+  font-weight: inherit !important;
+}
+
+/* =========================
+   SIGNATURE — version section complète
+   (style TOUT ce qui est dans la colonne qui contient le block)
+   ========================= */
+
+/* 1) On vise la colonne/zone qui contient ton block signature */
+
+.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca),{
+  text-align: center !important;
+}
+
+/* 2) On applique le look "manifeste" à tous les textes de cette zone */
+.notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) .notion-tex,t{
+  font-size: clamp(28px, 3vw, 38px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px !important;
+  font-weight: 800 !important;
+}
+
+/* 3) Neutralise le gras natif si tu as du <b>/<strong> */
 .notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) b,
 .notion-column:has(.notion-block-3096ae9a98f28098ac07fff93cdd69ca) strong{
   font-weight: inherit !important;
 }
-
