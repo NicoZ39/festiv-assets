@@ -410,17 +410,21 @@ body .notion-page-cover-wrapper img{
   margin-top: 4px !important;
 }
 
-.notion-gallery .notion-collection-card .notion-property-multi_select-item{
+.notion-gallery .notion-collection-card 
+.notion-property-multi_select-item{
   border-radius: 999px !important;
   padding: 6px 10px !important;
+
   font-size: 11px !important;
-  font-weight: 900 !important;
-  letter-spacing: .35px !important;
-  text-transform: uppercase !important;
-  line-height: 1 !important;
-  box-shadow: 0 8px 18px rgba(0,0,0,.08) !important;
+  font-weight: 600 !important;     /* ↓ au lieu de 900 */
+  letter-spacing: .25px !important; /* ↓ moins espacé */
+  text-transform: uppercase !important; /* ← plus naturel */
+  line-height: 1.1 !important;
+
+  box-shadow: 0 6px 14px rgba(0,0,0,.06) !important;
   border: 1px solid rgba(0,0,0,.08) !important;
 }
+
 
 /* Dark mode : cartes + badges */
 .dark-mode .notion-gallery a.notion-collection-card{
