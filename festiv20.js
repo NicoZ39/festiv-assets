@@ -1542,8 +1542,9 @@ function setupWeatherWidget() {
       window.__weatherwidget_init();
     }
   } catch (e) {
-    if (window.DEBUG) console.warn("WeatherWidget setup error:", e);
-  }
+  if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
+}
+
 }
 // =========================================
 // GLOBAL STICKER (🧷)
@@ -1595,13 +1596,89 @@ if (!raw.startsWith(TRIGGER)) return;
     // silencieux
   }
 }
-function setActiveHeaderLink() {
+// =========================================================
+// NAV ACTIVE (rouge piment) + marqueurs Notion
+// - Met en actif "Articles" ou "Événements"
+// - Supporte les pages enfants via marqueurs : [nav:articles] / [nav:evenements]
+// - Nettoie le texte pour ne jamais afficher les marqueurs
+// - Evite le bug "reste bloqué sur événements" : cache PAR PAGE (pathname)
+// =========================================================
+
+// --- util: key cache par page ---
+function festivNavCacheKey() {
+  const path = (window.location.pathname || "/").toLowerCase().replace(/\/+$/, "") || "/";
+  return "festiv-nav:" + path;
+}
+
+function festivReadCachedSection() {
+  try {
+    const v = sessionStorage.getItem(festivNavCacheKey());
+    if (v === "articles" || v === "evenements") return v;
+  } catch {}
+  return null;
+}
+
+function festivWriteCachedSection(section) {
+  try {
+    sessionStorage.setItem(festivNavCacheKey(), section);
+  } catch {}
+}
+
+// --- 1) detecte un marqueur [nav:...] sur la page + le supprime ---
+function festivDetectAndCleanupNavMarker() {
+  try {
+    // On cherche dans les zones de texte Notion/Simple
+    const candidates = Array.from(
+      document.querySelectorAll(
+        ".notion-text, .notion-paragraph, .notion-callout-text, [data-content-editable-leaf]"
+      )
+    );
+
+    for (const el of candidates) {
+      const t = (el.textContent || "");
+      const m = t.match(/\[nav:(articles|evenements)\]/i);
+      if (!m) continue;
+
+      const section = m[1].toLowerCase(); // "articles" | "evenements"
+      festivWriteCachedSection(section);
+
+      // nettoyage dans le DOM (text nodes)
+      const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (!n.nodeValue) continue;
+        if (!re.test(n.nodeValue)) continue;
+        n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
+      }
+
+      return section;
+    }
+  } catch {}
+  return null;
+}
+
+// --- 2) nettoyage global de sécurité (si Simple.ink réinjecte le texte plus tard) ---
+function festivCleanupNavMarkersEverywhere() {
+  try {
+    const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue) continue;
+      if (!re.test(n.nodeValue)) continue;
+      n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
+    }
+  } catch {}
+}
+
+// --- 3) applique le bouton actif dans le header ---
+function festivApplyActiveHeaderLink() {
   try {
     const links = Array.from(document.querySelectorAll(".custom-header__links__link"));
+    if (!links.length) return;
 
-    // =========================
-    // Helpers
-    // =========================
+    // helpers
     const normalizePath = (href) => {
       try {
         const u = new URL(href, window.location.origin);
@@ -1611,154 +1688,57 @@ function setActiveHeaderLink() {
       }
     };
 
-    const byText = (txt) =>
-      links.find((a) => (a.textContent || "").trim().toLowerCase() === txt);
+    const byLabel = (label) =>
+      links.find((a) => (a.textContent || "").trim().toLowerCase() === label);
 
-    const findLinkArticles = () =>
-      byText("articles") ||
-      links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/blog-"));
-
-    const findLinkEvents = () =>
-      byText("événements") ||
-      links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/nos-evenements-"));
+    // IMPORTANT : on s’appuie d’abord sur le libellé (le plus stable)
+    const linkArticles = byLabel("articles") || links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/blog-"));
+    const linkEvents   = byLabel("événements") || byLabel("evenements") || links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/nos-evenements-"));
 
     const setActive = (a) => {
-      if (!a) return false;
       links.forEach((x) => x.classList.remove("is-active"));
-      a.classList.add("is-active");
-      return true;
+      if (a) a.classList.add("is-active");
     };
 
-    // =========================
-    // A) Détecter le marqueur + CACHER la section (important)
-    // =========================
-    const readCachedSection = () => {
-      const d = document.documentElement.dataset.festivNavSection;
-      if (d === "articles" || d === "evenements") return d;
-      try {
-        const s = sessionStorage.getItem("festiv-nav-section");
-        if (s === "articles" || s === "evenements") return s;
-      } catch {}
-      return null;
-    };
+    // A) PRIORITÉ 1 : marqueur présent sur la page (pages enfants)
+    const markerSection = festivDetectAndCleanupNavMarker();
+    if (markerSection === "articles") { setActive(linkArticles); return; }
+    if (markerSection === "evenements") { setActive(linkEvents); return; }
 
-    const writeCachedSection = (section) => {
-      document.documentElement.dataset.festivNavSection = section;
-      try { sessionStorage.setItem("festiv-nav-section", section); } catch {}
-    };
+    // B) PRIORITÉ 2 : pages “listing” reconnaissables
+    const curPath = (window.location.pathname || "/").toLowerCase();
+    if (curPath.includes("/blog-")) { festivWriteCachedSection("articles"); setActive(linkArticles); return; }
+    if (curPath.includes("/nos-evenements-")) { festivWriteCachedSection("evenements"); setActive(linkEvents); return; }
 
-    const detectNavMarker = () => {
-      // si déjà en cache, pas besoin de rescanner
-      const cached = readCachedSection();
-      if (cached) return cached;
+    // C) PRIORITÉ 3 : cache PAR PAGE (évite le bug “reste bloqué sur événements”)
+    const cached = festivReadCachedSection();
+    if (cached === "articles") { setActive(linkArticles); return; }
+    if (cached === "evenements") { setActive(linkEvents); return; }
 
-      const nodes = Array.from(
-        document.querySelectorAll(".notion-text, .notion-paragraph, .notion-callout-text")
-      );
+    // D) fallback : match exact sur pathname (pages statiques)
+    const curNorm = curPath.replace(/\/+$/, "") || "/";
+    const exact = links.find((a) => normalizePath(a.getAttribute("href") || "") === curNorm);
+    if (exact) { setActive(exact); return; }
 
-      for (const n of nodes) {
-        const t = (n.textContent || "").toLowerCase();
-        const m = t.match(/\[nav:(articles|evenements)\]/i);
-        if (!m) continue;
+    // E) fallback : contient (rare)
+    const contains = links.find((a) => {
+      const p = normalizePath(a.getAttribute("href") || "");
+      return p && p !== "/" && curNorm.includes(p);
+    });
+    if (contains) { setActive(contains); return; }
 
-        const section = m[1].toLowerCase(); // "articles" | "evenements"
-        writeCachedSection(section);
-
-        // Retire le marqueur du texte (comme avant)
-        try {
-          const walker = document.createTreeWalker(n, NodeFilter.SHOW_TEXT, null);
-          let node;
-          while ((node = walker.nextNode())) {
-            if (!node.nodeValue) continue;
-            if (/\[nav:(articles|evenements)\]/i.test(node.nodeValue)) {
-              node.nodeValue = node.nodeValue.replace(/\s*\[nav:(articles|evenements)\]\s*/gi, " ").trim();
-            }
-          }
-        } catch {}
-
-        return section;
-      }
-      return null;
-    };
-
-    const section = detectNavMarker();
-
-    // =========================
-    // Si le header n’est pas encore là → on sort,
-    // mais la section est maintenant en cache ✅
-    // =========================
-    if (!links.length) return;
-
-    // =========================
-    // 0) Nettoie état actif
-    // =========================
-    links.forEach((a) => a.classList.remove("is-active"));
-
-    // =========================
-    // B) Si section connue → on force le bon bouton
-    // =========================
-    if (section === "articles") {
-      if (setActive(findLinkArticles())) return;
-    }
-    if (section === "evenements") {
-      if (setActive(findLinkEvents())) return;
-    }
-
-    // =========================
-    // C) Fallbacks (tes règles initiales)
-    // =========================
-    const currentPath = (window.location.pathname || "/").toLowerCase();
-    const curNorm = currentPath.replace(/\/+$/, "") || "/";
-
-    // 1) match strict
-    let best = links.find((a) => normalizePath(a.getAttribute("href") || "") === curNorm);
-
-    // 2) contains
-    if (!best) {
-      best = links.find((a) => {
-        const p = normalizePath(a.getAttribute("href") || "");
-        if (!p || p === "/") return false;
-        return curNorm.includes(p);
-      });
-    }
-
-    // 3) match ID
-    if (!best) {
-      const idLike = (p) => {
-        const m = p.match(/-([0-9a-f]{12,})$/i);
-        return m ? m[1].toLowerCase() : null;
-      };
-      const curId = (() => {
-        const m = curNorm.match(/-([0-9a-f]{12,})$/i);
-        return m ? m[1].toLowerCase() : null;
-      })();
-      if (curId) {
-        best = links.find((a) => {
-          const p = normalizePath(a.getAttribute("href") || "");
-          const id = idLike(p);
-          return id && id === curId;
-        });
-      }
-    }
-
-    if (best) best.classList.add("is-active");
   } catch (e) {
-    console.warn("[festiv20] setActiveHeaderLink error", e);
+    console.warn("[festiv20] festivApplyActiveHeaderLink error:", e);
   }
 }
-function cleanupNavMarkers() {
-  try {
-    const re = /\[nav:(articles|evenements)\]/gi;
 
-    // Nettoyage via text nodes (le plus fiable)
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-    let n;
-    while ((n = walker.nextNode())) {
-      if (!n.nodeValue) continue;
-      if (!re.test(n.nodeValue)) continue;
-      n.nodeValue = n.nodeValue.replace(re, "").replace(/\s{2,}/g, " ").trim();
-    }
-  } catch {}
+// --- 4) runner NAV (appelé souvent, safe) ---
+function festivRunNav() {
+  // 1) applique l’actif
+  festivApplyActiveHeaderLink();
+
+  // 2) nettoie (au cas où Simple réinjecte)
+  festivCleanupNavMarkersEverywhere();
 }
 
 
@@ -1769,53 +1749,55 @@ function cleanupNavMarkers() {
   // runAll (load + rebuild DOM)
   // =========================================
   function runAll() {
-    if (window.__FESTIV_RUNALL_LOCK) return;
-    window.__FESTIV_RUNALL_LOCK = true;
+  if (window.__FESTIV_RUNALL_LOCK) return;
+  window.__FESTIV_RUNALL_LOCK = true;
 
-    try {
-      applySavedTheme();
+  try {
+    applySavedTheme();
 
-      syncMeteoblueTheme();
-      setTimeout(syncMeteoblueTheme, 300);
+    syncMeteoblueTheme();
+    setTimeout(syncMeteoblueTheme, 300);
 
-      makeLogoClickable();
-      formatDates();
-      cleanupSimpleInkTZInDates();
+    makeLogoClickable();
+    formatDates();
+    cleanupSimpleInkTZInDates();
 
-      createFooterColumns();
-      addCopyright();
-      tweakCover();
-      setupTableScrollUX();
-      shortcodeRetour();
-      bindNotionButtons();
-      fixInternalAnchors();
-      hideGenericCalloutIcons();
-      setupFaqAnimation();
-      localizeSearchUI();
-      setupBackToTop();
+    createFooterColumns();
+    addCopyright();
+    tweakCover();
+    setupTableScrollUX();
+    shortcodeRetour();
+    bindNotionButtons();
+    fixInternalAnchors();
+    hideGenericCalloutIcons();
+    setupFaqAnimation();
+    localizeSearchUI();
+    setupBackToTop();
 
-      bindSystemThemeListener();
-      bindCalendarI18nHooks();
-      translateNotionCalendar();
-      setupGlobalStickers();
-      setActiveHeaderLink();
-setTimeout(setActiveHeaderLink, 250);
-setTimeout(setActiveHeaderLink, 1000);
-setTimeout(setActiveHeaderLink, 2500);
-cleanupNavMarkers();
+    bindSystemThemeListener();
+    bindCalendarI18nHooks();
+    translateNotionCalendar();
+    setupGlobalStickers();
 
-      initThemeToggle();
+    // ✅ NAV (remplace setActiveHeaderLink + cleanupNavMarkers)
+    festivRunNav();
+    setTimeout(festivRunNav, 250);
+    setTimeout(festivRunNav, 1000);
+    setTimeout(festivRunNav, 2500);
 
-      shortcodeContactForm();
-      shortcodeInscriptionForm();
-      setupWeatherWidget();
+    initThemeToggle();
 
-      injectDisqusGuestTip();
-      initDisqus(false);
-    } finally {
-      window.__FESTIV_RUNALL_LOCK = false;
-    }
+    shortcodeContactForm();
+    shortcodeInscriptionForm();
+    setupWeatherWidget();
+
+    injectDisqusGuestTip();
+    initDisqus(false);
+  } finally {
+    window.__FESTIV_RUNALL_LOCK = false;
   }
+}
+
 
   // =========================================
   // Observer : relance runAll si Simple.ink reconstruit le DOM
