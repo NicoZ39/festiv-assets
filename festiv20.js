@@ -1595,7 +1595,64 @@ if (!raw.startsWith(TRIGGER)) return;
     // silencieux
   }
 }
+// =========================================
+// Header nav — lien actif (rouge piment)
+// =========================================
+function setActiveHeaderLink() {
+  try {
+    const links = document.querySelectorAll(".custom-header__links__link");
+    if (!links.length) return;
 
+    const currentUrl = new URL(window.location.href);
+    const currentPath = (currentUrl.pathname || "/").replace(/\/+$/, "") || "/";
+
+    // Retire l'état actif
+    links.forEach(a => a.classList.remove("is-active"));
+
+    // Trouve le meilleur match (exact path)
+    let best = null;
+
+    links.forEach(a => {
+      const href = a.getAttribute("href");
+      if (!href) return;
+
+      // Normalise href en URL
+      let u;
+      try {
+        u = new URL(href, window.location.origin);
+      } catch (e) {
+        return;
+      }
+
+      const path = (u.pathname || "/").replace(/\/+$/, "") || "/";
+
+      // Match exact
+      if (path === currentPath) best = a;
+
+      // Cas accueil ("/") : si on est sur "/", c'est lui
+      if (currentPath === "/" && path === "/") best = a;
+    });
+
+    // Fallback : si Simple.ink rajoute des chemins proches
+    if (!best) {
+      links.forEach(a => {
+        const href = a.getAttribute("href") || "";
+        if (href.includes(currentPath) && currentPath !== "/") best = a;
+      });
+    }
+
+    if (best) best.classList.add("is-active");
+  } catch (e) {}
+}
+
+// Lance au chargement + petit retry (header parfois injecté après)
+document.addEventListener("DOMContentLoaded", () => {
+  setActiveHeaderLink();
+  setTimeout(setActiveHeaderLink, 250);
+  setTimeout(setActiveHeaderLink, 1000);
+}
+
+   
   // =========================================
   // runAll (load + rebuild DOM)
   // =========================================
@@ -1629,6 +1686,7 @@ if (!raw.startsWith(TRIGGER)) return;
       bindCalendarI18nHooks();
       translateNotionCalendar();
       setupGlobalStickers();
+      setActiveHeaderLink();
 
       initThemeToggle();
 
