@@ -1604,20 +1604,16 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 }
 
 /* =========================================================
-   1) SPOILER ALERT — sticker + hover zoom + shimmer + fix iPhone
-   Block id: 2f86ae9a98f280608b14fdd3b05d787a
+   GLOBAL STICKER — opt-in via emoji déclencheur (🧷)
+   Active le style sur tous les H4 dont le titre commence par 🧷
 ========================================================= */
 
-.notion-block-2f86ae9a98f280608b14fdd3b05d787a{
-  margin: 8px auto 18px auto !important;
-}
-
-.notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
   gap: 10px !important;
 
-  padding: 10px 14px !important;
+  padding: 10px 16px !important;
   border-radius: 16px !important;
 
   background: rgba(255, 122, 0, .10) !important;
@@ -1626,30 +1622,26 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   font-weight: 900 !important;
   text-decoration: none !important;
 
-  /* hover anim */
-  transform: translateY(-2px) rotate(-1deg) scale(1) !important;
-  transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease !important;
+  transform: rotate(-1deg) scale(1) !important;
+  transition:
+    transform .25s cubic-bezier(.2,.8,.2,1),
+    box-shadow .25s ease,
+    filter .25s ease !important;
 
-  /* shimmer requirements */
   position: relative !important;
   overflow: hidden !important;
-
-  /* FIX iPhone word-break */
-  flex-wrap: wrap !important;
-  justify-content: center !important;
-  text-align: center !important;
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-  hyphens: none !important;
+  will-change: transform;
 }
 
-/* Empêche "Spoiler alert" de se casser au milieu d’un mot */
-.notion-block-2f86ae9a98f280608b14fdd3b05d787a a b:first-child{
-  white-space: nowrap !important;
+/* petit “pin” dans le sticker (l’emoji déclencheur est retiré du texte par le JS) */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
+  content: "🧷";
+  display: inline-block;
+  transform: translateY(-1px);
 }
 
-/* Shimmer layer */
-.notion-block-2f86ae9a98f280608b14fdd3b05d787a a::after{
+/* shimmer */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
   content: "";
   position: absolute;
   top: 0;
@@ -1669,32 +1661,52 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   pointer-events: none;
 }
 
-.notion-block-2f86ae9a98f280608b14fdd3b05d787a a:hover{
-  transform: translateY(-2px) rotate(-3deg) scale(1.06) !important;
+/* hover */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker:hover{
+  transform: rotate(-3deg) scale(1.06) !important;
   box-shadow: 0 18px 55px rgba(0,0,0,.15) !important;
+  filter: saturate(1.05);
 }
-
-.notion-block-2f86ae9a98f280608b14fdd3b05d787a a:hover::after{
+.notion-h.notion-h3 .notion-h-title.festiv-sticker:hover::after{
   left: 130%;
 }
 
-html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+/* dark mode */
+html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   background: rgba(255, 122, 0, .14) !important;
   border-color: rgba(255, 122, 0, .30) !important;
 }
 
-/* Mobile iPhone : on empile proprement en 2 lignes */
+/* iPhone : wrap propre */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  text-align: center !important;
+
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+}
+
 @media (max-width: 480px){
-  .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker{
     flex-direction: column !important;
     gap: 8px !important;
     padding: 14px 16px !important;
   }
+}
 
-  .notion-block-2f86ae9a98f280608b14fdd3b05d787a a b:last-child{
-    white-space: normal !important;
+/* Respect “reduce motion” */
+@media (prefers-reduced-motion: reduce){
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+    transition: none !important;
+    transform: none !important;
+  }
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
+    display: none !important;
   }
 }
+
 
 
 /* =========================================================
