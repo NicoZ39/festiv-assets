@@ -1962,7 +1962,7 @@ html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
    Header — lien actif (rouge piment)
 ========================================= */
 :root{
-  --festiv-piment: #ff3c00; /* ajuste ici si tu veux plus “piment” */
+  --festiv-piment: #C0392B; /* ajuste ici si tu veux plus “piment” */
 }
 
 /* état actif */
