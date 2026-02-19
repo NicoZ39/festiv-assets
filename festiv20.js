@@ -1650,7 +1650,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setActiveHeaderLink();
   setTimeout(setActiveHeaderLink, 250);
   setTimeout(setActiveHeaderLink, 1000);
-}
+}});
 
    
   // =========================================
