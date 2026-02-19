@@ -1725,160 +1725,159 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
 }
 
 /* =========================================================
-   EVENTS — PAGE “Nos événements”
-   Version Impact Festival
+   2) HERO IMPACT — 1 seul grand encadré (callout wrapper)
+   Wrapper callout id: 30c6ae9a98f28054884cd267b66e6dca
+   Lignes:
+   - 30c6...09ec6 (titre)
+   - 30c6...5d41  (liste)
+   - 30c6...3f280 (CTA ligne)
+   - 30c6...5ca4f (phrase)
+   - 30c6...b3db4 (micro)
 ========================================================= */
 
-
-
-
-/* =========================================================
-   2) HERO IMPACT — bloc éditorial
-========================================================= */
-
-/* largeur commune */
-.notion-block-30c6ae9a98f280d08987ef5f39909ec6,
-.notion-block-30c6ae9a98f28090b412f9f2f2c95d41,
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280,
-.notion-block-30c6ae9a98f28076a811c1bb6d55ca4f,
-.notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
+/* --- 2.1 Le GRAND encadré = le callout --- */
+.notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
   max-width: 920px !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-/* carte unique (sur la 1ère ligne) */
-.notion-block-30c6ae9a98f280d08987ef5f39909ec6{
-  margin: 18px auto 12px auto !important;
-  padding: clamp(18px, 3vw, 26px) !important;
-  padding-bottom: clamp(22px, 3vw, 30px) !important;
+  margin: 22px auto 26px auto !important;
 
   border-radius: 28px !important;
   border: 1px solid rgba(0,0,0,.08) !important;
-  box-shadow: 0 20px 70px rgba(0,0,0,.12) !important;
 
-  background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.70)) !important;
-  backdrop-filter: blur(10px);
+  /* look “pill / dégradé doux” */
+  background: linear-gradient(
+    90deg,
+    rgba(255,112,52,.14),
+    rgba(255,255,255,.80),
+    rgba(0,177,172,.14)
+  ) !important;
+
+  box-shadow: 0 22px 80px rgba(0,0,0,.10) !important;
   overflow: hidden !important;
 }
 
-/* glow festif léger */
-.notion-block-30c6ae9a98f280d08987ef5f39909ec6::before{
+/* Padding interne (le callout a son propre layout) */
+.notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout .notion-callout-text{
+  padding: clamp(20px, 3vw, 30px) !important;
+}
+
+/* Petit “glow” propre par-dessus */
+.notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout::before{
   content:"";
   position:absolute;
   inset:-40px;
   background:
-    radial-gradient(circle at 20% 10%, rgba(255,112,52,.18), transparent 55%),
-    radial-gradient(circle at 80% 0%, rgba(0,177,172,.16), transparent 50%),
-    radial-gradient(circle at 70% 90%, rgba(255,112,52,.10), transparent 55%);
+    radial-gradient(circle at 15% 0%, rgba(255,112,52,.18), transparent 55%),
+    radial-gradient(circle at 85% 0%, rgba(0,177,172,.16), transparent 50%),
+    radial-gradient(circle at 70% 100%, rgba(255,112,52,.10), transparent 55%);
   pointer-events:none;
 }
 
-/* typographie hero */
+/* --- 2.2 On SUPPRIME le “petit encadré” (ancienne carte) --- */
 .notion-block-30c6ae9a98f280d08987ef5f39909ec6{
-  font-size: 1.28rem !important;
-  font-weight: 800 !important;
-  line-height: 1.3 !important;
-}
-
-.notion-block-30c6ae9a98f280d08987ef5f39909ec6 b{
-  font-size: 1.38rem !important;
-}
-
-/* lignes intégrées */
-.notion-block-30c6ae9a98f28090b412f9f2f2c95d41{
-  margin-top: -18px !important;
-  font-size: 1.08rem !important;
-  opacity: .9 !important;
-}
-
-.notion-block-30c6ae9a98f28076a811c1bb6d55ca4f{
-  margin-top: 14px !important;
-  font-size: 1.08rem !important;
-  opacity: .92 !important;
-}
-
-.notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
-  margin-top: 8px !important;
-  font-size: .98rem !important;
-  opacity: .75 !important;
-  margin-bottom: 26px !important;
-}
-
-/* reset backgrounds secondaires */
-.notion-block-30c6ae9a98f28090b412f9f2f2c95d41,
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280,
-.notion-block-30c6ae9a98f28076a811c1bb6d55ca4f,
-.notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
+  margin: 0 0 10px 0 !important;
+  padding: 0 !important;
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
+/* Titre plus “impact” sans encadré */
+.notion-block-30c6ae9a98f280d08987ef5f39909ec6{
+  font-size: 1.28rem !important;
+  font-weight: 900 !important;
+  line-height: 1.25 !important;
+}
+.notion-block-30c6ae9a98f280d08987ef5f39909ec6 b{
+  font-size: 1.32rem !important;
+}
+
+/* Texte */
+.notion-block-30c6ae9a98f28090b412f9f2f2c95d41{
+  font-size: 1.06rem !important;
+  opacity: .90 !important;
+  margin: 0 0 10px 0 !important;
+}
+.notion-block-30c6ae9a98f28076a811c1bb6d55ca4f{
+  font-size: 1.06rem !important;
+  opacity: .92 !important;
+  margin: 10px 0 0 0 !important;
+}
+.notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
+  font-size: .98rem !important;
+  opacity: .75 !important;
+  margin: 6px 0 0 0 !important;
+}
 
 /* =========================================================
-   CTA PRINCIPAL — version festival
+   CTA — bouton + flamme dedans
 ========================================================= */
 
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-
-  padding: 16px 28px !important;
-  border-radius: 999px !important;
-
-  font-weight: 900 !important;
-  font-size: 1.05rem !important;
-  letter-spacing: .4px !important;
-
-  background: linear-gradient(
-    90deg,
-    #ff7a00,
-    #ff3c00,
-    #ff0066
-  ) !important;
-
-  background-size: 200% 200% !important;
-
-  color: #ffffff !important;
-  border: none !important;
-  text-decoration: none !important;
-
-  box-shadow:
-    0 22px 70px rgba(255,60,0,.45),
-    0 12px 35px rgba(0,0,0,.18) !important;
-
-  transition: all .35s ease !important;
-}
-
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:hover{
-  transform: translateY(-4px) scale(1.05) !important;
-  background-position: 100% 0 !important;
-  box-shadow:
-    0 35px 100px rgba(255,60,0,.65),
-    0 16px 45px rgba(0,0,0,.25) !important;
-}
-
-/* cache petit lien 🔥 inutile */
+/* Cache le petit lien “🔥 ” séparé (le parasite avant le vrai lien) */
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 > a.notion-link:first-child{
   display: none !important;
 }
 
-/* mobile CTA */
+/* Le vrai bouton */
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+
+  padding: 14px 22px !important;
+  border-radius: 999px !important;
+
+  font-weight: 900 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: .2px !important;
+
+  background: linear-gradient(90deg,#ff7a00,#ff3c00,#ff0066) !important;
+  background-size: 200% 200% !important;
+
+  color: #fff !important;
+  border: none !important;
+  text-decoration: none !important;
+
+  box-shadow: 0 20px 70px rgba(255,60,0,.35) !important;
+  transition: transform .25s ease, box-shadow .25s ease, background-position .35s ease !important;
+
+  margin: 12px 0 6px 0 !important;
+}
+
+/* ✅ Flamme DANS le bouton */
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link::before{
+  content: "🔥";
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+/* Hover */
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:hover{
+  transform: translateY(-3px) scale(1.03) !important;
+  background-position: 100% 0 !important;
+  box-shadow: 0 30px 95px rgba(255,60,0,.45) !important;
+}
+
+/* Mobile : full width */
 @media (max-width: 640px){
   .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
     width: 100% !important;
-    justify-content: center !important;
   }
 }
 
-/* dark mode hero */
-html.dark-mode .notion-block-30c6ae9a98f280d08987ef5f39909ec6{
-  background: linear-gradient(135deg, #1a1a1a 0%, #101010 100%) !important;
-  border-color: rgba(255,255,255,.08) !important;
-  box-shadow:
-    0 35px 120px rgba(0,0,0,.65) !important;
+/* =========================================================
+   Dark mode — grand encadré
+========================================================= */
+
+html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
+  border-color: rgba(255,255,255,.10) !important;
+  background: linear-gradient(
+    90deg,
+    rgba(255,112,52,.16),
+    rgba(20,20,20,.72),
+    rgba(0,177,172,.16)
+  ) !important;
+  box-shadow: 0 28px 110px rgba(0,0,0,.55) !important;
 }
+
