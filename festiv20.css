@@ -1724,6 +1724,40 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
   background: rgba(255, 122, 0, .14) !important;
   border-color: rgba(255, 122, 0, .30) !important;
 }
+/* =========================================================
+   SPOILER ALERT — FIX iPhone (évite SPOILE / R / ALERT)
+   Block id: 2f86ae9a98f280608b14fdd3b05d787a
+========================================================= */
+
+/* Base : pas de word-break sauvage + wrap propre */
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  text-align: center !important;
+
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+}
+
+/* Empêche "Spoiler alert" de se casser au milieu d’un mot */
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a a b:first-child{
+  white-space: nowrap !important;
+}
+
+/* Mobile iPhone : on empile proprement en 2 lignes */
+@media (max-width: 480px){
+  .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 14px 16px !important;
+  }
+
+  /* Le 2e morceau peut revenir à la ligne normalement */
+  .notion-block-2f86ae9a98f280608b14fdd3b05d787a a b:last-child{
+    white-space: normal !important;
+  }
+}
 
 /* =========================================================
    2) HERO IMPACT — 1 seul grand encadré (callout wrapper)
