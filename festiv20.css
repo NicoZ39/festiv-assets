@@ -1602,3 +1602,31 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   font-weight: 650 !important;
   opacity: .82 !important;
 }
+/* =========================================================
+   EVENTS — Spoiler alert (sticker discret)
+========================================================= */
+
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a{
+  margin: 8px auto 18px auto !important;
+}
+
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  padding: 10px 14px !important;
+  border-radius: 16px !important;
+
+  background: rgba(255, 122, 0, .10) !important; /* orange léger */
+  border: 1px dashed rgba(255, 122, 0, .35) !important;
+
+  font-weight: 900 !important;
+  text-decoration: none !important;
+}
+
+/* En dark mode, on garde le même esprit mais moins “clair” */
+html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
+  background: rgba(255, 122, 0, .14) !important;
+  border-color: rgba(255, 122, 0, .30) !important;
+}
