@@ -1746,6 +1746,20 @@ function setActiveHeaderLink() {
     console.warn("[festiv20] setActiveHeaderLink error", e);
   }
 }
+function cleanupNavMarkers() {
+  try {
+    const re = /\[nav:(articles|evenements)\]/gi;
+
+    // Nettoyage via text nodes (le plus fiable)
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue) continue;
+      if (!re.test(n.nodeValue)) continue;
+      n.nodeValue = n.nodeValue.replace(re, "").replace(/\s{2,}/g, " ").trim();
+    }
+  } catch {}
+}
 
 
 
@@ -1788,7 +1802,7 @@ function setActiveHeaderLink() {
 setTimeout(setActiveHeaderLink, 250);
 setTimeout(setActiveHeaderLink, 1000);
 setTimeout(setActiveHeaderLink, 2500);
-
+cleanupNavMarkers();
 
       initThemeToggle();
 
