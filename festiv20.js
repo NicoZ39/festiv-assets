@@ -1561,8 +1561,9 @@ function setupGlobalStickers() {
     titles.forEach((a) => {
       if (a.classList.contains("festiv-sticker")) return;
 
-      const raw = (a.textContent || "").replace(/\s+/g, " ").trim();
-      if (!raw.startsWith(TRIGGER)) return;
+      const raw = (a.textContent || "").trim();
+if (!raw.startsWith(TRIGGER)) return;
+
 
       // 1) Marqueur style
       a.classList.add("festiv-sticker");
