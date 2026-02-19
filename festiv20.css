@@ -1958,3 +1958,24 @@ html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
   font-weight: 700 !important;      /* au lieu d’un 900 agressif */
 }
 
+/* =========================================
+   Header — lien actif (rouge piment)
+========================================= */
+:root{
+  --festiv-piment: #ff3c00; /* ajuste ici si tu veux plus “piment” */
+}
+
+/* état actif */
+.custom-header__links__link.is-active{
+  background-color: var(--festiv-piment) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(255, 60, 0, .28) !important;
+}
+
+/* option : garder le hover cohérent */
+.custom-header__links__link.is-active:hover{
+  background-color: var(--festiv-piment) !important;
+  opacity: .95 !important;
+  transform: translateY(-1px) scale(1.03);
+}
