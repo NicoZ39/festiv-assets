@@ -1595,55 +1595,69 @@ if (!raw.startsWith(TRIGGER)) return;
     // silencieux
   }
 }
-// =========================================
-// Header nav — lien actif (rouge piment)
-// =========================================
 function setActiveHeaderLink() {
   try {
-    const links = document.querySelectorAll(".custom-header__links__link");
+    const links = Array.from(document.querySelectorAll(".custom-header__links__link"));
     if (!links.length) return;
 
-    const currentUrl = new URL(window.location.href);
-    const currentPath = (currentUrl.pathname || "/").replace(/\/+$/, "") || "/";
+    const currentPath = (window.location.pathname || "/").toLowerCase();
 
-    // Retire l'état actif
+    // Nettoie
     links.forEach(a => a.classList.remove("is-active"));
 
-    // Trouve le meilleur match (exact path)
-    let best = null;
-
-    links.forEach(a => {
-      const href = a.getAttribute("href");
-      if (!href) return;
-
-      // Normalise href en URL
-      let u;
+    // 1) Match strict par pathname normalisé
+    const normalizePath = (href) => {
       try {
-        u = new URL(href, window.location.origin);
-      } catch (e) {
-        return;
+        const u = new URL(href, window.location.origin);
+        return (u.pathname || "/").toLowerCase().replace(/\/+$/, "") || "/";
+      } catch {
+        return "";
       }
+    };
 
-      const path = (u.pathname || "/").replace(/\/+$/, "") || "/";
+    const curNorm = currentPath.replace(/\/+$/, "") || "/";
 
-      // Match exact
-      if (path === currentPath) best = a;
+    let best = links.find(a => normalizePath(a.getAttribute("href") || "") === curNorm);
 
-      // Cas accueil ("/") : si on est sur "/", c'est lui
-      if (currentPath === "/" && path === "/") best = a;
-    });
-
-    // Fallback : si Simple.ink rajoute des chemins proches
+    // 2) Fallback Simple.ink : match par "contient le slug-id"
+    // Exemple : /blog-35adaa... doit matcher Articles même si lien est full URL
     if (!best) {
-      links.forEach(a => {
-        const href = a.getAttribute("href") || "";
-        if (href.includes(currentPath) && currentPath !== "/") best = a;
+      best = links.find(a => {
+        const p = normalizePath(a.getAttribute("href") || "");
+        if (!p || p === "/") return false;
+        return curNorm.includes(p);
       });
     }
 
+    // 3) Fallback ultime : match par ID (super fiable)
+    // On extrait le suffixe "-xxxxxxxx..." du lien et on teste si l’URL courante le contient
+    if (!best) {
+      const idLike = (p) => {
+        // récupère la partie après le dernier "-" si ça ressemble à un id hex
+        const m = p.match(/-([0-9a-f]{12,})$/i);
+        return m ? m[1].toLowerCase() : null;
+      };
+
+      const curId = (() => {
+        const m = curNorm.match(/-([0-9a-f]{12,})$/i);
+        return m ? m[1].toLowerCase() : null;
+      })();
+
+      if (curId) {
+        best = links.find(a => {
+          const p = normalizePath(a.getAttribute("href") || "");
+          const id = idLike(p);
+          return id && id === curId;
+        });
+      }
+    }
+
     if (best) best.classList.add("is-active");
-  } catch (e) {}
+  } catch (e) {
+    console.warn("[festiv20] setActiveHeaderLink error", e);
+  }
 }
+
 
    
   // =========================================
