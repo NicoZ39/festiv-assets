@@ -1706,6 +1706,19 @@ html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
     display: none !important;
   }
 }
+/* =========================================================
+   PATCH — GLOBAL STICKER sans icône
+========================================================= */
+
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
+  content: none !important;
+  display: none !important;
+}
+
+/* On enlève l'espace prévu pour l'icône */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
+  gap: 0 !important;
+}
 
 
 
