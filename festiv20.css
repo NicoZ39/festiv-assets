@@ -1850,13 +1850,6 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
   margin: 12px 0 6px 0 !important;
 }
 
-/* ✅ Flamme DANS le bouton */
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link::before{
-  content: "🔥";
-  display: inline-block;
-  transform: translateY(-1px);
-}
-
 /* Hover */
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:hover{
   transform: translateY(-3px) scale(1.03) !important;
