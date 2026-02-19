@@ -416,7 +416,7 @@ body .notion-page-cover-wrapper img{
   padding: 6px 10px !important;
 
   font-size: 11px !important;
-  font-weight: 600 !important;     /* ↓ au lieu de 900 */
+  font-weight: 700 !important;     /* ↓ au lieu de 900 */
   letter-spacing: .25px !important; /* ↓ moins espacé */
   text-transform: uppercase !important; /* ← plus naturel */
   line-height: 1.1 !important;
