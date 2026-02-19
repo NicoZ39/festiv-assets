@@ -1823,11 +1823,6 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
    CTA — bouton + flamme dedans
 ========================================================= */
 
-/* Cache le petit lien “🔥 ” séparé (le parasite avant le vrai lien) */
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280 > a.notion-link:first-child{
-  display: none !important;
-}
-
 /* Le vrai bouton */
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
   display: inline-flex !important;
