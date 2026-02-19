@@ -1645,13 +1645,6 @@ function setActiveHeaderLink() {
   } catch (e) {}
 }
 
-// Lance au chargement + petit retry (header parfois injecté après)
-document.addEventListener("DOMContentLoaded", () => {
-  setActiveHeaderLink();
-  setTimeout(setActiveHeaderLink, 250);
-  setTimeout(setActiveHeaderLink, 1000);
-});
-
    
   // =========================================
   // runAll (load + rebuild DOM)
@@ -1687,6 +1680,9 @@ document.addEventListener("DOMContentLoaded", () => {
       translateNotionCalendar();
       setupGlobalStickers();
       setActiveHeaderLink();
+setTimeout(setActiveHeaderLink, 250);
+setTimeout(setActiveHeaderLink, 1000);
+
 
       initThemeToggle();
 
