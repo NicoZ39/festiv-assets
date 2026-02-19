@@ -1545,6 +1545,55 @@ function setupWeatherWidget() {
     if (window.DEBUG) console.warn("WeatherWidget setup error:", e);
   }
 }
+// =========================================
+// GLOBAL STICKER (🧷)
+// - Ajoute .festiv-sticker aux H4 dont le titre commence par 🧷
+// - Retire l’emoji déclencheur du texte (mais le CSS le réinjecte en ::before)
+// =========================================
+function setupGlobalStickers() {
+  try {
+    const TRIGGER = "🧷";
+
+    const titles = document.querySelectorAll(
+      'h4.notion-h.notion-h3 a.notion-h-title'
+    );
+
+    titles.forEach((a) => {
+      if (a.classList.contains("festiv-sticker")) return;
+
+      const raw = (a.textContent || "").replace(/\s+/g, " ").trim();
+      if (!raw.startsWith(TRIGGER)) return;
+
+      // 1) Marqueur style
+      a.classList.add("festiv-sticker");
+
+      // 2) Retire le TRIGGER au début dans le 1er text node trouvé
+      // (en gardant le HTML/gras/etc.)
+      const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
+      let node;
+      while ((node = walker.nextNode())) {
+        let t = node.nodeValue;
+        if (!t) continue;
+        // on cherche la première occurrence utile
+        const cleaned = t.replace(/\s+/g, " ");
+        const trimmed = cleaned.trimStart();
+        if (!trimmed.startsWith(TRIGGER)) continue;
+
+        // enlève l’emoji + un espace éventuel juste après
+        const idx = t.indexOf(TRIGGER);
+        if (idx >= 0) {
+          const before = t.slice(0, idx);
+          let after = t.slice(idx + TRIGGER.length);
+          after = after.replace(/^\s+/, ""); // enlève l'espace après 🧷
+          node.nodeValue = before + after;
+        }
+        break;
+      }
+    });
+  } catch (e) {
+    // silencieux
+  }
+}
 
   // =========================================
   // runAll (load + rebuild DOM)
@@ -1578,6 +1627,7 @@ function setupWeatherWidget() {
       bindSystemThemeListener();
       bindCalendarI18nHooks();
       translateNotionCalendar();
+      setupGlobalStickers();
 
       initThemeToggle();
 
