@@ -1885,4 +1885,25 @@ html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:active{
   color: #ffffff !important;
 }
+.notion-block-30c6ae9a98f280ffb321f9b564183e46{
+  font-weight: 700 !important;      /* un peu moins massif */
+  font-size: 1.14rem !important;    /* très légèrement plus grand */
+  line-height: 1.35 !important;     /* plus d’air */
+  margin-top: 20px !important;
+  margin-bottom: 6px !important;
+}
+/* Ligne “Producteurs…” en semi-gras + plus présente */
+.notion-block-30c6ae9a98f28041bee6e8d21e6a8286{
+  font-weight: 600 !important;      /* semi-bold */
+  font-size: 1.02rem !important;    /* très légèrement plus grand */
+  margin-top: 10px !important;
+  margin-bottom: 4px !important;
+  opacity: .95 !important;          /* un peu plus présent */
+  line-height: 1.4 !important;
+}
+
+/* On évite que le <b> soit trop lourd */
+.notion-block-30c6ae9a98f28041bee6e8d21e6a8286 b{
+  font-weight: 700 !important;      /* au lieu d’un 900 agressif */
+}
 
