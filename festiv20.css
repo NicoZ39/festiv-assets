@@ -316,43 +316,64 @@ body .notion-page-cover-wrapper img{
 }
 
 /* =========================================================
-   GALLERY CARDS — global (Blog + Événements + Home)
-   - lift premium + zoom cover
-   - badges catégories "magazine"
-   - compatible Simple.ink / Notion
+   GALLERY CARDS — style premium (Blog + Événements + Home)
+   - lift + shadow + zoom cover
+   - badges catégories “magazine”
+   - fix ombres coupées (overflow)
 ========================================================= */
 
-/* Grille un peu plus respirante (optionnel mais propre) */
+:root{
+  --card-radius: 22px;
+  --card-shadow: 0 12px 30px rgba(0,0,0,.08);
+  --card-shadow-hover: 0 28px 60px rgba(0,0,0,.18);
+  --card-lift: -8px;
+  --cover-zoom-base: 1.02;
+  --cover-zoom-hover: 1.06;
+}
+
+/* ✅ FIX : empêche les ombres d’être “coupées” par les wrappers */
+.notion-gallery,
+.notion-gallery-view,
+.notion-gallery-grid,
+.notion-gallery-grid > * ,
+.notion-collection,
+.notion-collection-body,
+.notion-collection-content,
+.notion-collection-container{
+  overflow: visible !important;
+}
+
+/* Un peu d’air autour de la grille pour que l’ombre ait la place */
 .notion-gallery .notion-gallery-grid{
+  padding: 18px 12px 42px !important; /* bottom ↑ pour éviter coupe nette */
   gap: 24px !important;
-  padding: 12px !important;
 }
 
 /* Carte */
-.notion-gallery .notion-collection-card{
-  border-radius: 22px !important;
-  overflow: hidden !important;
+.notion-gallery a.notion-collection-card{
+  border-radius: var(--card-radius) !important;
+  overflow: hidden !important; /* ok: on coupe l’image aux coins, pas l’ombre (gérée par parents) */
   background: #fff !important;
   border: 1px solid rgba(0,0,0,.05) !important;
-  box-shadow: 0 12px 30px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.05) !important;
+  box-shadow: var(--card-shadow) !important;
   transform: translateZ(0);
-  transition: transform .28s ease, box-shadow .28s ease !important;
 }
 
-/* Hover lift */
-@media (hover:hover){
-  .notion-gallery .notion-collection-card:hover{
-    transform: translateY(-6px) !important;
-    box-shadow: 0 28px 60px rgba(0,0,0,.16), 0 10px 22px rgba(0,0,0,.08) !important;
+/* Hover (desktop uniquement) */
+@media (hover:hover) and (pointer:fine){
+  .notion-gallery a.notion-collection-card{
+    transition: transform .35s ease, box-shadow .35s ease !important;
+  }
+  .notion-gallery a.notion-collection-card:hover{
+    transform: translateY(var(--card-lift)) !important;
+    box-shadow: var(--card-shadow-hover) !important;
   }
 }
 
-/* Cover / image */
+/* Cover */
 .notion-gallery .notion-collection-card-cover{
   overflow: hidden !important;
-  border-radius: 22px 22px 0 0 !important;
-  height: 230px !important;   /* ajuste si tu veux */
-  background: rgba(0,0,0,.02) !important;
+  border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
 }
 
 .notion-gallery .notion-collection-card-cover img{
@@ -360,62 +381,36 @@ body .notion-page-cover-wrapper img{
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
-  transform: scale(1.02);
-  transition: transform .55s ease !important;
+  transform: scale(var(--cover-zoom-base));
+  transition: transform .6s ease !important;
+  will-change: transform;
 }
 
-/* Zoom au hover */
-@media (hover:hover){
-  .notion-gallery .notion-collection-card:hover .notion-collection-card-cover img{
-    transform: scale(1.065) !important;
+@media (hover:hover) and (pointer:fine){
+  .notion-gallery a.notion-collection-card:hover .notion-collection-card-cover img{
+    transform: scale(var(--cover-zoom-hover));
   }
 }
 
-/* Body */
-.notion-gallery .notion-collection-card-body{
-  padding: 18px 18px 16px !important;
-}
-
-/* Titre */
-.notion-gallery .notion-collection-card .notion-property-title{
-  font-size: 20px !important;
+/* Titres */
+.notion-gallery .notion-collection-card .notion-page-title{
+  font-weight: 800 !important;
+  font-size: 1.1rem !important;
   line-height: 1.3 !important;
 }
 
-/* Align emoji + titre */
-.notion-gallery .notion-property-title .notion-page-title{
-  display:flex !important;
-  align-items:center !important;
-  gap:8px !important;
-}
-.notion-gallery .notion-page-title-icon{
-  display:flex !important;
-  align-items:center !important;
-  line-height:1 !important;
-  font-size:1.1em !important;
-}
-.notion-gallery .notion-page-title-text{
-  line-height:1.15 !important;
-  display:block !important;
-}
-
-/* Textes secondaires */
-.notion-gallery .notion-collection-card .notion-property-text,
-.notion-gallery .notion-collection-card .notion-property-rich_text{
-  opacity: .92 !important;
-}
-
 /* =========================================================
-   Badges catégories (multi_select) — style "magazine" GLOBAL
+   BADGES catégories — “magazine” (global, uniquement dans les cartes)
 ========================================================= */
-.notion-gallery .notion-property.notion-property-multi_select{
+
+.notion-gallery .notion-collection-card .notion-property.notion-property-multi_select{
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 8px !important;
-  margin-top: 6px !important;
+  margin-top: 4px !important;
 }
 
-.notion-gallery .notion-property-multi_select-item{
+.notion-gallery .notion-collection-card .notion-property-multi_select-item{
   border-radius: 999px !important;
   padding: 6px 10px !important;
   font-size: 11px !important;
@@ -427,41 +422,25 @@ body .notion-page-cover-wrapper img{
   border: 1px solid rgba(0,0,0,.08) !important;
 }
 
-/* Dark mode: cartes + badges */
-.dark-mode .notion-gallery .notion-collection-card{
+/* Dark mode : cartes + badges */
+.dark-mode .notion-gallery a.notion-collection-card{
   background: #212828 !important;
   border: 1px solid rgba(255,255,255,.08) !important;
-  box-shadow: 0 14px 40px rgba(0,0,0,.55), 0 2px 10px rgba(0,0,0,.35) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 2px 10px rgba(0,0,0,.35) !important;
 }
-
 .dark-mode .notion-gallery .notion-collection-card-cover{
-  background: rgba(0,0,0,.25) !important;
+  background: #0f0f0f !important;
 }
-
 .dark-mode .notion-gallery .notion-collection-card .notion-property-title,
 .dark-mode .notion-gallery .notion-collection-card .notion-property-text,
 .dark-mode .notion-gallery .notion-collection-card .notion-property-rich_text{
   color: rgba(255,255,255,.92) !important;
 }
-
-.dark-mode .notion-gallery .notion-property-multi_select-item{
-  border: 1px solid rgba(255,255,255,.12) !important;
+.dark-mode .notion-gallery .notion-collection-card .notion-property-multi_select-item{
+  border: 1px solid rgba(255,255,255,.10) !important;
   box-shadow: 0 10px 26px rgba(0,0,0,.45) !important;
 }
 
-/* Respect reduce motion */
-@media (prefers-reduced-motion: reduce){
-  .notion-gallery .notion-collection-card,
-  .notion-gallery .notion-collection-card-cover img{
-    transition: none !important;
-  }
-  .notion-gallery .notion-collection-card:hover{
-    transform: none !important;
-  }
-  .notion-gallery .notion-collection-card:hover .notion-collection-card-cover img{
-    transform: scale(1.02) !important;
-  }
-}
 
 /* =========================================================
    9) Tables — scroll horizontal + indicateurs
@@ -1510,10 +1489,7 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   color: rgba(255,255,255,.92) !important;
 }
 
-/* Pastilles multi-select un peu moins flashy en dark */
-.dark-mode .notion-gallery .notion-property-multi_select-item{
-  filter: saturate(.9) brightness(.95);
-}
+
 .weatherwidget-io {
   border-radius: 24px !important;
   overflow: hidden !important;
