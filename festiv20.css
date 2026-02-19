@@ -1815,7 +1815,7 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
 }
 .notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
   font-size: .98rem !important;
-  opacity: .75 !important;
+  opacity: .65 !important;
   margin: 6px 0 0 0 !important;
 }
 
@@ -1856,7 +1856,9 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
   background-position: 100% 0 !important;
   box-shadow: 0 30px 95px rgba(255,60,0,.45) !important;
 }
-
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280{
+  margin-bottom: 14px !important;
+}
 /* Mobile : full width */
 @media (max-width: 640px){
   .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
