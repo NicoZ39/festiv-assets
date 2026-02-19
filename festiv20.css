@@ -1559,3 +1559,46 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 .notion-property-text .notion-purple b{
   background: rgba(0,0,0,.06) !important;
 }
+/* =========================================================
+   EVENTS — Sous-titre : "Découvrez les prochains rendez-vous…"
+   Bloc : 30b6ae9a98f2800da27cd6308e1f8fb0
+========================================================= */
+
+.notion-text.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0{
+  text-align: center !important;
+  max-width: 760px !important;
+
+  /* spacing (évite le “vide” moche) */
+  margin: 6px auto 14px auto !important;
+  padding: 0 !important;
+
+  /* typo */
+  font-size: 1.08rem !important;
+  line-height: 1.55 !important;
+  font-weight: 650 !important;
+  opacity: .82 !important;
+}
+
+/* petit trait discret (optionnel) */
+.notion-text.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0::after{
+  content: "" !important;
+  display: block !important;
+  width: 90px !important;
+  height: 3px !important;
+  margin: 10px auto 0 auto !important;
+  background: currentColor !important;
+  opacity: .16 !important;
+  border-radius: 999px !important;
+}
+.notion-text.notion-block-30b6ae9a98f2800da27cd6308e1f8fb0{
+  text-align: center !important;
+  max-width: 760px !important;
+
+  margin: 160px auto 20px auto !important;  /* ← vrai espace hero */
+  padding: 0 !important;
+
+  font-size: 1.6rem !important;
+  line-height: 1.55 !important;
+  font-weight: 650 !important;
+  opacity: .82 !important;
+}
