@@ -1681,231 +1681,98 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
 
 
 /* =========================================================
-   2) HERO IMPACT — accroche + CTA exposant
-   Blocs:
-   - 30c6...09ec6 (🎪 Ounans ne s’endort jamais.)
-   - 30c6...5d41  (Vide-grenier...)
-   - 30c6...3f280 (CTA lien)
-   - 30c6...5ca4f (Toute l’année...)
-   - 30c6...b3db4 (Micro-rassurance)
+   EVENTS — HERO CARTE UNIQUE
 ========================================================= */
 
-/* largeur commune (resserrée pour éviter l’effet “trop long”) */
+/* === 1. Tous les blocs concernés === */
 .notion-block-30c6ae9a98f280d08987ef5f39909ec6,
 .notion-block-30c6ae9a98f28090b412f9f2f2c95d41,
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280,
 .notion-block-30c6ae9a98f28076a811c1bb6d55ca4f,
 .notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
-  max-width: 920px !important;
+  max-width: 880px !important;
   margin-left: auto !important;
   margin-right: auto !important;
-  position: relative !important;
-  z-index: 1 !important;
 }
 
-/* reset des lignes 2→5 (pas de bandes) */
-.notion-block-30c6ae9a98f28090b412f9f2f2c95d41,
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280,
-.notion-block-30c6ae9a98f28076a811c1bb6d55ca4f,
-.notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-}
-
-/* carte unique (sur la 1ère ligne) */
+/* === 2. Carte principale (on applique UNIQUEMENT sur le 1er bloc) === */
 .notion-block-30c6ae9a98f280d08987ef5f39909ec6{
-  margin: 18px auto 12px auto !important;
-  padding: clamp(18px, 3vw, 26px) !important;
-  padding-bottom: clamp(22px, 3vw, 30px) !important;
+  margin-top: 24px !important;
+  padding: 32px !important;
+  padding-bottom: 26px !important;
 
   border-radius: 28px !important;
   border: 1px solid rgba(0,0,0,.08) !important;
   box-shadow: 0 20px 70px rgba(0,0,0,.12) !important;
 
-  background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.70)) !important;
-  backdrop-filter: blur(10px);
-  overflow: hidden !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.80)) !important;
 }
 
-/* glow festif léger */
-.notion-block-30c6ae9a98f280d08987ef5f39909ec6::before{
-  content:"";
-  position:absolute;
-  inset:-40px;
-  background:
-    radial-gradient(circle at 20% 10%, rgba(255,112,52,.18), transparent 55%),
-    radial-gradient(circle at 80% 0%, rgba(0,177,172,.16), transparent 50%),
-    radial-gradient(circle at 70% 90%, rgba(255,112,52,.10), transparent 55%);
-  pointer-events:none;
-}
-
-/* on “rentre” les lignes 2→5 dans la carte via marges */
-.notion-block-30c6ae9a98f28090b412f9f2f2c95d41{ margin-top: -18px !important; }
-.notion-block-30c6ae9a98f2801ea8ddd6113113f280{ margin-top: 10px !important; }
-.notion-block-30c6ae9a98f28076a811c1bb6d55ca4f{ margin-top: 12px !important; }
-.notion-block-30c6ae9a98f2807aab63d7c2559b3db4{ margin-top: 6px !important; margin-bottom: 22px !important; }
-
-/* padding latéral des lignes “dans la carte” */
+/* === 3. On “rentre” les autres blocs dans la carte === */
 .notion-block-30c6ae9a98f28090b412f9f2f2c95d41,
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280,
 .notion-block-30c6ae9a98f28076a811c1bb6d55ca4f,
 .notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
-  padding-left: clamp(18px, 3vw, 26px) !important;
-  padding-right: clamp(18px, 3vw, 26px) !important;
+  margin-top: 10px !important;
+  padding-left: 32px !important;
+  padding-right: 32px !important;
 }
 
-/* typo */
+/* === 4. Typographie === */
 .notion-block-30c6ae9a98f280d08987ef5f39909ec6{
-  font-size: 1.18rem !important;
-  line-height: 1.25 !important;
+  font-size: 1.2rem !important;
+  font-weight: 700 !important;
 }
 
 .notion-block-30c6ae9a98f28090b412f9f2f2c95d41{
-  font-size: 1.06rem !important;
-  opacity: .88 !important;
+  font-size: 1.05rem !important;
+  opacity: .9 !important;
 }
 
 .notion-block-30c6ae9a98f28076a811c1bb6d55ca4f{
-  font-size: 1.06rem !important;
-  opacity: .92 !important;
+  font-size: 1.05rem !important;
 }
 
 .notion-block-30c6ae9a98f2807aab63d7c2559b3db4{
-  opacity: .75 !important;
-  font-size: .98rem !important;
+  font-size: .95rem !important;
+  opacity: .7 !important;
 }
 
-/* CTA : lien => bouton teal */
+/* === 5. BOUTON exposant (avec flamme conservée) === */
+
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
   display: inline-flex !important;
   align-items: center !important;
   gap: 10px !important;
 
-  padding: 13px 20px !important;
+  padding: 14px 22px !important;
   border-radius: 999px !important;
-  text-decoration: none !important;
+
   font-weight: 900 !important;
-  font-size: 1.02rem !important;
+  font-size: 1.05rem !important;
+  text-decoration: none !important;
 
-  background: rgba(0,177,172,.16) !important;
-  border: 1px solid rgba(0,177,172,.35) !important;
-  box-shadow: 0 18px 55px rgba(0,0,0,.10) !important;
+  background: linear-gradient(90deg, #ff7034, #ff3c7d) !important;
+  color: white !important;
 
-  transition: transform .2s ease, box-shadow .2s ease, background .2s ease !important;
+  box-shadow: 0 18px 50px rgba(255,112,52,.35) !important;
+  transition: transform .2s ease, box-shadow .2s ease !important;
 }
 
+/* Hover */
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:hover{
-  transform: translateY(-2px) !important;
-  box-shadow: 0 24px 70px rgba(0,0,0,.16) !important;
-  background: rgba(0,177,172,.22) !important;
+  transform: translateY(-3px) !important;
+  box-shadow: 0 26px 70px rgba(255,60,125,.45) !important;
 }
 
-/* cache le 1er lien “🔥 ” séparé (le petit <a> avant le vrai lien) */
+/* On masque le petit lien "🔥" séparé si Notion en crée un */
 .notion-block-30c6ae9a98f2801ea8ddd6113113f280 > a.notion-link:first-child{
   display: none !important;
 }
 
-/* mobile : CTA full width */
-@media (max-width: 640px){
-  .notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link{
-    width: 100% !important;
-    justify-content: center !important;
-  }
-}
-
-/* dark mode hero */
+/* === 6. Dark mode === */
 html.dark-mode .notion-block-30c6ae9a98f280d08987ef5f39909ec6{
-  background: linear-gradient(180deg, rgba(20,20,20,.75), rgba(10,10,10,.55)) !important;
-  border-color: rgba(255,255,255,.10) !important;
-  box-shadow: 0 22px 80px rgba(0,0,0,.55) !important;
-}
-
-
-/* =========================================================
-   3) 🔥 PROCHAINS ÉVÉNEMENTS — cartes premium
-   Block id collection: d478c59959434057984428b994645dfd
-========================================================= */
-
-/* Header : supprime ligne / séparateurs */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-header{
-  border-bottom: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 12px !important;
-}
-.notion-block-d478c59959434057984428b994645dfd hr,
-.notion-block-d478c59959434057984428b994645dfd .notion-divider{
-  display: none !important;
-}
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-header span.notion-collection-header{
-  font-weight: 900 !important;
-  letter-spacing: .2px !important;
-}
-
-/* grille */
-.notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
-  max-width: 1180px !important;
-  margin: 0 auto !important;
-  gap: 22px !important;
-}
-
-/* cartes */
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
-  border-radius: 24px !important;
-  overflow: hidden !important;
-  border: 1px solid rgba(0,0,0,.07) !important;
-  box-shadow: 0 18px 55px rgba(0,0,0,.12) !important;
-  transition: transform .25s ease, box-shadow .25s ease !important;
-  cursor: pointer !important;
-}
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover{
-  transform: translateY(-4px) !important;
-  box-shadow: 0 28px 85px rgba(0,0,0,.18) !important;
-}
-
-/* cover (effet affiche) */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
-  height: 205px !important; /* ajuste 190–230 si besoin */
-}
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover img{
-  height: 100% !important;
-  width: 100% !important;
-  object-fit: cover !important;
-}
-
-/* body */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-body{
-  padding: 14px 14px 16px 14px !important;
-}
-
-/* titre */
-.notion-block-d478c59959434057984428b994645dfd .notion-property-title b{
-  font-weight: 900 !important;
-  font-size: 1.12rem !important;
-  line-height: 1.15 !important;
-}
-
-/* bouton “Voir plus…” mini-pill */
-.notion-block-d478c59959434057984428b994645dfd .notion-property-text .notion-purple b{
-  display: inline-block !important;
-  padding: 9px 14px !important;
-  border-radius: 999px !important;
-  border: 1px solid rgba(0,0,0,.14) !important;
-  background: rgba(0,0,0,.04) !important;
-}
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover
-.notion-property-text .notion-purple b{
-  background: rgba(0,0,0,.06) !important;
-}
-
-/* mobile */
-@media (max-width: 720px){
-  .notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
-    gap: 14px !important;
-    padding: 0 10px !important;
-  }
-  .notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
-    height: 190px !important;
-  }
+  background: linear-gradient(180deg, rgba(25,25,25,.85), rgba(10,10,10,.65)) !important;
+  border-color: rgba(255,255,255,.1) !important;
+  box-shadow: 0 25px 80px rgba(0,0,0,.6) !important;
 }
