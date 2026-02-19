@@ -1598,9 +1598,6 @@ if (!raw.startsWith(TRIGGER)) return;
 function setActiveHeaderLink() {
   try {
     const links = Array.from(document.querySelectorAll(".custom-header__links__link"));
-    if (!links.length) return;
-
-    const currentPath = (window.location.pathname || "/").toLowerCase();
 
     // =========================
     // Helpers
@@ -1617,23 +1614,44 @@ function setActiveHeaderLink() {
     const byText = (txt) =>
       links.find((a) => (a.textContent || "").trim().toLowerCase() === txt);
 
-    const linkArticles =
+    const findLinkArticles = () =>
       byText("articles") ||
       links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/blog-"));
 
-    const linkEvents =
+    const findLinkEvents = () =>
       byText("événements") ||
       links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/nos-evenements-"));
 
-    // =========================
-    // 0) Nettoie état actif
-    // =========================
-    links.forEach((a) => a.classList.remove("is-active"));
+    const setActive = (a) => {
+      if (!a) return false;
+      links.forEach((x) => x.classList.remove("is-active"));
+      a.classList.add("is-active");
+      return true;
+    };
 
     // =========================
-    // A) Détection via marqueur Notion [nav:...]
+    // A) Détecter le marqueur + CACHER la section (important)
     // =========================
+    const readCachedSection = () => {
+      const d = document.documentElement.dataset.festivNavSection;
+      if (d === "articles" || d === "evenements") return d;
+      try {
+        const s = sessionStorage.getItem("festiv-nav-section");
+        if (s === "articles" || s === "evenements") return s;
+      } catch {}
+      return null;
+    };
+
+    const writeCachedSection = (section) => {
+      document.documentElement.dataset.festivNavSection = section;
+      try { sessionStorage.setItem("festiv-nav-section", section); } catch {}
+    };
+
     const detectNavMarker = () => {
+      // si déjà en cache, pas besoin de rescanner
+      const cached = readCachedSection();
+      if (cached) return cached;
+
       const nodes = Array.from(
         document.querySelectorAll(".notion-text, .notion-paragraph, .notion-callout-text")
       );
@@ -1643,8 +1661,10 @@ function setActiveHeaderLink() {
         const m = t.match(/\[nav:(articles|evenements)\]/i);
         if (!m) continue;
 
-        // Retire le marqueur du rendu (sans casser le contenu)
-        // -> on remplace seulement dans les text nodes
+        const section = m[1].toLowerCase(); // "articles" | "evenements"
+        writeCachedSection(section);
+
+        // Retire le marqueur du texte (comme avant)
         try {
           const walker = document.createTreeWalker(n, NodeFilter.SHOW_TEXT, null);
           let node;
@@ -1654,33 +1674,46 @@ function setActiveHeaderLink() {
               node.nodeValue = node.nodeValue.replace(/\s*\[nav:(articles|evenements)\]\s*/gi, " ").trim();
             }
           }
-          n.dataset.festivNavMarkerCleaned = "1";
         } catch {}
 
-        return m[1].toLowerCase(); // "articles" | "evenements"
+        return section;
       }
       return null;
     };
 
     const section = detectNavMarker();
-    if (section === "articles" && linkArticles) {
-      linkArticles.classList.add("is-active");
-      return;
+
+    // =========================
+    // Si le header n’est pas encore là → on sort,
+    // mais la section est maintenant en cache ✅
+    // =========================
+    if (!links.length) return;
+
+    // =========================
+    // 0) Nettoie état actif
+    // =========================
+    links.forEach((a) => a.classList.remove("is-active"));
+
+    // =========================
+    // B) Si section connue → on force le bon bouton
+    // =========================
+    if (section === "articles") {
+      if (setActive(findLinkArticles())) return;
     }
-    if (section === "evenements" && linkEvents) {
-      linkEvents.classList.add("is-active");
-      return;
+    if (section === "evenements") {
+      if (setActive(findLinkEvents())) return;
     }
 
     // =========================
-    // B) Fallbacks (tes règles)
+    // C) Fallbacks (tes règles initiales)
     // =========================
+    const currentPath = (window.location.pathname || "/").toLowerCase();
     const curNorm = currentPath.replace(/\/+$/, "") || "/";
 
-    // 1) Match strict par pathname normalisé
+    // 1) match strict
     let best = links.find((a) => normalizePath(a.getAttribute("href") || "") === curNorm);
 
-    // 2) Fallback Simple.ink : match "contient le chemin"
+    // 2) contains
     if (!best) {
       best = links.find((a) => {
         const p = normalizePath(a.getAttribute("href") || "");
@@ -1689,18 +1722,16 @@ function setActiveHeaderLink() {
       });
     }
 
-    // 3) Fallback ultime : match par ID
+    // 3) match ID
     if (!best) {
       const idLike = (p) => {
         const m = p.match(/-([0-9a-f]{12,})$/i);
         return m ? m[1].toLowerCase() : null;
       };
-
       const curId = (() => {
         const m = curNorm.match(/-([0-9a-f]{12,})$/i);
         return m ? m[1].toLowerCase() : null;
       })();
-
       if (curId) {
         best = links.find((a) => {
           const p = normalizePath(a.getAttribute("href") || "");
@@ -1715,6 +1746,7 @@ function setActiveHeaderLink() {
     console.warn("[festiv20] setActiveHeaderLink error", e);
   }
 }
+
 
 
 
@@ -1755,6 +1787,7 @@ function setActiveHeaderLink() {
       setActiveHeaderLink();
 setTimeout(setActiveHeaderLink, 250);
 setTimeout(setActiveHeaderLink, 1000);
+setTimeout(setActiveHeaderLink, 2500);
 
 
       initThemeToggle();
