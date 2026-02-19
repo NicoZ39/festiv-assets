@@ -1612,6 +1612,7 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 
 .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
   display: inline-flex !important;
+  transition: transform .2s ease, box-shadow .2s ease !important;
   align-items: center !important;
   gap: 10px !important;
 
@@ -1629,4 +1630,8 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
   background: rgba(255, 122, 0, .14) !important;
   border-color: rgba(255, 122, 0, .30) !important;
+}
+.notion-block-2f86ae9a98f280608b14fdd3b05d787a a:hover{
+  transform: translateY(-2px) !important;
+  box-shadow: 0 14px 40px rgba(0,0,0,.10) !important;
 }
