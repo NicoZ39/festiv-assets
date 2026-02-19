@@ -1602,10 +1602,9 @@ function setActiveHeaderLink() {
 
     const currentPath = (window.location.pathname || "/").toLowerCase();
 
-    // Nettoie
-    links.forEach(a => a.classList.remove("is-active"));
-
-    // 1) Match strict par pathname normalisé
+    // =========================
+    // Helpers
+    // =========================
     const normalizePath = (href) => {
       try {
         const u = new URL(href, window.location.origin);
@@ -1615,25 +1614,84 @@ function setActiveHeaderLink() {
       }
     };
 
+    const byText = (txt) =>
+      links.find((a) => (a.textContent || "").trim().toLowerCase() === txt);
+
+    const linkArticles =
+      byText("articles") ||
+      links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/blog-"));
+
+    const linkEvents =
+      byText("événements") ||
+      links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/nos-evenements-"));
+
+    // =========================
+    // 0) Nettoie état actif
+    // =========================
+    links.forEach((a) => a.classList.remove("is-active"));
+
+    // =========================
+    // A) Détection via marqueur Notion [nav:...]
+    // =========================
+    const detectNavMarker = () => {
+      const nodes = Array.from(
+        document.querySelectorAll(".notion-text, .notion-paragraph, .notion-callout-text")
+      );
+
+      for (const n of nodes) {
+        const t = (n.textContent || "").toLowerCase();
+        const m = t.match(/\[nav:(articles|evenements)\]/i);
+        if (!m) continue;
+
+        // Retire le marqueur du rendu (sans casser le contenu)
+        // -> on remplace seulement dans les text nodes
+        try {
+          const walker = document.createTreeWalker(n, NodeFilter.SHOW_TEXT, null);
+          let node;
+          while ((node = walker.nextNode())) {
+            if (!node.nodeValue) continue;
+            if (/\[nav:(articles|evenements)\]/i.test(node.nodeValue)) {
+              node.nodeValue = node.nodeValue.replace(/\s*\[nav:(articles|evenements)\]\s*/gi, " ").trim();
+            }
+          }
+          n.dataset.festivNavMarkerCleaned = "1";
+        } catch {}
+
+        return m[1].toLowerCase(); // "articles" | "evenements"
+      }
+      return null;
+    };
+
+    const section = detectNavMarker();
+    if (section === "articles" && linkArticles) {
+      linkArticles.classList.add("is-active");
+      return;
+    }
+    if (section === "evenements" && linkEvents) {
+      linkEvents.classList.add("is-active");
+      return;
+    }
+
+    // =========================
+    // B) Fallbacks (tes règles)
+    // =========================
     const curNorm = currentPath.replace(/\/+$/, "") || "/";
 
-    let best = links.find(a => normalizePath(a.getAttribute("href") || "") === curNorm);
+    // 1) Match strict par pathname normalisé
+    let best = links.find((a) => normalizePath(a.getAttribute("href") || "") === curNorm);
 
-    // 2) Fallback Simple.ink : match par "contient le slug-id"
-    // Exemple : /blog-35adaa... doit matcher Articles même si lien est full URL
+    // 2) Fallback Simple.ink : match "contient le chemin"
     if (!best) {
-      best = links.find(a => {
+      best = links.find((a) => {
         const p = normalizePath(a.getAttribute("href") || "");
         if (!p || p === "/") return false;
         return curNorm.includes(p);
       });
     }
 
-    // 3) Fallback ultime : match par ID (super fiable)
-    // On extrait le suffixe "-xxxxxxxx..." du lien et on teste si l’URL courante le contient
+    // 3) Fallback ultime : match par ID
     if (!best) {
       const idLike = (p) => {
-        // récupère la partie après le dernier "-" si ça ressemble à un id hex
         const m = p.match(/-([0-9a-f]{12,})$/i);
         return m ? m[1].toLowerCase() : null;
       };
@@ -1644,7 +1702,7 @@ function setActiveHeaderLink() {
       })();
 
       if (curId) {
-        best = links.find(a => {
+        best = links.find((a) => {
           const p = normalizePath(a.getAttribute("href") || "");
           const id = idLike(p);
           return id && id === curId;
@@ -1657,6 +1715,7 @@ function setActiveHeaderLink() {
     console.warn("[festiv20] setActiveHeaderLink error", e);
   }
 }
+
 
 
    
