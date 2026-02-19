@@ -1752,25 +1752,35 @@ html.dark-mode .notion-block-2f86ae9a98f280608b14fdd3b05d787a a{
   ) !important;
 
   box-shadow: 0 22px 80px rgba(0,0,0,.10) !important;
-  overflow: hidden !important;
+
+  /* ✅ FIX dégradé qui “débordait” sur la page */
+  position: relative !important;   /* ancre le ::before au callout */
+  isolation: isolate !important;   /* évite les mélanges */
+  overflow: hidden !important;     /* clip le glow */
 }
 
 /* Padding interne (le callout a son propre layout) */
 .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout .notion-callout-text{
   padding: clamp(20px, 3vw, 30px) !important;
+
+  /* ✅ le contenu doit passer au-dessus du glow */
+  position: relative !important;
+  z-index: 1 !important;
 }
 
-/* Petit “glow” propre par-dessus */
+/* Petit “glow” propre derrière le contenu */
 .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout::before{
   content:"";
-  position:absolute;
-  inset:-40px;
+  position: absolute;
+  inset: -40px;
+  z-index: 0 !important;           /* ✅ derrière le texte */
   background:
     radial-gradient(circle at 15% 0%, rgba(255,112,52,.18), transparent 55%),
     radial-gradient(circle at 85% 0%, rgba(0,177,172,.16), transparent 50%),
     radial-gradient(circle at 70% 100%, rgba(255,112,52,.10), transparent 55%);
-  pointer-events:none;
+  pointer-events: none;
 }
+
 
 /* --- 2.2 On SUPPRIME le “petit encadré” (ancienne carte) --- */
 .notion-block-30c6ae9a98f280d08987ef5f39909ec6{
