@@ -1603,112 +1603,95 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   opacity: .82 !important;
 }
 /* =========================================================
-   GLOBAL LABEL — opt-in via emoji déclencheur (🧷)
-   - Style "label éditorial" (propre, premium)
-   - Pas d’icône visible
+   GLOBAL STICKER — opt-in via emoji déclencheur (🧷)
+   Active le style sur tous les H4 dont le titre commence par 🧷
 ========================================================= */
 
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  gap: 10px !important;
 
   padding: 10px 16px !important;
-  border-radius: 999px !important;
+  border-radius: 16px !important;
 
-  /* look "label" */
-  background: rgba(255, 122, 0, .08) !important;
-  border: 1px dashed rgba(255, 122, 0, .28) !important;
+  background: rgba(255, 122, 0, .10) !important;
+  border: 1px dashed rgba(255, 122, 0, .35) !important;
 
   font-weight: 900 !important;
   text-decoration: none !important;
 
-  /* plus clean que le sticker */
-  letter-spacing: .6px !important;
-  text-transform: uppercase !important;
+  transform: rotate(-1deg) scale(1) !important;
+  transition:
+    transform .25s cubic-bezier(.2,.8,.2,1),
+    box-shadow .25s ease,
+    filter .25s ease !important;
 
-  /* léger tilt “festival”, mais discret */
-  transform: rotate(-.6deg) scale(1) !important;
-  will-change: transform;
-
-  /* shimmer layer */
   position: relative !important;
   overflow: hidden !important;
-
-  transition:
-    transform .22s cubic-bezier(.2,.8,.2,1),
-    box-shadow .22s ease,
-    filter .22s ease,
-    background-color .22s ease !important;
+  will-change: transform;
 }
 
-/* Pas d’icône du tout */
+/* petit “pin” dans le sticker (l’emoji déclencheur est retiré du texte par le JS) */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
-  display: none !important;
+  content: "🧷";
+  display: inline-block;
+  transform: translateY(-1px);
 }
 
-/* Shimmer (desktop seulement) */
-@media (hover:hover) and (pointer:fine){
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -70%;
-    width: 45%;
-    height: 100%;
-    background: linear-gradient(
-      120deg,
-      transparent,
-      rgba(255, 140, 0, 0.22),
-      transparent
-    );
-    transform: skewX(-20deg);
-    transition: left .55s ease;
-    pointer-events: none;
-  }
+/* shimmer */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
 
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker:hover{
-    transform: rotate(-1.4deg) scale(1.045) !important;
-    box-shadow: 0 18px 55px rgba(0,0,0,.14) !important;
-    filter: saturate(1.05);
-    background: rgba(255, 122, 0, .10) !important;
-  }
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 140, 0, 0.28),
+    transparent
+  );
 
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker:hover::after{
-    left: 130%;
-  }
+  transform: skewX(-20deg);
+  transition: left .6s ease;
+  pointer-events: none;
 }
 
-/* iPhone safe : pas de hover, mais "tap glow" */
-@media (hover:none) and (pointer:coarse){
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker{
-    transform: none !important; /* évite l'effet hover collant iOS */
-  }
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker:active{
-    box-shadow: 0 14px 40px rgba(255, 122, 0, .22) !important;
-    background: rgba(255, 122, 0, .12) !important;
-    filter: saturate(1.05);
-  }
+/* hover */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker:hover{
+  transform: rotate(-3deg) scale(1.06) !important;
+  box-shadow: 0 18px 55px rgba(0,0,0,.15) !important;
+  filter: saturate(1.05);
+}
+.notion-h.notion-h3 .notion-h-title.festiv-sticker:hover::after{
+  left: 130%;
 }
 
-/* Dark mode */
+/* dark mode */
 html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   background: rgba(255, 122, 0, .14) !important;
-  border-color: rgba(255, 122, 0, .26) !important;
+  border-color: rgba(255, 122, 0, .30) !important;
 }
 
-/* Wrap iPhone */
+/* iPhone : wrap propre */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  text-align: center !important;
+
   word-break: normal !important;
   overflow-wrap: normal !important;
   hyphens: none !important;
-  text-align: center !important;
 }
 
 @media (max-width: 480px){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
-    padding: 12px 16px !important;
-    font-size: .98rem !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 14px 16px !important;
   }
 }
 
@@ -1716,13 +1699,25 @@ html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
 @media (prefers-reduced-motion: reduce){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
     transition: none !important;
+    transform: none !important;
   }
   .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
     display: none !important;
   }
 }
+/* =========================================================
+   PATCH — GLOBAL STICKER sans icône
+========================================================= */
 
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
+  content: none !important;
+  display: none !important;
+}
 
+/* On enlève l'espace prévu pour l'icône */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
+  gap: 0 !important;
+}
 
 
 
