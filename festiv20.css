@@ -1967,7 +1967,7 @@ html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
 
 /* état actif */
 .custom-header__links__link.is-active{
-  background-color: var(--festiv-piment) !important;
+  background-color: #ff3c00 !important; /* rouge piment */
   color: #fff !important;
   transform: translateY(-1px);
   box-shadow: 0 14px 34px rgba(255, 60, 0, .28) !important;
