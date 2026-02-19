@@ -1890,4 +1890,11 @@ html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
   ) !important;
   box-shadow: 0 28px 110px rgba(0,0,0,.55) !important;
 }
+/* Force la couleur du texte du CTA (hover compris) */
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link,
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:hover,
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:focus,
+.notion-block-30c6ae9a98f2801ea8ddd6113113f280 a.notion-link:active{
+  color: #ffffff !important;
+}
 
