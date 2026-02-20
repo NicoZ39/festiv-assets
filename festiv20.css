@@ -1471,11 +1471,44 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   font-weight: inherit !important;
 }
 /* ==============================
+   MANIFESTE 3 — version premium
+   ============================== */
+
+.notion-block-2ff6ae9a98f280b0966ae3628e3aaeff.notion-quote{
+  border-left: none !important;
+  padding-left: 0 !important;
+  text-align: center !important;
+  margin: 80px auto !important;
+  max-width: 900px !important;
+  position: relative;
+  font-size: clamp(30px, 3vw, 40px) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.5px !important;
+  font-weight: 900 !important; /* ← plus puissant */
+}
+
+/* Ligne horizontale au-dessus */
+.notion-block-2ff6ae9a98f280b0966ae3628e3aaeff.notion-quote::before{
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 0 auto 30px auto;
+  background: currentColor;
+  opacity: 0.25;
+}
+
+/* Neutralise le <b> sans perdre la puissance */
+.notion-block-2ff6ae9a98f280b0966ae3628e3aaeff b{
+  font-weight: inherit !important;
+}
+/* ==============================
    ESPACEMENT MANIFESTES
    ============================== */
 
 .notion-block-3096ae9a98f2800a9276cf163d3970c9.notion-quote,
-.notion-block-30b6ae9a98f280c98bc9df20cf7217e5.notion-quote{
+.notion-block-30b6ae9a98f280c98bc9df20cf7217e5.notion-quote,
+.notion-block-2ff6ae9a98f280b0966ae3628e3aaeff.notion-quote{
   margin: clamp(260px, 28vw, 520px) auto !important;
 }
 /* =========================================================
