@@ -1547,57 +1547,59 @@ function setupWeatherWidget() {
 
 }
 // =========================================
-// GLOBAL STICKER (🧷) — SCROLL REVEAL + NO CLICK
-// - Ajoute .festiv-sticker aux H4 dont le titre commence par 🧷
-// - Retire l’emoji déclencheur du texte (CSS peut injecter ce que tu veux)
-// - Désactive le clic (le lien garde son href mais n'est plus interactif)
-// - Anime à l’apparition au scroll (IntersectionObserver)
+// FESTIV — GLOBAL STICKER (🧷 trigger) — ROBUST
+// - détecte le trigger sur tous les titres Notion (h1..h6)
+// - retire l'emoji du texte
+// - désactive le clic + focus
+// - scroll reveal via IntersectionObserver
+// - se relance via MutationObserver (SPA Simple.ink)
 // =========================================
+
 function setupGlobalStickers() {
   try {
-    const TRIGGER = "🧷";
+    const TRIGGERS = ["🧷", "📌"]; // ajoute ici si besoin
 
-    const titles = document.querySelectorAll(
-      "h4.notion-h.notion-h3 a.notion-h-title"
-    );
+    // On cible TOUS les titres notion, peu importe le niveau
+    const titles = document.querySelectorAll("a.notion-h-title");
 
     const stickers = [];
 
     titles.forEach((a) => {
       if (a.classList.contains("festiv-sticker")) return;
 
-      const raw = (a.textContent || "").trim();
-      if (!raw.startsWith(TRIGGER)) return;
+      const raw = (a.textContent || "").replace(/\u00A0/g, " ").trim(); // NBSP safe
+      if (!TRIGGERS.some((t) => raw.startsWith(t))) return;
 
-      // 1) Marqueur style + état initial animation
+      // classes
       a.classList.add("festiv-sticker");
-      a.classList.add("festiv-sticker--pre"); // état "pas encore révélé"
-      a.setAttribute("aria-disabled", "true");
-      a.setAttribute("tabindex", "-1"); // évite focus clavier sur un lien
+      a.classList.add("festiv-sticker--pre");
 
-      // 2) Retire le TRIGGER au début dans le 1er text node trouvé
+      // neutralise focus + a11y
+      a.setAttribute("aria-disabled", "true");
+      a.setAttribute("tabindex", "-1");
+
+      // retire le trigger dans le premier node texte
       const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
       let node;
       while ((node = walker.nextNode())) {
         let t = node.nodeValue;
         if (!t) continue;
 
-        const cleaned = t.replace(/\s+/g, " ");
-        const trimmed = cleaned.trimStart();
-        if (!trimmed.startsWith(TRIGGER)) continue;
+        const tTrim = t.replace(/\u00A0/g, " ").trimStart();
+        const trig = TRIGGERS.find((x) => tTrim.startsWith(x));
+        if (!trig) continue;
 
-        const idx = t.indexOf(TRIGGER);
+        const idx = t.indexOf(trig);
         if (idx >= 0) {
           const before = t.slice(0, idx);
-          let after = t.slice(idx + TRIGGER.length);
+          let after = t.slice(idx + trig.length);
           after = after.replace(/^\s+/, "");
           node.nodeValue = before + after;
         }
         break;
       }
 
-      // 3) Désactive le clic (capture)
-      //    (on le fait une seule fois par élément)
+      // désactive clic (capture) — même si CSS rate
       if (!a.__festivNoClickBound) {
         a.__festivNoClickBound = true;
 
@@ -1610,10 +1612,13 @@ function setupGlobalStickers() {
 
         a.addEventListener("click", stop, true);
         a.addEventListener("pointerdown", stop, true);
-        a.addEventListener("keydown", (ev) => {
-          // Enter / Space ne doivent rien faire
-          if (ev.key === "Enter" || ev.key === " ") stop(ev);
-        }, true);
+        a.addEventListener(
+          "keydown",
+          (ev) => {
+            if (ev.key === "Enter" || ev.key === " ") stop(ev);
+          },
+          true
+        );
       }
 
       stickers.push(a);
@@ -1621,7 +1626,6 @@ function setupGlobalStickers() {
 
     if (!stickers.length) return;
 
-    // 4) Reveal au scroll (IntersectionObserver)
     const reduceMotion =
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1642,28 +1646,40 @@ function setupGlobalStickers() {
             const el = entry.target;
             el.classList.remove("festiv-sticker--pre");
             el.classList.add("festiv-sticker--in");
-            obs.unobserve(el); // une fois suffit
+            obs.unobserve(el);
           });
         },
-        {
-          root: null,
-          threshold: 0.18,          // déclenche quand ~18% visible
-          rootMargin: "0px 0px -10% 0px", // un poil avant le centre
-        }
+        { threshold: 0.18, rootMargin: "0px 0px -10% 0px" }
       );
-
       stickers.forEach((el) => io.observe(el));
     } else {
-      // Fallback basique
       stickers.forEach((el) => {
         el.classList.remove("festiv-sticker--pre");
         el.classList.add("festiv-sticker--in");
       });
     }
-  } catch (e) {
-    // silencieux
-  }
+  } catch (e) {}
 }
+
+function initGlobalStickers() {
+  try {
+    // 1) run now
+    setupGlobalStickers();
+
+    // 2) SPA / DOM changes
+    if (window.__FESTIV_STICKERS_OBS) return;
+    window.__FESTIV_STICKERS_OBS = true;
+
+    let raf = 0;
+    const mo = new MutationObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(setupGlobalStickers);
+    });
+
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (e) {}
+}
+
 
 
 // =========================================================
@@ -1847,7 +1863,8 @@ function festivRunNav() {
     bindSystemThemeListener();
     bindCalendarI18nHooks();
     translateNotionCalendar();
-    setupGlobalStickers();
+    initGlobalStickers();
+
 
     // ✅ NAV (remplace setActiveHeaderLink + cleanupNavMarkers)
     festivRunNav();
