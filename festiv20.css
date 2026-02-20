@@ -1655,20 +1655,21 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   opacity: .82 !important;
 }
 /* =========================================================
-   GLOBAL STICKER — AU SCROLL, sans hover, sans clic
-   Anti-flash : cache les titres "🧷..." tant que le JS n'a pas posé le style
+   GLOBAL STICKER — AU SCROLL, no hover, no click
 ========================================================= */
 
-/* 0) Anti-flash (avant JS) : on cache uniquement les ancres dont le title commence par 🧷 */
+/* Anti-flash AVANT JS : cache seulement les titres dont le title commence par 🧷 */
 a.notion-h-title[title^="🧷"]{
   visibility: hidden !important;
 }
 
-/* 1) Style sticker (visible seulement quand JS a "ready") */
+/* Base sticker */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  flex-wrap: wrap !important;
+  text-align: center !important;
 
   padding: 12px 18px !important;
   border-radius: 16px !important;
@@ -1681,21 +1682,20 @@ a.notion-h-title[title^="🧷"]{
 
   position: relative !important;
   overflow: hidden !important;
-  will-change: transform;
 
-  /* pas d'hover */
+  /* pas de hover */
   transition: none !important;
 
-  /* par défaut : reste caché tant que JS n'a pas "ready" */
+  /* invisible tant que JS n'a pas mis --ready */
   visibility: hidden !important;
 }
 
-/* JS => ready : maintenant on montre */
+/* JS OK => visible */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--ready{
   visibility: visible !important;
 }
 
-/* shimmer (joué uniquement quand inview) */
+/* Shimmer (joué au scroll) */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
   content: "";
   position: absolute;
@@ -1703,21 +1703,15 @@ a.notion-h-title[title^="🧷"]{
   left: -75%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255, 140, 0, 0.28),
-    transparent
-  );
+  background: linear-gradient(120deg, transparent, rgba(255, 140, 0, 0.28), transparent);
   transform: skewX(-20deg);
   pointer-events: none;
 }
 
-/* 2) Déclenchement au scroll */
+/* Trigger au scroll */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview{
   animation: festiv-sticker-pop 650ms cubic-bezier(.2,.8,.2,1) both;
 }
-
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview::after{
   animation: festiv-sticker-shimmer 900ms ease forwards;
 }
@@ -1732,30 +1726,19 @@ a.notion-h-title[title^="🧷"]{
   100% { left: 130%; }
 }
 
-/* dark mode */
+/* Dark */
 html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   background: rgba(255, 122, 0, .14) !important;
   border-color: rgba(255, 122, 0, .30) !important;
 }
 
-/* iPhone wrap propre */
-.notion-h.notion-h3 .notion-h-title.festiv-sticker{
-  flex-wrap: wrap !important;
-  text-align: center !important;
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-  hyphens: none !important;
-}
-
-/* reduce motion */
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
     visibility: visible !important;
     animation: none !important;
   }
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
-    display: none !important;
-  }
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{ display:none !important; }
 }
 
 
