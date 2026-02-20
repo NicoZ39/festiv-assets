@@ -1547,11 +1547,11 @@ function setupWeatherWidget() {
 
 }
 // =========================================
-// GLOBAL STICKER (🧷) — scroll reveal
-// - Ajoute .festiv-sticker aux titres H3 (h4.notion-h3) dont le texte commence par 🧷
-// - Retire l’emoji du texte (le CSS peut le réinjecter si besoin)
-// - Désactive le clic (anchor) sur cet <a>
-// - Anime à l’entrée dans le viewport (IntersectionObserver)
+// GLOBAL STICKER (🧷) — SCROLL REVEAL + NO CLICK
+// - Ajoute .festiv-sticker aux H4 dont le titre commence par 🧷
+// - Retire l’emoji déclencheur du texte (CSS peut injecter ce que tu veux)
+// - Désactive le clic (le lien garde son href mais n'est plus interactif)
+// - Anime à l’apparition au scroll (IntersectionObserver)
 // =========================================
 function setupGlobalStickers() {
   try {
@@ -1561,38 +1561,21 @@ function setupGlobalStickers() {
       "h4.notion-h.notion-h3 a.notion-h-title"
     );
 
-    // Respect “reduce motion”
-    const reduceMotion =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    // IntersectionObserver (1 seule instance)
-    if (!window.__FESTIV_STICKER_IO && !reduceMotion) {
-      window.__FESTIV_STICKER_IO = new IntersectionObserver(
-        (entries, obs) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            entry.target.classList.add("festiv-sticker--in");
-            obs.unobserve(entry.target); // animation une seule fois
-          });
-        },
-        {
-          threshold: 0.25,
-          rootMargin: "0px 0px -10% 0px", // déclenche un peu avant le centre
-        }
-      );
-    }
+    const stickers = [];
 
     titles.forEach((a) => {
+      if (a.classList.contains("festiv-sticker")) return;
+
       const raw = (a.textContent || "").trim();
       if (!raw.startsWith(TRIGGER)) return;
 
-      // 1) Marqueur style
-      if (!a.classList.contains("festiv-sticker")) {
-        a.classList.add("festiv-sticker");
-      }
+      // 1) Marqueur style + état initial animation
+      a.classList.add("festiv-sticker");
+      a.classList.add("festiv-sticker--pre"); // état "pas encore révélé"
+      a.setAttribute("aria-disabled", "true");
+      a.setAttribute("tabindex", "-1"); // évite focus clavier sur un lien
 
-      // 2) Retire le TRIGGER au début dans le 1er text node trouvé (sans casser le HTML)
+      // 2) Retire le TRIGGER au début dans le 1er text node trouvé
       const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
       let node;
       while ((node = walker.nextNode())) {
@@ -1607,43 +1590,81 @@ function setupGlobalStickers() {
         if (idx >= 0) {
           const before = t.slice(0, idx);
           let after = t.slice(idx + TRIGGER.length);
-          after = after.replace(/^\s+/, ""); // enlève l'espace après 🧷
+          after = after.replace(/^\s+/, "");
           node.nodeValue = before + after;
         }
         break;
       }
 
-      // 3) Désactive le clic + focus clavier (car <a> = ancre Notion)
-      if (!a.__festivStickerNoClick) {
-        a.__festivStickerNoClick = true;
+      // 3) Désactive le clic (capture)
+      //    (on le fait une seule fois par élément)
+      if (!a.__festivNoClickBound) {
+        a.__festivNoClickBound = true;
 
-        // Empêche navigation + évite le "focus ring"
-        a.addEventListener(
-          "click",
-          (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          },
-          true
-        );
+        const stop = (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          ev.stopImmediatePropagation();
+          return false;
+        };
 
-        a.setAttribute("role", "text");
-        a.setAttribute("tabindex", "-1");
-        a.style.cursor = "default";
+        a.addEventListener("click", stop, true);
+        a.addEventListener("pointerdown", stop, true);
+        a.addEventListener("keydown", (ev) => {
+          // Enter / Space ne doivent rien faire
+          if (ev.key === "Enter" || ev.key === " ") stop(ev);
+        }, true);
       }
 
-      // 4) Animation au scroll
-      if (reduceMotion) {
-        a.classList.add("festiv-sticker--in");
-      } else if (window.__FESTIV_STICKER_IO) {
-        // Si déjà visible (ex: refresh en plein milieu), on force l’observation
-        window.__FESTIV_STICKER_IO.observe(a);
-      }
+      stickers.push(a);
     });
+
+    if (!stickers.length) return;
+
+    // 4) Reveal au scroll (IntersectionObserver)
+    const reduceMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion) {
+      stickers.forEach((el) => {
+        el.classList.remove("festiv-sticker--pre");
+        el.classList.add("festiv-sticker--in");
+      });
+      return;
+    }
+
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const el = entry.target;
+            el.classList.remove("festiv-sticker--pre");
+            el.classList.add("festiv-sticker--in");
+            obs.unobserve(el); // une fois suffit
+          });
+        },
+        {
+          root: null,
+          threshold: 0.18,          // déclenche quand ~18% visible
+          rootMargin: "0px 0px -10% 0px", // un poil avant le centre
+        }
+      );
+
+      stickers.forEach((el) => io.observe(el));
+    } else {
+      // Fallback basique
+      stickers.forEach((el) => {
+        el.classList.remove("festiv-sticker--pre");
+        el.classList.add("festiv-sticker--in");
+      });
+    }
   } catch (e) {
     // silencieux
   }
 }
+
 
 // =========================================================
 // NAV ACTIVE (rouge piment) + marqueurs Notion
