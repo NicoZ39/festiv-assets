@@ -1502,9 +1502,10 @@ function setupWeatherWidget() {
 // =========================================
 // STICKERS (🧷) — opt-in via emoji déclencheur
 // - Ajoute .festiv-sticker sur les titres dont le texte commence par 🧷
-// - Retire l’emoji du texte (mais le CSS peut le réafficher si tu veux)
+// - Retire l’emoji du texte
 // - Désactive le clic (pas de saut d'ancre)
 // - Anime AU SCROLL (IntersectionObserver) => .festiv-sticker--inview
+// - ⚠️ Ne déclenche PAS au chargement : attend le 1er scroll utilisateur
 // =========================================
 function setupGlobalStickers() {
   try {
@@ -1522,7 +1523,6 @@ function setupGlobalStickers() {
 
       // déjà traité ?
       if (a.dataset.festivStickerDone === "1") {
-        // si déjà sticker, on le garde pour l'observer
         if (a.classList.contains("festiv-sticker")) stickers.push(a);
         return;
       }
@@ -1581,10 +1581,19 @@ function setupGlobalStickers() {
       return;
     }
 
-    // IntersectionObserver (1 seule fois)
+    // -------------------------------------------------
+    // ✅ Attend le 1er scroll utilisateur avant d'autoriser l'anim
+    // -------------------------------------------------
+    const hasScrolled = () =>
+      (window.scrollY || document.documentElement.scrollTop || 0) > 0;
+
+    // Crée l'IO une fois
     if (!window.__FESTIV_STICKER_IO) {
       window.__FESTIV_STICKER_IO = new IntersectionObserver(
         (entries, io) => {
+          // tant que l'utilisateur n'a pas scrollé => on ne déclenche rien
+          if (!hasScrolled()) return;
+
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
             entry.target.classList.add("festiv-sticker--inview");
@@ -1599,16 +1608,39 @@ function setupGlobalStickers() {
       );
     }
 
+    const io = window.__FESTIV_STICKER_IO;
+
     // Observe les stickers pas encore animés
     stickers.forEach((a) => {
       if (a.classList.contains("festiv-sticker--inview")) return;
-      window.__FESTIV_STICKER_IO.observe(a);
+      io.observe(a);
     });
 
+    // Si visible au chargement, l'IO ne rappellera pas forcément après scroll :
+    // => on "poke" une fois au 1er scroll en re-observant.
+    if (!window.__FESTIV_STICKER_SCROLL_ARMED) {
+      window.__FESTIV_STICKER_SCROLL_ARMED = true;
+
+      const armOnce = () => {
+        stickers.forEach((a) => {
+          if (a.classList.contains("festiv-sticker--inview")) return;
+          try {
+            io.unobserve(a);
+            io.observe(a);
+          } catch {}
+        });
+
+        // ✅ important : remove avec la même référence de fonction
+        window.removeEventListener("scroll", armOnce, { passive: true });
+      };
+
+      window.addEventListener("scroll", armOnce, { passive: true });
+    }
   } catch (e) {
     // silencieux
   }
 }
+
 
 // =========================================================
 // NAV ACTIVE (rouge piment) + marqueurs Notion
