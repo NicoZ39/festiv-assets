@@ -1443,7 +1443,7 @@
   // =========================================
   // Meteoblue theme sync
   // =========================================
-  function syncMeteoblueTheme(tries = 20) {
+/*  function syncMeteoblueTheme(tries = 20) {
     try {
       const isDark = document.documentElement.classList.contains("dark-mode");
 
@@ -1484,7 +1484,7 @@
     } catch (e) {
       console.error("[festiv20] syncMeteoblueTheme error:", e);
     }
-  }
+  }*/
 // =========================================
 // WeatherWidget.io via shortcode Notion
 // Shortcode à mettre dans Notion : {{meteo_ounans}}
@@ -1547,41 +1547,62 @@ function setupWeatherWidget() {
 
 }
 // =========================================
-// GLOBAL STICKER (🧷)
-// - Ajoute .festiv-sticker aux H4 dont le titre commence par 🧷
-// - Retire l’emoji déclencheur du texte (mais le CSS le réinjecte en ::before)
+// GLOBAL STICKER (🧷) — scroll reveal
+// - Ajoute .festiv-sticker aux titres H3 (h4.notion-h3) dont le texte commence par 🧷
+// - Retire l’emoji du texte (le CSS peut le réinjecter si besoin)
+// - Désactive le clic (anchor) sur cet <a>
+// - Anime à l’entrée dans le viewport (IntersectionObserver)
 // =========================================
 function setupGlobalStickers() {
   try {
     const TRIGGER = "🧷";
 
     const titles = document.querySelectorAll(
-      'h4.notion-h.notion-h3 a.notion-h-title'
+      "h4.notion-h.notion-h3 a.notion-h-title"
     );
 
+    // Respect “reduce motion”
+    const reduceMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // IntersectionObserver (1 seule instance)
+    if (!window.__FESTIV_STICKER_IO && !reduceMotion) {
+      window.__FESTIV_STICKER_IO = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("festiv-sticker--in");
+            obs.unobserve(entry.target); // animation une seule fois
+          });
+        },
+        {
+          threshold: 0.25,
+          rootMargin: "0px 0px -10% 0px", // déclenche un peu avant le centre
+        }
+      );
+    }
+
     titles.forEach((a) => {
-      if (a.classList.contains("festiv-sticker")) return;
-
       const raw = (a.textContent || "").trim();
-if (!raw.startsWith(TRIGGER)) return;
-
+      if (!raw.startsWith(TRIGGER)) return;
 
       // 1) Marqueur style
-      a.classList.add("festiv-sticker");
+      if (!a.classList.contains("festiv-sticker")) {
+        a.classList.add("festiv-sticker");
+      }
 
-      // 2) Retire le TRIGGER au début dans le 1er text node trouvé
-      // (en gardant le HTML/gras/etc.)
+      // 2) Retire le TRIGGER au début dans le 1er text node trouvé (sans casser le HTML)
       const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
       let node;
       while ((node = walker.nextNode())) {
         let t = node.nodeValue;
         if (!t) continue;
-        // on cherche la première occurrence utile
+
         const cleaned = t.replace(/\s+/g, " ");
         const trimmed = cleaned.trimStart();
         if (!trimmed.startsWith(TRIGGER)) continue;
 
-        // enlève l’emoji + un espace éventuel juste après
         const idx = t.indexOf(TRIGGER);
         if (idx >= 0) {
           const before = t.slice(0, idx);
@@ -1591,11 +1612,39 @@ if (!raw.startsWith(TRIGGER)) return;
         }
         break;
       }
+
+      // 3) Désactive le clic + focus clavier (car <a> = ancre Notion)
+      if (!a.__festivStickerNoClick) {
+        a.__festivStickerNoClick = true;
+
+        // Empêche navigation + évite le "focus ring"
+        a.addEventListener(
+          "click",
+          (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          },
+          true
+        );
+
+        a.setAttribute("role", "text");
+        a.setAttribute("tabindex", "-1");
+        a.style.cursor = "default";
+      }
+
+      // 4) Animation au scroll
+      if (reduceMotion) {
+        a.classList.add("festiv-sticker--in");
+      } else if (window.__FESTIV_STICKER_IO) {
+        // Si déjà visible (ex: refresh en plein milieu), on force l’observation
+        window.__FESTIV_STICKER_IO.observe(a);
+      }
     });
   } catch (e) {
     // silencieux
   }
 }
+
 // =========================================================
 // NAV ACTIVE (rouge piment) + marqueurs Notion
 // - Met en actif "Articles" ou "Événements"
@@ -1789,7 +1838,7 @@ function festivRunNav() {
 
     shortcodeContactForm();
     shortcodeInscriptionForm();
-    setupWeatherWidget();
+    /*setupWeatherWidget();*/
 
     injectDisqusGuestTip();
     initDisqus(false);
