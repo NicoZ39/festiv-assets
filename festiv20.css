@@ -1655,41 +1655,39 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   opacity: .82 !important;
 }
 /* =========================================================
-   GLOBAL STICKER — 🧷 opt-in (anim au scroll, pas de hover, pas de clic)
-   JS:
-   - ajoute .festiv-sticker
-   - ajoute .festiv-sticker--inview quand visible
+   GLOBAL STICKER — animation AU SCROLL (sans hover, sans clic)
+   Classes:
+   - .festiv-sticker (état repos)
+   - .festiv-sticker--inview (déclenche l'anim)
 ========================================================= */
 
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  text-align: center !important;
 
-  padding: 10px 16px !important;
+  padding: 12px 18px !important;
   border-radius: 16px !important;
 
   background: rgba(255, 122, 0, .10) !important;
   border: 1px dashed rgba(255, 122, 0, .35) !important;
 
-  text-decoration: none !important;
-  cursor: default !important;
-
-  /* look typo */
   font-weight: 900 !important;
+  text-decoration: none !important;
 
-  /* stable (pas de hover) */
-  transform: rotate(-1deg) scale(1) !important;
-  box-shadow: none !important;
-  filter: none !important;
+  /* ✅ état "avant anim" */
+  opacity: 0 !important;
+  transform: translateY(10px) rotate(-1deg) scale(.98) !important;
+
+  /* pas d'effet hover */
+  transition: none !important;
 
   position: relative !important;
   overflow: hidden !important;
   will-change: transform, opacity;
 }
 
-/* shimmer (déclenché au scroll via animation) */
+/* shimmer (se déclenche aussi au moment inview) */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
   content: "";
   position: absolute;
@@ -1697,52 +1695,63 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   left: -75%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(120deg, transparent, rgba(255, 140, 0, 0.28), transparent);
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 140, 0, 0.28),
+    transparent
+  );
   transform: skewX(-20deg);
   pointer-events: none;
-  opacity: 0;
 }
 
-/* ✅ Animation AU SCROLL (1 fois) */
+/* ✅ Déclenchement au scroll */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview{
-  animation: festiv-sticker-pop 700ms cubic-bezier(.2,.9,.2,1) both;
+  opacity: 1 !important;
+  transform: translateY(0) rotate(-1deg) scale(1) !important;
+  animation: festiv-sticker-pop 650ms cubic-bezier(.2,.8,.2,1) both;
 }
+
+/* shimmer qui traverse une seule fois */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview::after{
-  animation: festiv-sticker-shimmer 900ms ease both;
+  animation: festiv-sticker-shimmer 900ms ease forwards;
 }
 
 @keyframes festiv-sticker-pop{
-  0%   { transform: rotate(-6deg) scale(.92); opacity: 0; }
-  45%  { transform: rotate(-2deg) scale(1.06); opacity: 1; }
-  70%  { transform: rotate(-1deg) scale(.99); }
-  100% { transform: rotate(-1deg) scale(1); }
-}
-@keyframes festiv-sticker-shimmer{
-  0%   { left: -75%; opacity: 0; }
-  15%  { opacity: 1; }
-  100% { left: 130%; opacity: 0.95; }
+  0%   { opacity: 0; transform: translateY(10px) rotate(-1deg) scale(.98); }
+  60%  { opacity: 1; transform: translateY(-2px) rotate(-2deg) scale(1.03); }
+  100% { opacity: 1; transform: translateY(0) rotate(-1deg) scale(1); }
 }
 
-/* Dark mode */
+@keyframes festiv-sticker-shimmer{
+  0%   { left: -75%; }
+  100% { left: 130%; }
+}
+
+/* dark mode */
 html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   background: rgba(255, 122, 0, .14) !important;
   border-color: rgba(255, 122, 0, .30) !important;
 }
 
-/* Mobile wrap propre */
+/* iPhone wrap propre */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   flex-wrap: wrap !important;
+  text-align: center !important;
   word-break: normal !important;
   overflow-wrap: normal !important;
   hyphens: none !important;
 }
 
-/* Reduce motion */
+/* Respect reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker,
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+    opacity: 1 !important;
+    transform: none !important;
     animation: none !important;
-    transition: none !important;
+  }
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
+    display: none !important;
   }
 }
 
