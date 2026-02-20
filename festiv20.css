@@ -1656,14 +1656,13 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
 }
 /* =========================================================
    FESTIV — GLOBAL STICKER (🧷 trigger)
-   Animation au scroll (pas de hover)
-   Version clean & unifiée
+   Scroll reveal (JS: --pre -> --in)
+   Clean & unifié
 ========================================================= */
 
 /* =========================
    Base Sticker
 ========================= */
-
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
@@ -1675,34 +1674,27 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   font-weight: 600 !important;
   text-decoration: none !important;
 
+  /* non interactif (c'est un <a> mais on le neutralise) */
   cursor: default !important;
+  pointer-events: none !important;
 
-  transition:
-    opacity .45s ease,
-    transform .55s cubic-bezier(.2,.9,.2,1),
-    box-shadow .45s ease;
-
-  will-change: opacity, transform;
+  will-change: opacity, transform, filter;
 }
 
 /* =========================
    Couleurs — LIGHT
 ========================= */
-
-html:not(.dark-mode) 
-.notion-h.notion-h3 .notion-h-title.festiv-sticker{
+html:not(.dark-mode) .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   background: rgba(255, 122, 0, .08) !important;
   border: 1px solid rgba(255, 122, 0, .20) !important;
-  color: #C0392B !important; /* ton rouge piment */
+  color: #C0392B !important; /* rouge piment */
   box-shadow: 0 6px 18px rgba(0,0,0,.06);
 }
 
 /* =========================
    Couleurs — DARK
 ========================= */
-
-html.dark-mode 
-.notion-h.notion-h3 .notion-h-title.festiv-sticker{
+html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   background: rgba(255, 122, 0, .14) !important;
   border: 1px solid rgba(255, 122, 0, .30) !important;
   color: #ffb38a !important;
@@ -1710,30 +1702,41 @@ html.dark-mode
 }
 
 /* =========================
-   État initial (avant scroll reveal)
+   Scroll reveal
+   - état initial: --pre
+   - état visible: --in
 ========================= */
-
-.notion-h.notion-h3 .notion-h-title.festiv-sticker{
-  opacity: 0;
-  transform: translateY(12px) scale(.98);
+.notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--pre{
+  opacity: 0 !important;
+  transform: translateY(14px) scale(.985) !important;
+  filter: blur(2px);
 }
 
-/* =========================
-   État visible (ajouté par JS)
-========================= */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--in{
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0);
 
-.notion-h.notion-h3 
-.notion-h-title.festiv-sticker.festiv-sticker--in{
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  animation: festivStickerPop .7s cubic-bezier(.2,.9,.2,1) both;
+  transition:
+    opacity 520ms ease,
+    transform 520ms cubic-bezier(.2,.9,.2,1),
+    filter 520ms ease,
+    box-shadow 520ms ease;
+
+  animation:
+    festivStickerPop 520ms cubic-bezier(.2,.9,.2,1) 1,
+    festivStickerShadow 700ms ease-out 1;
 }
 
-/* =========================
-   Animation subtile premium
-========================= */
-
+/* Pop léger (micro bounce) */
 @keyframes festivStickerPop{
+  0%   { transform: translateY(0) scale(1); }
+  60%  { transform: translateY(-1px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* “Premium shadow” (séparé, ne remplace pas le pop) */
+@keyframes festivStickerShadow{
   0%   { box-shadow: 0 0 0 rgba(0,0,0,0); }
   60%  { box-shadow: 0 18px 55px rgba(0,0,0,.12); }
   100% { box-shadow: 0 12px 30px rgba(0,0,0,.10); }
@@ -1742,7 +1745,6 @@ html.dark-mode
 /* =========================
    Responsive propre
 ========================= */
-
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   flex-wrap: wrap !important;
   text-align: center !important;
@@ -1758,7 +1760,6 @@ html.dark-mode
 /* =========================
    Sans icône (PATCH)
 ========================= */
-
 .notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
   content: none !important;
   display: none !important;
@@ -1767,13 +1768,13 @@ html.dark-mode
 /* =========================
    Respect reduce motion
 ========================= */
-
 @media (prefers-reduced-motion: reduce){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
-    opacity: 1 !important;
-    transform: none !important;
     transition: none !important;
     animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    filter: none !important;
   }
 }
 
