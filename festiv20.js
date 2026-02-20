@@ -1493,24 +1493,20 @@ function setupWeatherWidget() {
   try {
     const SHORTCODE = "{{meteo_ounans}}";
 
-    // 1) Trouver un bloc texte qui contient le shortcode
-    // (Simple.ink/Notion rendent le texte dans différents wrappers selon les pages)
-    const candidates = Array.from(document.querySelectorAll(
-      ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
-    ));
+    const candidates = Array.from(
+      document.querySelectorAll(
+        ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
+      )
+    );
 
-    const host = candidates.find(el => (el.textContent || "").includes(SHORTCODE));
+    const host = candidates.find((el) => (el.textContent || "").includes(SHORTCODE));
     if (!host) return;
 
-    // 2) Éviter de ré-injecter si déjà fait
-    if (host.querySelector('.weatherwidget-io')) {
-      // on enlève juste le shortcode si encore visible
+    if (host.querySelector(".weatherwidget-io")) {
       host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
       return;
     }
 
-    // 3) Injecter l'ancre WeatherWidget à la place du shortcode
-    // On remplace le texte uniquement (pratique si ton bloc contient autre chose)
     host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
 
     const a = document.createElement("a");
@@ -1527,7 +1523,6 @@ function setupWeatherWidget() {
 
     host.appendChild(a);
 
-    // 4) Charger le script une seule fois
     const SCRIPT_ID = "weatherwidget-io-js";
     if (!document.getElementById(SCRIPT_ID)) {
       const s = document.createElement("script");
@@ -1536,14 +1531,11 @@ function setupWeatherWidget() {
       document.head.appendChild(s);
     }
 
-    // 5) Demander un refresh si la lib est déjà là
-    // (weatherwidget.io expose souvent __weatherwidget_init)
-    if (window.__weatherwidget_init) {
-      window.__weatherwidget_init();
-    }
+    if (window.__weatherwidget_init) window.__weatherwidget_init();
   } catch (e) {
-  if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
-}
+    if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
+  }
+} // ✅ IMPORTANT : fermeture de la fonction
 
 // =========================================
 // FESTIV — Global Stickers (🧷)
