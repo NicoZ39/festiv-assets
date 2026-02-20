@@ -1,36 +1,19 @@
-/* festiv20.js — clean & robuste (Simple.ink + CookieHub + Disqus)
+/* festiv20.js — version “full & robuste” (Simple.ink + CookieHub + Disqus)
    - Thème (auto OS + override) + bouton
    - Meteoblue sync thème
    - Disqus : placeholder si pas de consentement + recheck si CookieHub pas prêt au refresh
    - Disqus : remount + watchdog si l’iframe n’apparaît pas après refresh
-   - Dates FR + cleanup "06:00 (Europe/Paris)"
-   - Footer colonnes + copyright
-   - UX: tables scroll, retour shortcode, notion buttons, fix target=_blank
-   - FAQ accordion, i18n search, back-to-top, calendrier FR
-   - Stickers 🧷 (H4)
-   - NAV actif via marqueurs {{nav:articles}} / {{nav:evenements}}
-   - WeatherWidget via shortcode {{meteo_ounans}} (page où il est présent)
+   - runAll + MutationObserver (ignore Disqus)
 */
 (function () {
-  "use strict";
-
   const locale = "fr-FR";
   const DEBUG = true;
 
   // ====== DISQUS ======
-  const DISQUS_SHORTNAME = "festivounans";
+  const DISQUS_SHORTNAME = "festivounans"; // <- ton shortname
   const DISQUS_MARKER_TEXT = "💬 Commentaires";
   const DISQUS_COOKIE_CATS_OK = ["preferences", "functional", "analytics", "statistics", "performance", "marketing"];
 
-  // ====== SHORTCODES ======
-  const SHORTCODES = {
-    weather: "{{meteo_ounans}}",
-    navRe: /\{\{\s*nav\s*:\s*(articles|evenements)\s*\}\}|\[\s*nav\s*:\s*(articles|evenements)\s*\]/gi,
-  };
-
-  // -----------------------------------------
-  // utils
-  // -----------------------------------------
   function log(...args) {
     if (DEBUG) console.log("[festiv20]", ...args);
   }
@@ -52,12 +35,12 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // THEME (auto système + override manuel)
-  // -----------------------------------------
+  // =========================================
   function getSavedTheme() {
     try {
-      const v = localStorage.getItem("festiv-theme");
+      const v = localStorage.getItem("festiv-theme"); // "dark" | "light" | null
       return v === "dark" || v === "light" ? v : null;
     } catch {
       return null;
@@ -80,7 +63,11 @@
     try {
       const isDark = theme === "dark";
 
-      if (window.__FESTIV_LAST_THEME === theme && document.documentElement.classList.contains("festiv-theme-ready")) {
+      // garde-fou
+      if (
+        window.__FESTIV_LAST_THEME === theme &&
+        document.documentElement.classList.contains("festiv-theme-ready")
+      ) {
         return;
       }
       window.__FESTIV_LAST_THEME = theme;
@@ -100,24 +87,6 @@
 
   function applySavedTheme() {
     applyTheme(getEffectiveTheme());
-  }
-
-  function isAutoMode() {
-    return !getSavedTheme();
-  }
-
-  function syncAutoIndicator() {
-    try {
-      const wrap = document.getElementById("festiv-theme-toggle");
-      if (!wrap) return;
-
-      const auto = isAutoMode();
-      wrap.classList.toggle("is-auto", auto);
-      wrap.setAttribute(
-        "title",
-        auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
-      );
-    } catch {}
   }
 
   function bindSystemThemeListener() {
@@ -142,12 +111,33 @@
     }
   }
 
+  // ===== INDICATEUR AUTO =====
+  function isAutoMode() {
+    return !getSavedTheme();
+  }
+
+  function syncAutoIndicator() {
+    try {
+      const wrap = document.getElementById("festiv-theme-toggle");
+      if (!wrap) return;
+
+      const auto = isAutoMode();
+      wrap.classList.toggle("is-auto", auto);
+      wrap.setAttribute(
+        "title",
+        auto ? "Auto : suit le thème de ton appareil" : "Thème forcé • Double-clic : revenir en Auto"
+      );
+    } catch {}
+  }
+
+  // =========================================
+  // THEME TOGGLE (bouton)
+  // =========================================
   let ignoreClickUntil = 0;
 
   function initThemeToggle() {
     try {
       let wrap = document.getElementById("festiv-theme-toggle");
-
       if (!wrap) {
         wrap = document.createElement("button");
         wrap.type = "button";
@@ -240,13 +230,13 @@
     }
   }
 
-  // applique thème ASAP
+  // appliquer thème ASAP
   applySavedTheme();
   bindSystemThemeListener();
 
-  // -----------------------------------------
+  // =========================================
   // 1) Logo cliquable
-  // -----------------------------------------
+  // =========================================
   function makeLogoClickable() {
     try {
       const logoDiv = document.querySelector(".styles_logo__JgM3o");
@@ -268,9 +258,9 @@
     }
   }
 
-  // -----------------------------------------
-  // 2) Dates FR + cleanup TZ
-  // -----------------------------------------
+  // =========================================
+  // 2) Dates FR
+  // =========================================
   function parseDateFromText(text) {
     const t = (text || "").trim();
 
@@ -303,7 +293,9 @@
 
     const fr = t
       .replace(/^⏰\s*/g, "")
-      .match(/\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i);
+      .match(
+        /\b(\d{1,2})\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+(\d{4})\b/i
+      );
 
     if (fr) {
       const day = Number(fr[1]);
@@ -366,7 +358,9 @@
           /\b\d{4}-\d{2}-\d{2}\b/.test(raw) ||
           /\b\d{4}\/\d{1,2}\/\d{1,2}\b/.test(raw) ||
           /\b[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4}\b/.test(raw) ||
-          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(raw);
+          /\b\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}\b/i.test(
+            raw
+          );
 
         if (!looksLikeDate) return;
 
@@ -381,6 +375,7 @@
         });
 
         const hasTime = /\b(\d{2}:\d{2})\b/.test(raw) || /\b(?:dès|à)\s*\d{1,2}h\d{2}\b/i.test(raw);
+
         const formatted = hasTime ? `⏰ ${dateStr} dès ${pad2(d.getHours())}h${pad2(d.getMinutes())}` : dateStr;
 
         const datePattern =
@@ -393,7 +388,9 @@
       console.error("[festiv20] formatDates error:", e);
     }
   }
-
+  // =========================================
+  // 2bis) Nettoyage Simple.ink: "06:00 (Europe/Paris)" sur les dates
+  // =========================================
   function cleanupSimpleInkTZInDates() {
     try {
       const els = document.querySelectorAll(".notion-property-date");
@@ -402,8 +399,11 @@
         const txt = (el.textContent || "").replace(/\u00A0/g, " ").trim();
         if (!txt) return;
 
-        const next = txt
+        // Cas typique Simple.ink : "06:00 (Europe/Paris)" en fin de texte
+        // => on retire l'heure + timezone
+        let next = txt
           .replace(/\s+\d{1,2}:\d{2}\s*\(\s*[A-Za-z_\/+-]+\s*\)\s*$/i, "")
+          // au cas où il ne reste que "(Europe/Paris)" sans l'heure
           .replace(/\s*\(\s*[A-Za-z_\/+-]+\s*\)\s*$/i, "")
           .trim();
 
@@ -414,9 +414,10 @@
     }
   }
 
-  // -----------------------------------------
+
+  // =========================================
   // 3) Footer colonnes + copyright
-  // -----------------------------------------
+  // =========================================
   function createFooterColumns() {
     try {
       const footer = document.querySelector("footer.styles_main_footer__LoNow");
@@ -425,25 +426,24 @@
       const wrapper = document.createElement("div");
       wrapper.className = "festiv-footer-columns";
       wrapper.innerHTML = `
-        <div class="festiv-footer-column">
-          <a href="/">Accueil</a>
-          <a href="/nos-evenements-d0b436d5a1e1428d8bd76845ab0654de">Événements</a>
-          <a href="/blog-35adaa1207fd47b38b9d6b4115740b22">Articles</a>
-          <a href="https://festiv-ounans.thesimple.ink/Foire-aux-questions-1d06ae9a98f2804a838fea4211af04f1">Questions fréquentes</a>
-        </div>
-        <div class="festiv-footer-column">
-          <a href="https://www.facebook.com/FestivOunans/" target="_blank" rel="noopener">Facebook</a>
-          <a href="https://www.instagram.com/festiv_ounans/" target="_blank" rel="noopener">Instagram</a>
-          <a href="/press-kit-festivounans-1d16ae9a98f280a2b1fac57ddcfcf2cf">Press Kit</a>
-          <a href="/desabonnement-1046ae9a98f280d39023f3ba28cfc7c9">Désinscription</a>
-        </div>
-        <div class="festiv-footer-column">
-          <a href="/a-propos-19f3c0c80f76450e926ba49e49f4bceb">À propos</a>
-          <a href="/contact-7b3a8f150fff44bb972726bbd828a57f">Nous contacter</a>
-          <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
-          <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
-        </div>
-      `;
+<div class="festiv-footer-column">
+  <a href="/">Accueil</a>
+  <a href="/nos-evenements-d0b436d5a1e1428d8bd76845ab0654de">Événements</a>
+  <a href="/blog-35adaa1207fd47b38b9d6b4115740b22">Articles</a>
+  <a href="https://festiv-ounans.thesimple.ink/Foire-aux-questions-1d06ae9a98f2804a838fea4211af04f1">Questions fréquentes</a>
+</div>
+<div class="festiv-footer-column">
+  <a href="https://www.facebook.com/FestivOunans/" target="_blank" rel="noopener">Facebook</a>
+  <a href="https://www.instagram.com/festiv_ounans/" target="_blank" rel="noopener">Instagram</a>
+  <a href="/press-kit-festivounans-1d16ae9a98f280a2b1fac57ddcfcf2cf">Press Kit</a>
+  <a href="/desabonnement-1046ae9a98f280d39023f3ba28cfc7c9">Désinscription</a>
+</div>
+<div class="festiv-footer-column">
+  <a href="/a-propos-19f3c0c80f76450e926ba49e49f4bceb">À propos</a>
+  <a href="/contact-7b3a8f150fff44bb972726bbd828a57f">Nous contacter</a>
+  <a href="/mentions-legales-ea6aaecc43b448438befb83d9a2f60f7">Mentions légales</a>
+  <a href="/politique-de-confidentialite-905b976410cf420caff3c6a618a147f9">Politique de confidentialité</a>
+</div>`;
       footer.appendChild(wrapper);
     } catch (e) {
       console.error("[festiv20] createFooterColumns error:", e);
@@ -473,9 +473,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // 4) Cover
-  // -----------------------------------------
+  // =========================================
   function tweakCover() {
     try {
       const img = document.querySelector(".notion-page-cover-wrapper img");
@@ -488,9 +488,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // 5) Tables scroll UX
-  // -----------------------------------------
+  // =========================================
   function setupTableScrollUX() {
     try {
       const tables = document.querySelectorAll(".notion-collection .notion-table");
@@ -536,9 +536,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // 6) Shortcode [retour]
-  // -----------------------------------------
+  // =========================================
   function shortcodeRetour() {
     try {
       const pageBornAt = (window.__FESTIV_PAGE_BORN_AT ||= Date.now());
@@ -576,7 +576,9 @@
           return;
         }
 
-        const parts = (node.textContent || "").split("[retour]");
+        const safe = node.textContent;
+        const parts = safe.split("[retour]");
+
         node.textContent = "";
         parts.forEach((part, i) => {
           if (part) node.appendChild(document.createTextNode(part));
@@ -588,9 +590,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // 7) Notion buttons mapping
-  // -----------------------------------------
+  // =========================================
   function bindNotionButtons() {
     try {
       if (window.__FESTIV_NOTION_BTNS_BOUND) return;
@@ -627,9 +629,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // 8) Corrige les liens internes target=_blank
-  // -----------------------------------------
+  // =========================================
   function fixInternalAnchors() {
     try {
       const anchors = document.querySelectorAll("a[href]");
@@ -672,9 +674,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // FAQ accordion anim
-  // -----------------------------------------
+  // =========================================
   function setupFaqAnimation() {
     try {
       if (window.__FESTIV_FAQ_ANIM_BOUND) return;
@@ -763,9 +765,9 @@
     }
   }
 
-  // -----------------------------------------
+  // =========================================
   // i18n Search
-  // -----------------------------------------
+  // =========================================
   function localizeSearchUI() {
     try {
       const FR = {
@@ -838,9 +840,9 @@
     }
   }
 
-  // -----------------------------------------
-  // Back-to-top
-  // -----------------------------------------
+  // =========================================
+  // 9) Back-to-top
+  // =========================================
   function setupBackToTop() {
     try {
       if (window.__FESTIV_BACKTOTOP_BOUND) return;
@@ -880,9 +882,9 @@
     }
   }
 
-  // -----------------------------------------
-  // Calendrier Notion FR
-  // -----------------------------------------
+  // =========================================
+  // 10) Calendrier Notion FR
+  // =========================================
   function translateNotionCalendar() {
     try {
       const monthMap = {
@@ -942,51 +944,46 @@
     }
   }
 
-  // -----------------------------------------
-  // Fillout shortcodes
-  // -----------------------------------------
-  function ensureScriptOnce(src) {
-    const already = [...document.scripts].some((s) => (s.src || "") === src);
-    if (already) return true;
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    document.head.appendChild(s);
-    return true;
-  }
-
-  function shortcodeFillout(shortcode, filloutId) {
+ // =========================================
+  // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
+  // =========================================
+  function shortcodeContactForm() {
     try {
-      const nodes = document.querySelectorAll(".notion-text, .notion-callout-text .notion-text, .notion-paragraph");
+      const FILL0UT_ID = "tZMYfrqCWAus";
+
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
+      );
+
       let found = false;
 
       nodes.forEach((node) => {
-        if (!node || !node.dataset) return;
-        const doneKey = "festivFilloutDone_" + shortcode;
-        if (node.dataset[doneKey] === "1") return;
+        if (node.dataset.festivContactFormDone === "1") return;
 
         const txt = (node.textContent || "").trim();
-        if (!txt.includes(shortcode)) return;
+        if (!txt.includes("[contact-form]")) return;
 
-        node.dataset[doneKey] = "1";
+        node.dataset.festivContactFormDone = "1";
         found = true;
 
         const mount = document.createElement("div");
         mount.className = "festiv-fillout";
         mount.style.width = "100%";
         mount.style.minHeight = "520px";
-        mount.setAttribute("data-fillout-id", filloutId);
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
         mount.setAttribute("data-fillout-embed-type", "standard");
         mount.setAttribute("data-fillout-inherit-parameters", "");
         mount.setAttribute("data-fillout-dynamic-resize", "");
 
-        if (txt === shortcode) {
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[contact-form]") {
           node.textContent = "";
           node.appendChild(mount);
           return;
         }
 
-        const parts = (node.textContent || "").split(shortcode);
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[contact-form]");
         node.textContent = "";
         parts.forEach((part, i) => {
           if (part) node.appendChild(document.createTextNode(part));
@@ -994,450 +991,89 @@
         });
       });
 
-      if (found) ensureScriptOnce("https://server.fillout.com/embed/v1/");
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
+        }
+      }
     } catch (e) {
-      console.error("[festiv20] shortcodeFillout error:", e);
+      console.error("[festiv20] shortcodeContactForm error:", e);
     }
   }
 
-  function shortcodeContactForm() {
-    shortcodeFillout("[contact-form]", "tZMYfrqCWAus");
-  }
-
+  // =========================================
+  // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
+  // =========================================
   function shortcodeInscriptionForm() {
-    shortcodeFillout("[inscription-form]", "jYPEHAqG3Lus");
-  }
-
-  // -----------------------------------------
-  // Meteoblue theme sync
-  // -----------------------------------------
-  function syncMeteoblueTheme(tries = 20) {
     try {
-      const isDark = document.documentElement.classList.contains("dark-mode");
+      const FILL0UT_ID = "jYPEHAqG3Lus";
 
-      const iframe = document.querySelector(
-        'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
+      const nodes = document.querySelectorAll(
+        ".notion-text, .notion-callout-text .notion-text, .notion-paragraph"
       );
 
-      if (!iframe) {
-        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-        return;
-      }
+      let found = false;
 
-      const srcAttr = iframe.getAttribute("src");
-      const dataSrcAttr = iframe.getAttribute("data-src");
-      const current = srcAttr || dataSrcAttr || "";
-      if (!current) {
-        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-        return;
-      }
+      nodes.forEach((node) => {
+        if (node.dataset.festivInscriptionFormDone === "1") return;
 
-      let url;
-      try {
-        url = new URL(current, window.location.href);
-      } catch {
-        return;
-      }
+        const txt = (node.textContent || "").trim();
+        if (!txt.includes("[inscription-form]")) return;
 
-      url.searchParams.set("layout", isDark ? "dark" : "bright");
-      const next = url.toString();
+        node.dataset.festivInscriptionFormDone = "1";
+        found = true;
 
-      if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
-      if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
+        const mount = document.createElement("div");
+        mount.className = "festiv-fillout";
+        mount.style.width = "100%";
+        mount.style.minHeight = "520px";
+        mount.setAttribute("data-fillout-id", FILL0UT_ID);
+        mount.setAttribute("data-fillout-embed-type", "standard");
+        mount.setAttribute("data-fillout-inherit-parameters", "");
+        mount.setAttribute("data-fillout-dynamic-resize", "");
 
-      if (tries === 20) {
-        setTimeout(() => syncMeteoblueTheme(3), 900);
-        setTimeout(() => syncMeteoblueTheme(3), 2500);
-      }
-    } catch (e) {
-      console.error("[festiv20] syncMeteoblueTheme error:", e);
-    }
-  }
-
-  // -----------------------------------------
-  // WeatherWidget.io via shortcode {{meteo_ounans}}
-  // (ne fait RIEN si le shortcode n'existe pas sur la page)
-  // -----------------------------------------
-  function setupWeatherWidget() {
-    try {
-      const SHORTCODE = SHORTCODES.weather;
-
-      const candidates = Array.from(
-        document.querySelectorAll(
-          ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
-        )
-      );
-
-      const host = candidates.find((el) => (el.textContent || "").includes(SHORTCODE));
-      if (!host) return;
-
-      // éviter ré-injection
-      if (host.querySelector(".weatherwidget-io")) {
-        host.innerHTML = host.innerHTML.replaceAll(SHORTCODE, "");
-        return;
-      }
-
-      host.innerHTML = host.innerHTML.replaceAll(SHORTCODE, "");
-
-      const a = document.createElement("a");
-      a.className = "weatherwidget-io";
-      a.href = "https://forecast7.com/fr/46d995d67/ounans/";
-      a.setAttribute("data-label_1", "OUNANS");
-      a.setAttribute("data-label_2", "Météo");
-      a.setAttribute("data-font", "Roboto");
-      a.setAttribute("data-icons", "Climacons Animated");
-      a.setAttribute("data-mode", "Current");
-      a.setAttribute("data-days", "3");
-      a.setAttribute("data-theme", "weather_one");
-      a.textContent = "OUNANS Météo";
-
-      host.appendChild(a);
-
-      const SCRIPT_ID = "weatherwidget-io-js";
-      if (!document.getElementById(SCRIPT_ID)) {
-        const s = document.createElement("script");
-        s.id = SCRIPT_ID;
-        s.src = "https://weatherwidget.io/js/widget.min.js";
-        document.head.appendChild(s);
-      }
-
-      if (window.__weatherwidget_init) window.__weatherwidget_init();
-    } catch (e) {
-      if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
-    }
-  }
-
-// =========================================
-// FESTIV — Global Stickers (🧷)
-// - Opt-in via emoji 🧷 au début du titre H4
-// - Ajoute .festiv-sticker
-// - Retire l’emoji du texte (sans casser le HTML)
-// - Désactive le clic (href supprimé + blocage click/keyboard)
-// - Anime au scroll via IntersectionObserver (1 fois)
-// =========================================
-(function setupFestivGlobalStickers() {
-  try {
-    const TRIGGER = "🧷";
-    const SELECTOR = "h4.notion-h.notion-h3 a.notion-h-title";
-    const CLASS_STICKER = "festiv-sticker";
-    const CLASS_INVIEW = "festiv-sticker--inview";
-
-    const reduceMotion =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const titles = Array.from(document.querySelectorAll(SELECTOR));
-    if (!titles.length) return;
-
-    // --- helpers ---
-    const startsWithTrigger = (el) => {
-      const raw = (el.textContent || "").replace(/\s+/g, " ").trim();
-      return raw.startsWith(TRIGGER);
-    };
-
-    const stripTriggerFromFirstTextNode = (el) => {
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-      let node;
-      while ((node = walker.nextNode())) {
-        const t = node.nodeValue || "";
-        if (!t) continue;
-
-        // check "visible" start
-        const cleaned = t.replace(/\s+/g, " ");
-        const trimmedStart = cleaned.trimStart();
-        if (!trimmedStart.startsWith(TRIGGER)) continue;
-
-        const idx = t.indexOf(TRIGGER);
-        if (idx >= 0) {
-          const before = t.slice(0, idx);
-          let after = t.slice(idx + TRIGGER.length);
-          after = after.replace(/^\s+/, ""); // retire l’espace après 🧷
-          node.nodeValue = before + after;
+        // Si le bloc ne contient QUE le shortcode -> on remplace tout
+        if (txt === "[inscription-form]") {
+          node.textContent = "";
+          node.appendChild(mount);
+          return;
         }
-        break;
-      }
-    };
 
-    const disableLink = (a) => {
-      if (a.dataset.festivNoClick === "1") return;
-      a.dataset.festivNoClick = "1";
-
-      a.removeAttribute("href");
-      a.removeAttribute("title");
-      a.setAttribute("aria-disabled", "true");
-      a.setAttribute("role", "text");
-      a.setAttribute("tabindex", "-1");
-
-      // capture = true pour bloquer tôt
-      a.addEventListener(
-        "click",
-        (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        },
-        true
-      );
-
-      a.addEventListener(
-        "keydown",
-        (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-          }
-        },
-        true
-      );
-    };
-
-    // --- 1) Convertit en stickers (opt-in) ---
-    const stickers = [];
-    titles.forEach((a) => {
-      if (!startsWithTrigger(a)) return;
-
-      if (!a.classList.contains(CLASS_STICKER)) {
-        a.classList.add(CLASS_STICKER);
-        stripTriggerFromFirstTextNode(a);
-      }
-
-      disableLink(a);
-      stickers.push(a);
-    });
-
-    if (!stickers.length) return;
-
-    // --- 2) Animation au scroll ---
-    if (reduceMotion) {
-      stickers.forEach((a) => a.classList.add(CLASS_INVIEW));
-      return;
-    }
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          const el = entry.target;
-          el.classList.add(CLASS_INVIEW);
-          io.unobserve(el); // une seule fois
-        }
-      },
-      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
-    );
-
-    stickers.forEach((a) => {
-      if (!a.classList.contains(CLASS_INVIEW)) io.observe(a);
-    });
-  } catch (e) {
-    // silencieux
-  }
-})();
-
-
-  // -----------------------------------------
-  // NAV helpers (markers + cache) — GLOBAL
-  // -----------------------------------------
-  const FESTIV_NAV = {
-    re: SHORTCODES.navRe,
-    selector: ".notion-text, .notion-paragraph, .notion-callout-text .notion-text, .notion-quote, [data-content-editable-leaf]",
-
-    cacheKey() {
-      const p = (window.location.pathname || "/").toLowerCase();
-      return "festiv-nav-section:" + p;
-    },
-
-    readCache() {
-      try {
-        return sessionStorage.getItem(this.cacheKey()) || null;
-      } catch {
-        try {
-          return localStorage.getItem(this.cacheKey()) || null;
-        } catch {
-          return null;
-        }
-      }
-    },
-
-    writeCache(section) {
-      try {
-        sessionStorage.setItem(this.cacheKey(), section);
-        return;
-      } catch {}
-      try {
-        localStorage.setItem(this.cacheKey(), section);
-      } catch {}
-    },
-
-    detectAndCleanupInElement(el) {
-      const raw = el ? (el.textContent || "") : "";
-      if (!raw) return null;
-
-      // reset lastIndex (regex global)
-      this.re.lastIndex = 0;
-
-      let found = null;
-      raw.replace(this.re, (_m, a1, a2) => {
-        found = (a1 || a2 || "").toLowerCase();
-        return _m;
+        // Sinon on conserve le texte autour et on injecte au bon endroit
+        const parts = (node.textContent || "").split("[inscription-form]");
+        node.textContent = "";
+        parts.forEach((part, i) => {
+          if (part) node.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) node.appendChild(mount.cloneNode(true));
+        });
       });
 
-      if (!found) return null;
-
-      try {
-        this.re.lastIndex = 0;
-        const cleaned = raw.replace(this.re, "").replace(/\s{2,}/g, " ").trim();
-        el.textContent = cleaned;
-      } catch {}
-
-      return found;
-    },
-  };
-
-  function festivDetectAndCleanupNavMarker() {
-    try {
-      const nodes = Array.from(document.querySelectorAll(FESTIV_NAV.selector));
-      for (const el of nodes) {
-        if (el.dataset && el.dataset.festivNavMarkerDone === "1") continue;
-
-        const section = FESTIV_NAV.detectAndCleanupInElement(el);
-        if (el.dataset) el.dataset.festivNavMarkerDone = "1";
-
-        if (section) {
-          FESTIV_NAV.writeCache(section);
-          return section;
+      // Charger le script Fillout une seule fois (seulement si besoin)
+      if (found) {
+        const SRC = "https://server.fillout.com/embed/v1/";
+        const already = [...document.scripts].some((s) => s.src === SRC);
+        if (!already) {
+          const s = document.createElement("script");
+          s.src = SRC;
+          s.async = true;
+          document.head.appendChild(s);
         }
       }
     } catch (e) {
-      console.warn("[festiv20] festivDetectAndCleanupNavMarker error:", e);
-    }
-    return null;
-  }
-
-  function festivWriteCachedSection(section) {
-    try {
-      if (section === "articles" || section === "evenements") FESTIV_NAV.writeCache(section);
-    } catch {}
-  }
-
-  function festivReadCachedSection() {
-    try {
-      const v = FESTIV_NAV.readCache();
-      return v === "articles" || v === "evenements" ? v : null;
-    } catch {
-      return null;
+      console.error("[festiv20] shortcodeInscriptionForm error:", e);
     }
   }
 
-  function festivCleanupNavMarkersEverywhere() {
-    try {
-      const nodes = Array.from(document.querySelectorAll(FESTIV_NAV.selector));
-      nodes.forEach((el) => {
-        const t = (el.textContent || "");
-        if (!t) return;
 
-        FESTIV_NAV.re.lastIndex = 0;
-        if (!FESTIV_NAV.re.test(t)) return;
-
-        FESTIV_NAV.re.lastIndex = 0;
-        const cleaned = t.replace(FESTIV_NAV.re, "").replace(/\s{2,}/g, " ").trim();
-        if (cleaned !== t) el.textContent = cleaned;
-      });
-    } catch (e) {
-      console.warn("[festiv20] festivCleanupNavMarkersEverywhere error:", e);
-    }
-  }
-
-  function festivApplyActiveHeaderLink() {
-    try {
-      const links = Array.from(document.querySelectorAll(".custom-header__links__link"));
-      if (!links.length) return;
-
-      const normalizePath = (href) => {
-        try {
-          const u = new URL(href, window.location.origin);
-          return (u.pathname || "/").toLowerCase().replace(/\/+$/, "") || "/";
-        } catch {
-          return "";
-        }
-      };
-
-      const byLabel = (label) => links.find((a) => (a.textContent || "").trim().toLowerCase() === label);
-
-      const linkArticles =
-        byLabel("articles") || links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/blog-"));
-      const linkEvents =
-        byLabel("événements") ||
-        byLabel("evenements") ||
-        links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/nos-evenements-"));
-
-      const setActive = (a) => {
-        links.forEach((x) => x.classList.remove("is-active"));
-        if (a) a.classList.add("is-active");
-      };
-
-      // A) marqueur page
-      const markerSection = festivDetectAndCleanupNavMarker();
-      if (markerSection === "articles") {
-        setActive(linkArticles);
-        return;
-      }
-      if (markerSection === "evenements") {
-        setActive(linkEvents);
-        return;
-      }
-
-      // B) listing
-      const curPath = (window.location.pathname || "/").toLowerCase();
-      if (curPath.includes("/blog-")) {
-        festivWriteCachedSection("articles");
-        setActive(linkArticles);
-        return;
-      }
-      if (curPath.includes("/nos-evenements-")) {
-        festivWriteCachedSection("evenements");
-        setActive(linkEvents);
-        return;
-      }
-
-      // C) cache par page
-      const cached = festivReadCachedSection();
-      if (cached === "articles") {
-        setActive(linkArticles);
-        return;
-      }
-      if (cached === "evenements") {
-        setActive(linkEvents);
-        return;
-      }
-
-      // D) exact pathname
-      const curNorm = curPath.replace(/\/+$/, "") || "/";
-      const exact = links.find((a) => normalizePath(a.getAttribute("href") || "") === curNorm);
-      if (exact) {
-        setActive(exact);
-        return;
-      }
-
-      // E) contient
-      const contains = links.find((a) => {
-        const p = normalizePath(a.getAttribute("href") || "");
-        return p && p !== "/" && curNorm.includes(p);
-      });
-      if (contains) setActive(contains);
-    } catch (e) {
-      console.warn("[festiv20] festivApplyActiveHeaderLink error:", e);
-    }
-  }
-
-  function festivRunNav() {
-    festivApplyActiveHeaderLink();
-    festivCleanupNavMarkersEverywhere();
-  }
-
-  // -----------------------------------------
-  // DISQUS
-  // -----------------------------------------
+  // =========================================
+  // DISQUS — mini tip "invité"
+  // =========================================
   function injectDisqusGuestTip() {
     try {
       const marker = findDisqusMarker();
@@ -1485,10 +1121,14 @@
     }
   }
 
+  // =========================================
+  // DISQUS — patch texte "18+"
+  // =========================================
   function patchDisqusAgeGateFR() {
     try {
       const FROM = "Acknowledge I am 18 or older";
       const TO = "Je confirme avoir 18 ans ou plus";
+
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
       while (walker.nextNode()) {
         const n = walker.currentNode;
@@ -1499,15 +1139,23 @@
     } catch {}
   }
 
+  // =========================================
+  // DISQUS — CookieHub consent (true/false/null)
+  // null = CookieHub pas prêt
+  // =========================================
   function getDisqusConsentStatus() {
     const CH = window.cookiehub;
     if (!CH) return null;
 
+    // CookieHub pas prêt => on ne conclut rien
     if (typeof CH.isReady === "function" && !CH.isReady()) return null;
+
+    // Si l'utilisateur n'a pas encore répondu, alors pas de consentement
     if (typeof CH.hasAnswered === "function" && !CH.hasAnswered()) return false;
 
     if (typeof CH.hasConsented !== "function") return null;
 
+    // accepte si AU MOINS une catégorie est autorisée
     let sawAny = false;
     try {
       for (const c of DISQUS_COOKIE_CATS_OK) {
@@ -1526,16 +1174,16 @@
     window.__FESTIV_DISQUS_CONSENT_POLLING = true;
 
     let tries = 0;
-    const MAX_TRIES = 140;
+    const MAX_TRIES = 140; // ~21s
     const DELAY = 150;
 
     const tick = () => {
       tries++;
-      const consent = getDisqusConsentStatus();
+      const consent = getDisqusConsentStatus(); // true/false/null
 
       if (consent === true) {
         window.__FESTIV_DISQUS_CONSENT_POLLING = false;
-        safeTry(() => initDisqus(true));
+        try { initDisqus(true); } catch {}
         return;
       }
 
@@ -1550,8 +1198,13 @@
     setTimeout(tick, 50);
   }
 
+  // =========================================
+  // DISQUS — helpers anti “iframe disparue”
+  // =========================================
   function findDisqusMarker() {
-    return [...document.querySelectorAll("h1,h2,h3")].find((h) => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null;
+    return (
+      [...document.querySelectorAll("h1,h2,h3")].find((h) => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null
+    );
   }
 
   function disqusHasIframe() {
@@ -1570,6 +1223,8 @@
 
   function showDisqusConsentPlaceholder(marker) {
     const wrap = ensureDisqusWrapAfter(marker);
+
+    // si déjà là, ne pas dupliquer
     if (wrap.querySelector(".festiv-disqus-consent")) return;
 
     wrap.innerHTML = `
@@ -1591,6 +1246,8 @@
 
   function ensureDisqusThread(marker) {
     const wrap = ensureDisqusWrapAfter(marker);
+
+    // retire placeholder si existant
     wrap.querySelector(".festiv-disqus-consent")?.remove();
 
     let thread = document.getElementById("disqus_thread");
@@ -1604,29 +1261,37 @@
 
   function remountDisqusThread(marker) {
     const wrap = document.querySelector(".festiv-disqus-wrap") || ensureDisqusWrapAfter(marker);
-    document.getElementById("disqus_thread")?.remove();
+    const old = document.getElementById("disqus_thread");
+    if (old) old.remove();
 
     const thread = document.createElement("div");
     thread.id = "disqus_thread";
     wrap.appendChild(thread);
   }
 
+  // =========================================
+  // DISQUS — init idempotent (anti-flicker + watchdog)
+  // =========================================
   function initDisqus(force = false) {
     try {
       document.documentElement.setAttribute("lang", "fr");
 
+      // 1) marqueur
       const marker = findDisqusMarker();
       if (!marker) return;
 
-      const consentStatus = getDisqusConsentStatus();
+      // 2) consent
+      const consentStatus = getDisqusConsentStatus(); // true/false/null
       const consentOk = consentStatus === true;
 
+      // 3) pas de consentement (ou statut pas prêt) => placeholder + recheck
       if (!consentOk) {
         showDisqusConsentPlaceholder(marker);
         scheduleDisqusConsentRecheck();
         return;
       }
 
+      // 4) consent ok => thread
       ensureDisqusThread(marker);
 
       const pageUrl = window.location.href.split("#")[0];
@@ -1634,6 +1299,8 @@
       const pageKey = pageId + "||" + pageUrl;
 
       const hasIframe = disqusHasIframe();
+
+      // déjà prêt sur la même page + iframe présente => rien
       if (!force && window.__FESTIV_DISQUS_KEY === pageKey && window.__FESTIV_DISQUS_READY && hasIframe) return;
 
       const disqusConfig = function () {
@@ -1642,7 +1309,9 @@
         this.language = "fr";
       };
 
+      // Disqus déjà chargé
       if (window.DISQUS && typeof window.DISQUS.reset === "function") {
+        // si focus dans iframe Disqus, évite reset (anti “je tape et ça reset”)
         try {
           const ae = document.activeElement;
           if (ae && ae.tagName === "IFRAME" && !force) return;
@@ -1651,12 +1320,14 @@
         window.__FESTIV_DISQUS_KEY = pageKey;
         window.__FESTIV_DISQUS_READY = true;
 
+        // si iframe absente => remount avant reset
         if (!hasIframe) remountDisqusThread(marker);
 
         window.DISQUS.reset({ reload: true, config: disqusConfig });
         setTimeout(patchDisqusAgeGateFR, 300);
         setTimeout(patchDisqusAgeGateFR, 900);
 
+        // watchdog : si toujours pas d’iframe, remount + reset une fois
         setTimeout(() => {
           if (!disqusHasIframe()) {
             remountDisqusThread(marker);
@@ -1667,6 +1338,7 @@
         return;
       }
 
+      // premier chargement
       window.disqus_config = disqusConfig;
 
       const embedSrc = `https://${DISQUS_SHORTNAME}.disqus.com/embed.js`;
@@ -1689,6 +1361,7 @@
     }
   }
 
+  // refresh volontaire (toggle thème)
   function refreshDisqusTheme() {
     try {
       if (!document.getElementById("disqus_thread")) return;
@@ -1730,17 +1403,21 @@
     }
   }
 
+  // expose (si un jour tu veux l’appeler ailleurs)
   window.__festivInitDisqus = initDisqus;
 
+  // =========================================
+  // CookieHub -> retenter Disqus sur changements
+  // =========================================
   function bindCookieHubForDisqus() {
     try {
       if (window.__FESTIV_COOKIEHUB_DISQUS_BOUND) return;
       window.__FESTIV_COOKIEHUB_DISQUS_BOUND = true;
 
       const hard = () => {
-        setTimeout(() => safeTry(() => initDisqus(true)), 50);
-        setTimeout(() => safeTry(() => initDisqus(true)), 250);
-        setTimeout(() => safeTry(() => initDisqus(true)), 900);
+        setTimeout(() => { try { initDisqus(true); } catch {} }, 50);
+        setTimeout(() => { try { initDisqus(true); } catch {} }, 250);
+        setTimeout(() => { try { initDisqus(true); } catch {} }, 900);
       };
 
       const CH = window.cookiehub;
@@ -1749,10 +1426,11 @@
         CH.on("onStatusChange", hard);
         CH.on("onRevoke", hard);
       } else {
+        // fallback : quelques tentatives douces
         let n = 0;
         const poke = () => {
           n++;
-          safeTry(() => initDisqus(false));
+          try { initDisqus(false); } catch {}
           if (n < 12) setTimeout(poke, 250);
         };
         setTimeout(poke, 200);
@@ -1762,71 +1440,378 @@
     }
   }
 
-  // -----------------------------------------
-  // runAll
-  // -----------------------------------------
-  function runAll() {
-    if (window.__FESTIV_RUNALL_LOCK) return;
-    window.__FESTIV_RUNALL_LOCK = true;
-
+  // =========================================
+  // Meteoblue theme sync
+  // =========================================
+  function syncMeteoblueTheme(tries = 20) {
     try {
-      applySavedTheme();
+      const isDark = document.documentElement.classList.contains("dark-mode");
 
-      syncMeteoblueTheme();
-      setTimeout(syncMeteoblueTheme, 300);
+      const iframe = document.querySelector(
+        'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
+      );
 
-      makeLogoClickable();
-      formatDates();
-      cleanupSimpleInkTZInDates();
+      if (!iframe) {
+        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
+        return;
+      }
 
-      createFooterColumns();
-      addCopyright();
-      tweakCover();
-      setupTableScrollUX();
-      shortcodeRetour();
-      bindNotionButtons();
-      fixInternalAnchors();
-      hideGenericCalloutIcons();
-      setupFaqAnimation();
-      localizeSearchUI();
-      setupBackToTop();
+      const srcAttr = iframe.getAttribute("src");
+      const dataSrcAttr = iframe.getAttribute("data-src");
+      const current = srcAttr || dataSrcAttr || "";
+      if (!current) {
+        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
+        return;
+      }
 
-      bindSystemThemeListener();
-      bindCalendarI18nHooks();
-      translateNotionCalendar();
-      setupFestivGlobalStickers();
+      let url;
+      try {
+        url = new URL(current, window.location.href);
+      } catch {
+        return;
+      }
 
-      // NAV
-      festivRunNav();
-      setTimeout(festivRunNav, 250);
-      setTimeout(festivRunNav, 1000);
-      setTimeout(festivRunNav, 2500);
+      url.searchParams.set("layout", isDark ? "dark" : "bright");
+      const next = url.toString();
 
-      initThemeToggle();
+      if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
+      if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
 
-      shortcodeContactForm();
-      shortcodeInscriptionForm();
-
-      // WeatherWidget : ne fait rien si pas de shortcode sur la page
-      setupWeatherWidget();
-
-      injectDisqusGuestTip();
-      initDisqus(false);
-    } finally {
-      window.__FESTIV_RUNALL_LOCK = false;
+      if (tries === 20) {
+        setTimeout(() => syncMeteoblueTheme(3), 900);
+        setTimeout(() => syncMeteoblueTheme(3), 2500);
+      }
+    } catch (e) {
+      console.error("[festiv20] syncMeteoblueTheme error:", e);
     }
   }
+// =========================================
+// WeatherWidget.io via shortcode Notion
+// Shortcode à mettre dans Notion : {{meteo_ounans}}
+// =========================================
+function setupWeatherWidget() {
+  try {
+    const SHORTCODE = "{{meteo_ounans}}";
 
-  // -----------------------------------------
-  // Observer : relance runAll si Simple.ink reconstruit le DOM (ignore Disqus)
-  // -----------------------------------------
+    // 1) Trouver un bloc texte qui contient le shortcode
+    // (Simple.ink/Notion rendent le texte dans différents wrappers selon les pages)
+    const candidates = Array.from(document.querySelectorAll(
+      ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
+    ));
+
+    const host = candidates.find(el => (el.textContent || "").includes(SHORTCODE));
+    if (!host) return;
+
+    // 2) Éviter de ré-injecter si déjà fait
+    if (host.querySelector('.weatherwidget-io')) {
+      // on enlève juste le shortcode si encore visible
+      host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
+      return;
+    }
+
+    // 3) Injecter l'ancre WeatherWidget à la place du shortcode
+    // On remplace le texte uniquement (pratique si ton bloc contient autre chose)
+    host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
+
+    const a = document.createElement("a");
+    a.className = "weatherwidget-io";
+    a.href = "https://forecast7.com/fr/46d995d67/ounans/";
+    a.setAttribute("data-label_1", "OUNANS");
+    a.setAttribute("data-label_2", "Météo");
+    a.setAttribute("data-font", "Roboto");
+    a.setAttribute("data-icons", "Climacons Animated");
+    a.setAttribute("data-mode", "Current");
+    a.setAttribute("data-days", "3");
+    a.setAttribute("data-theme", "weather_one");
+    a.textContent = "OUNANS Météo";
+
+    host.appendChild(a);
+
+    // 4) Charger le script une seule fois
+    const SCRIPT_ID = "weatherwidget-io-js";
+    if (!document.getElementById(SCRIPT_ID)) {
+      const s = document.createElement("script");
+      s.id = SCRIPT_ID;
+      s.src = "https://weatherwidget.io/js/widget.min.js";
+      document.head.appendChild(s);
+    }
+
+    // 5) Demander un refresh si la lib est déjà là
+    // (weatherwidget.io expose souvent __weatherwidget_init)
+    if (window.__weatherwidget_init) {
+      window.__weatherwidget_init();
+    }
+  } catch (e) {
+  if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
+}
+
+}
+// =========================================
+// GLOBAL STICKER (🧷)
+// - Ajoute .festiv-sticker aux H4 dont le titre commence par 🧷
+// - Retire l’emoji déclencheur du texte (mais le CSS le réinjecte en ::before)
+// =========================================
+function setupGlobalStickers() {
+  try {
+    const TRIGGER = "🧷";
+
+    const titles = document.querySelectorAll(
+      'h4.notion-h.notion-h3 a.notion-h-title'
+    );
+
+    titles.forEach((a) => {
+      if (a.classList.contains("festiv-sticker")) return;
+
+      const raw = (a.textContent || "").trim();
+if (!raw.startsWith(TRIGGER)) return;
+
+
+      // 1) Marqueur style
+      a.classList.add("festiv-sticker");
+
+      // 2) Retire le TRIGGER au début dans le 1er text node trouvé
+      // (en gardant le HTML/gras/etc.)
+      const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
+      let node;
+      while ((node = walker.nextNode())) {
+        let t = node.nodeValue;
+        if (!t) continue;
+        // on cherche la première occurrence utile
+        const cleaned = t.replace(/\s+/g, " ");
+        const trimmed = cleaned.trimStart();
+        if (!trimmed.startsWith(TRIGGER)) continue;
+
+        // enlève l’emoji + un espace éventuel juste après
+        const idx = t.indexOf(TRIGGER);
+        if (idx >= 0) {
+          const before = t.slice(0, idx);
+          let after = t.slice(idx + TRIGGER.length);
+          after = after.replace(/^\s+/, ""); // enlève l'espace après 🧷
+          node.nodeValue = before + after;
+        }
+        break;
+      }
+    });
+  } catch (e) {
+    // silencieux
+  }
+}
+// =========================================================
+// NAV ACTIVE (rouge piment) + marqueurs Notion
+// - Met en actif "Articles" ou "Événements"
+// - Supporte les pages enfants via marqueurs : [nav:articles] / [nav:evenements]
+// - Nettoie le texte pour ne jamais afficher les marqueurs
+// - Evite le bug "reste bloqué sur événements" : cache PAR PAGE (pathname)
+// =========================================================
+
+// --- util: key cache par page ---
+function festivNavCacheKey() {
+  const path = (window.location.pathname || "/").toLowerCase().replace(/\/+$/, "") || "/";
+  return "festiv-nav:" + path;
+}
+
+function festivReadCachedSection() {
+  try {
+    const v = sessionStorage.getItem(festivNavCacheKey());
+    if (v === "articles" || v === "evenements") return v;
+  } catch {}
+  return null;
+}
+
+function festivWriteCachedSection(section) {
+  try {
+    sessionStorage.setItem(festivNavCacheKey(), section);
+  } catch {}
+}
+
+// --- 1) detecte un marqueur [nav:...] sur la page + le supprime ---
+function festivDetectAndCleanupNavMarker() {
+  try {
+    // On cherche dans les zones de texte Notion/Simple
+    const candidates = Array.from(
+      document.querySelectorAll(
+        ".notion-text, .notion-paragraph, .notion-callout-text, [data-content-editable-leaf]"
+      )
+    );
+
+    for (const el of candidates) {
+      const t = (el.textContent || "");
+      const m = t.match(/\[nav:(articles|evenements)\]/i);
+      if (!m) continue;
+
+      const section = m[1].toLowerCase(); // "articles" | "evenements"
+      festivWriteCachedSection(section);
+
+      // nettoyage dans le DOM (text nodes)
+      const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (!n.nodeValue) continue;
+        if (!re.test(n.nodeValue)) continue;
+        n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
+      }
+
+      return section;
+    }
+  } catch {}
+  return null;
+}
+
+// --- 2) nettoyage global de sécurité (si Simple.ink réinjecte le texte plus tard) ---
+function festivCleanupNavMarkersEverywhere() {
+  try {
+    const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    let n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue) continue;
+      if (!re.test(n.nodeValue)) continue;
+      n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
+    }
+  } catch {}
+}
+
+// --- 3) applique le bouton actif dans le header ---
+function festivApplyActiveHeaderLink() {
+  try {
+    const links = Array.from(document.querySelectorAll(".custom-header__links__link"));
+    if (!links.length) return;
+
+    // helpers
+    const normalizePath = (href) => {
+      try {
+        const u = new URL(href, window.location.origin);
+        return (u.pathname || "/").toLowerCase().replace(/\/+$/, "") || "/";
+      } catch {
+        return "";
+      }
+    };
+
+    const byLabel = (label) =>
+      links.find((a) => (a.textContent || "").trim().toLowerCase() === label);
+
+    // IMPORTANT : on s’appuie d’abord sur le libellé (le plus stable)
+    const linkArticles = byLabel("articles") || links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/blog-"));
+    const linkEvents   = byLabel("événements") || byLabel("evenements") || links.find((a) => normalizePath(a.getAttribute("href") || "").includes("/nos-evenements-"));
+
+    const setActive = (a) => {
+      links.forEach((x) => x.classList.remove("is-active"));
+      if (a) a.classList.add("is-active");
+    };
+
+    // A) PRIORITÉ 1 : marqueur présent sur la page (pages enfants)
+    const markerSection = festivDetectAndCleanupNavMarker();
+    if (markerSection === "articles") { setActive(linkArticles); return; }
+    if (markerSection === "evenements") { setActive(linkEvents); return; }
+
+    // B) PRIORITÉ 2 : pages “listing” reconnaissables
+    const curPath = (window.location.pathname || "/").toLowerCase();
+    if (curPath.includes("/blog-")) { festivWriteCachedSection("articles"); setActive(linkArticles); return; }
+    if (curPath.includes("/nos-evenements-")) { festivWriteCachedSection("evenements"); setActive(linkEvents); return; }
+
+    // C) PRIORITÉ 3 : cache PAR PAGE (évite le bug “reste bloqué sur événements”)
+    const cached = festivReadCachedSection();
+    if (cached === "articles") { setActive(linkArticles); return; }
+    if (cached === "evenements") { setActive(linkEvents); return; }
+
+    // D) fallback : match exact sur pathname (pages statiques)
+    const curNorm = curPath.replace(/\/+$/, "") || "/";
+    const exact = links.find((a) => normalizePath(a.getAttribute("href") || "") === curNorm);
+    if (exact) { setActive(exact); return; }
+
+    // E) fallback : contient (rare)
+    const contains = links.find((a) => {
+      const p = normalizePath(a.getAttribute("href") || "");
+      return p && p !== "/" && curNorm.includes(p);
+    });
+    if (contains) { setActive(contains); return; }
+
+  } catch (e) {
+    console.warn("[festiv20] festivApplyActiveHeaderLink error:", e);
+  }
+}
+
+// --- 4) runner NAV (appelé souvent, safe) ---
+function festivRunNav() {
+  // 1) applique l’actif
+  festivApplyActiveHeaderLink();
+
+  // 2) nettoie (au cas où Simple réinjecte)
+  festivCleanupNavMarkersEverywhere();
+}
+
+
+
+
+   
+  // =========================================
+  // runAll (load + rebuild DOM)
+  // =========================================
+  function runAll() {
+  if (window.__FESTIV_RUNALL_LOCK) return;
+  window.__FESTIV_RUNALL_LOCK = true;
+
+  try {
+    applySavedTheme();
+
+    syncMeteoblueTheme();
+    setTimeout(syncMeteoblueTheme, 300);
+
+    makeLogoClickable();
+    formatDates();
+    cleanupSimpleInkTZInDates();
+
+    createFooterColumns();
+    addCopyright();
+    tweakCover();
+    setupTableScrollUX();
+    shortcodeRetour();
+    bindNotionButtons();
+    fixInternalAnchors();
+    hideGenericCalloutIcons();
+    setupFaqAnimation();
+    localizeSearchUI();
+    setupBackToTop();
+
+    bindSystemThemeListener();
+    bindCalendarI18nHooks();
+    translateNotionCalendar();
+    setupGlobalStickers();
+
+    // ✅ NAV (remplace setActiveHeaderLink + cleanupNavMarkers)
+    festivRunNav();
+    setTimeout(festivRunNav, 250);
+    setTimeout(festivRunNav, 1000);
+    setTimeout(festivRunNav, 2500);
+
+    initThemeToggle();
+
+    shortcodeContactForm();
+    shortcodeInscriptionForm();
+    setupWeatherWidget();
+
+    injectDisqusGuestTip();
+    initDisqus(false);
+  } finally {
+    window.__FESTIV_RUNALL_LOCK = false;
+  }
+}
+
+
+  // =========================================
+  // Observer : relance runAll si Simple.ink reconstruit le DOM
+  // (ignore Disqus)
+  // =========================================
   function isDisqusRelatedNode(node) {
     if (!node || node.nodeType !== 1) return false;
     const el = node;
 
     if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
+
     if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
-    if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]')) return true;
+    if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]'))
+      return true;
 
     if (el.id && el.id.startsWith("dsq-")) return true;
     if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
@@ -1836,46 +1821,23 @@
     return false;
   }
 
-  // -----------------------------------------
-  // Exports (tu as dit que tu "as besoin de ces fonctions")
-  // -> accès via window.__festiv.*
-  // -----------------------------------------
-  function exportAPI() {
-    window.__festiv = window.__festiv || {};
-
-    // Accueil uniquement (mais safe partout)
-    window.__festiv.setupWeatherWidget = setupWeatherWidget;
-
-    // NAV helpers
-    window.__festiv.festivDetectAndCleanupNavMarker = festivDetectAndCleanupNavMarker;
-    window.__festiv.festivWriteCachedSection = festivWriteCachedSection;
-    window.__festiv.festivReadCachedSection = festivReadCachedSection;
-    window.__festiv.festivCleanupNavMarkersEverywhere = festivCleanupNavMarkersEverywhere;
-    window.__festiv.festivApplyActiveHeaderLink = festivApplyActiveHeaderLink;
-    window.__festiv.festivRunNav = festivRunNav;
-
-    // (optionnel) runner
-    window.__festiv.runAll = runAll;
-  }
-
-  // -----------------------------------------
+  // =========================================
   // Boot
-  // -----------------------------------------
+  // =========================================
   onReady(() => {
     log("loaded ✅");
 
-    exportAPI();
+    // Au refresh : CookieHub peut mettre un peu de temps à exposer hasConsented()
+    // -> on retente Disqus doucement
+    setTimeout(() => { try { initDisqus(false); } catch {} }, 400);
+    setTimeout(() => { try { initDisqus(false); } catch {} }, 1200);
+    setTimeout(() => { try { initDisqus(false); } catch {} }, 2500);
 
-    // Au refresh : CookieHub peut mettre un peu de temps
-    setTimeout(() => safeTry(() => initDisqus(false)), 400);
-    setTimeout(() => safeTry(() => initDisqus(false)), 1200);
-    setTimeout(() => safeTry(() => initDisqus(false)), 2500);
-
+    // petits retours internes
     setTimeout(fixInternalAnchors, 500);
     setTimeout(fixInternalAnchors, 1500);
 
     bindCookieHubForDisqus();
-
     runAll();
     setTimeout(cleanupSimpleInkTZInDates, 120);
     setTimeout(cleanupSimpleInkTZInDates, 600);
