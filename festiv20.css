@@ -398,7 +398,28 @@ body .notion-page-cover-wrapper img{
   font-size: 1.1rem !important;
   line-height: 1.3 !important;
 }
+/* =========================================================
+   GALLERY CARDS — spacing interne premium (global)
+========================================================= */
 
+:root{
+  --card-body-padding: 20px;
+}
+
+/* Corps de carte (zone texte sous image) */
+.notion-gallery .notion-collection-card-body{
+  padding: var(--card-body-padding) !important;
+}
+
+/* Espace entre les propriétés */
+.notion-gallery .notion-collection-card-property{
+  margin-bottom: 8px !important;
+}
+
+/* Dernière propriété (évite trop d’espace sous le bouton) */
+.notion-gallery .notion-collection-card-property:last-child{
+  margin-bottom: 0 !important;
+}
 /* =========================================================
    BADGES catégories — “magazine” (global, uniquement dans les cartes)
 ========================================================= */
