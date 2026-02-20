@@ -1,6 +1,6 @@
 /* festiv20.js — version “full & robuste” (Simple.ink + CookieHub + Disqus)
    - Thème (auto OS + override) + bouton
-   - Meteoblue sync thème
+   - Widget météo via shortcode (WeatherWidget.io)
    - Disqus : placeholder si pas de consentement + recheck si CookieHub pas prêt au refresh
    - Disqus : remount + watchdog si l’iframe n’apparaît pas après refresh
    - runAll + MutationObserver (ignore Disqus)
@@ -99,7 +99,6 @@
         if (!getSavedTheme()) {
           applySavedTheme();
           syncAutoIndicator();
-          syncMeteoblueTheme();
           // (on ne reset pas Disqus ici)
         }
       };
@@ -136,107 +135,94 @@
   let ignoreClickUntil = 0;
 
   function initThemeToggle() {
-    try {
-      let wrap = document.getElementById("festiv-theme-toggle");
-      if (!wrap) {
-        wrap = document.createElement("button");
-        wrap.type = "button";
-        wrap.id = "festiv-theme-toggle";
-        wrap.className = "festiv-switch";
-        wrap.setAttribute("aria-label", "Changer de thème");
-        wrap.setAttribute("aria-pressed", "false");
-        wrap.setAttribute("title", "Clic : changer le thème • Double-clic : Auto");
+  try {
+    let wrap = document.getElementById("festiv-theme-toggle");
+    if (!wrap) {
+      wrap = document.createElement("button");
+      wrap.type = "button";
+      wrap.id = "festiv-theme-toggle";
+      wrap.className = "festiv-switch";
+      wrap.setAttribute("aria-label", "Changer de thème");
+      wrap.setAttribute("aria-pressed", "false");
+      wrap.setAttribute("title", "Clic : changer le thème • Double-clic : Auto");
 
-        wrap.innerHTML = `
-          <span class="festiv-switch__track" aria-hidden="true">
-            <span class="festiv-switch__knob" aria-hidden="true">
-              <span class="festiv-switch__knob-icon is-moon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
-                  <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z" fill="currentColor"/>
-                </svg>
-              </span>
-              <span class="festiv-switch__knob-icon is-sun" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
-                  <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
-                  <path d="M12 2.6v2.2M12 19.2v2.2M4.8 12H2.6M21.4 12h-2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"
-                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-                </svg>
-              </span>
+      wrap.innerHTML = `
+        <span class="festiv-switch__track" aria-hidden="true">
+          <span class="festiv-switch__knob" aria-hidden="true">
+            <span class="festiv-switch__knob-icon is-moon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
+                <path d="M21 14.5A8.5 8.5 0 0 1 9.5 3a7 7 0 1 0 11.5 11.5Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="festiv-switch__knob-icon is-sun" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="14" height="14" focusable="false" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.2" fill="currentColor"/>
+                <path d="M12 2.6v2.2M12 19.2v2.2M4.8 12H2.6M21.4 12h-2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+              </svg>
             </span>
           </span>
-        `;
+        </span>
+      `;
 
-        // CLIC = toggle manuel
-        wrap.addEventListener("click", (e) => {
-          if (Date.now() < ignoreClickUntil) return;
+      // CLIC = toggle manuel
+      wrap.addEventListener("click", (e) => {
+        if (Date.now() < ignoreClickUntil) return;
 
-          e.preventDefault();
-          e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
 
-          const isDark = document.documentElement.classList.toggle("dark-mode");
-          wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
-          wrap.classList.toggle("is-dark", isDark);
+        const isDark = document.documentElement.classList.toggle("dark-mode");
+        wrap.setAttribute("aria-pressed", isDark ? "true" : "false");
+        wrap.classList.toggle("is-dark", isDark);
 
-          try {
-            localStorage.setItem("festiv-theme", isDark ? "dark" : "light");
-          } catch {}
+        try { localStorage.setItem("festiv-theme", isDark ? "dark" : "light"); } catch {}
 
-          window.__FESTIV_LAST_THEME = isDark ? "dark" : "light";
-          syncAutoIndicator();
+        window.__FESTIV_LAST_THEME = isDark ? "dark" : "light";
+        syncAutoIndicator();
 
-          // Meteoblue
-          syncMeteoblueTheme();
-          setTimeout(syncMeteoblueTheme, 300);
-          setTimeout(syncMeteoblueTheme, 1200);
+        // Disqus : refresh volontaire
+        refreshDisqusTheme();
+        setTimeout(refreshDisqusTheme, 350);
+        setTimeout(refreshDisqusTheme, 1200);
+      });
 
-          // Disqus : refresh volontaire
-          refreshDisqusTheme();
-          setTimeout(refreshDisqusTheme, 350);
-          setTimeout(refreshDisqusTheme, 1200);
-        });
+      // DOUBLE-CLIC = retour AUTO
+      wrap.addEventListener("dblclick", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        ignoreClickUntil = Date.now() + 350;
 
-        // DOUBLE-CLIC = retour AUTO
-        wrap.addEventListener("dblclick", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          ignoreClickUntil = Date.now() + 350;
+        try { localStorage.removeItem("festiv-theme"); } catch {}
 
-          try {
-            localStorage.removeItem("festiv-theme");
-          } catch {}
+        applySavedTheme();
+        syncAutoIndicator();
 
-          applySavedTheme();
-          syncAutoIndicator();
+        refreshDisqusTheme();
+        setTimeout(refreshDisqusTheme, 350);
+        setTimeout(refreshDisqusTheme, 1200);
+      });
 
-          syncMeteoblueTheme();
-          setTimeout(syncMeteoblueTheme, 300);
-          setTimeout(syncMeteoblueTheme, 1200);
-
-          refreshDisqusTheme();
-          setTimeout(refreshDisqusTheme, 350);
-          setTimeout(refreshDisqusTheme, 1200);
-        });
-
-        document.body.appendChild(wrap);
-      }
-
-      const isDarkNow = document.documentElement.classList.contains("dark-mode");
-      wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
-      wrap.classList.toggle("is-dark", isDarkNow);
-
-      syncAutoIndicator();
-    } catch (e) {
-      console.error("[festiv20] initThemeToggle error:", e);
+      document.body.appendChild(wrap);
     }
+
+    const isDarkNow = document.documentElement.classList.contains("dark-mode");
+    wrap.setAttribute("aria-pressed", isDarkNow ? "true" : "false");
+    wrap.classList.toggle("is-dark", isDarkNow);
+
+    syncAutoIndicator();
+  } catch (e) {
+    console.error("[festiv20] initThemeToggle error:", e);
   }
+}
 
-  // appliquer thème ASAP
-  applySavedTheme();
-  bindSystemThemeListener();
+// appliquer thème ASAP
+applySavedTheme();
+bindSystemThemeListener();
 
-  // =========================================
-  // 1) Logo cliquable
-  // =========================================
+// =========================================
+// 1) Logo cliquable
+// =========================================
   function makeLogoClickable() {
     try {
       const logoDiv = document.querySelector(".styles_logo__JgM3o");
@@ -799,7 +785,7 @@
           if (!svg) return;
 
           Array.from(label.childNodes).forEach((n) => {
-            if (n.nodeType === Node.TEXT_NODE) n.remove();
+            if (n.nodeType === 3) n.remove(); // 3 = TEXT_NODE
           });
 
           label.append(document.createTextNode(" " + FR.toggleLabel));
@@ -1129,7 +1115,7 @@
       const FROM = "Acknowledge I am 18 or older";
       const TO = "Je confirme avoir 18 ans ou plus";
 
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+      const walker = document.createTreeWalker(document.body, 4, null);
       while (walker.nextNode()) {
         const n = walker.currentNode;
         if (n && n.nodeValue && n.nodeValue.includes(FROM)) {
@@ -1203,7 +1189,7 @@
   // =========================================
   function findDisqusMarker() {
     return (
-      [...document.querySelectorAll("h1,h2,h3")].find((h) => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null
+      [...document.querySelectorAll("h1,h2,h3,h4")].find((h) => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null
     );
   }
 
@@ -1458,29 +1444,24 @@ function setupWeatherWidget() {
     const host = candidates.find((el) => (el.textContent || "").includes(SHORTCODE));
     if (!host) return;
 
-    // Éviter double injection
-    if (host.querySelector(".weatherwidget-io")) {
-      // retirer le shortcode si encore présent (dans les text nodes)
-      const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, null);
-      let n;
-      while ((n = walker.nextNode())) {
-        if (n.nodeValue && n.nodeValue.includes(SHORTCODE)) {
+    const stripShortcode = () => {
+      const walker = document.createTreeWalker(host, 4, null); // 4 = SHOW_TEXT
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (n?.nodeValue && n.nodeValue.includes(SHORTCODE)) {
           n.nodeValue = n.nodeValue.replaceAll(SHORTCODE, "").replace(/\s{2,}/g, " ");
         }
       }
+    };
+
+    // Éviter double injection
+    if (host.querySelector(".weatherwidget-io")) {
+      stripShortcode();
       return;
     }
 
-    // Retirer le shortcode proprement (text nodes)
-    {
-      const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, null);
-      let n;
-      while ((n = walker.nextNode())) {
-        if (n.nodeValue && n.nodeValue.includes(SHORTCODE)) {
-          n.nodeValue = n.nodeValue.replaceAll(SHORTCODE, "").replace(/\s{2,}/g, " ");
-        }
-      }
-    }
+    // Retirer le shortcode avant injection
+    stripShortcode();
 
     const a = document.createElement("a");
     a.className = "weatherwidget-io";
@@ -1502,11 +1483,18 @@ function setupWeatherWidget() {
       const s = document.createElement("script");
       s.id = SCRIPT_ID;
       s.src = "https://weatherwidget.io/js/widget.min.js";
+      s.async = true;
       document.head.appendChild(s);
     }
 
-    // Refresh si déjà présent
-    if (window.__weatherwidget_init) window.__weatherwidget_init();
+    // Refresh (si script déjà présent)
+    try { window.__weatherwidget_init?.(); } catch {}
+
+    // ...et retente après (si script vient juste d'arriver)
+    setTimeout(() => {
+      try { window.__weatherwidget_init?.(); } catch {}
+    }, 50);
+
   } catch (e) {
     if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
   }
@@ -1528,7 +1516,7 @@ function setupGlobalStickers() {
       if (a.classList.contains("festiv-sticker")) return;
 
       const raw = (a.textContent || "").trim();
-if (!raw.startsWith(TRIGGER)) return;
+      if (!raw.startsWith(TRIGGER)) return;
 
 
       // 1) Marqueur style
@@ -1536,9 +1524,9 @@ if (!raw.startsWith(TRIGGER)) return;
 
       // 2) Retire le TRIGGER au début dans le 1er text node trouvé
       // (en gardant le HTML/gras/etc.)
-      const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
-      let node;
-      while ((node = walker.nextNode())) {
+      const walker = document.createTreeWalker(a, 4, null);
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
         let t = node.nodeValue;
         if (!t) continue;
         // on cherche la première occurrence utile
@@ -1592,7 +1580,6 @@ function festivWriteCachedSection(section) {
 // --- 1) detecte un marqueur [nav:...] sur la page + le supprime ---
 function festivDetectAndCleanupNavMarker() {
   try {
-    // On cherche dans les zones de texte Notion/Simple
     const candidates = Array.from(
       document.querySelectorAll(
         ".notion-text, .notion-paragraph, .notion-callout-text, [data-content-editable-leaf]"
@@ -1607,14 +1594,14 @@ function festivDetectAndCleanupNavMarker() {
       const section = m[1].toLowerCase(); // "articles" | "evenements"
       festivWriteCachedSection(section);
 
-      // nettoyage dans le DOM (text nodes)
-      const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-      let n;
-      while ((n = walker.nextNode())) {
-        if (!n.nodeValue) continue;
-        if (!re.test(n.nodeValue)) continue;
-        n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
+      const reTest = /\[nav:(articles|evenements)\]/i;
+      const reReplace = /\s*\[nav:(articles|evenements)\]\s*/gi;
+      const walker = document.createTreeWalker(el, 4, null); // 4 = SHOW_TEXT
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (!n?.nodeValue) continue;
+        if (!reTest.test(n.nodeValue)) continue;
+        n.nodeValue = n.nodeValue.replace(reReplace, " ").replace(/\s{2,}/g, " ");
       }
 
       return section;
@@ -1626,13 +1613,14 @@ function festivDetectAndCleanupNavMarker() {
 // --- 2) nettoyage global de sécurité (si Simple.ink réinjecte le texte plus tard) ---
 function festivCleanupNavMarkersEverywhere() {
   try {
-    const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-    let n;
-    while ((n = walker.nextNode())) {
-      if (!n.nodeValue) continue;
-      if (!re.test(n.nodeValue)) continue;
-      n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
+    const reTest = /\[nav:(articles|evenements)\]/i;
+    const reReplace = /\s*\[nav:(articles|evenements)\]\s*/gi;
+    const walker = document.createTreeWalker(document.body, 4, null); // 4 = SHOW_TEXT
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      if (!n?.nodeValue) continue;
+      if (!reTest.test(n.nodeValue)) continue;
+      n.nodeValue = n.nodeValue.replace(reReplace, " ").replace(/\s{2,}/g, " ");
     }
   } catch {}
 }
@@ -1736,7 +1724,6 @@ function festivRunNav() {
     localizeSearchUI();
     setupBackToTop();
 
-    bindSystemThemeListener();
     bindCalendarI18nHooks();
     translateNotionCalendar();
     setupGlobalStickers();
