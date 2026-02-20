@@ -1440,51 +1440,7 @@
     }
   }
 
-  // =========================================
-  // Meteoblue theme sync
-  // =========================================
-  function syncMeteoblueTheme(tries = 20) {
-    try {
-      const isDark = document.documentElement.classList.contains("dark-mode");
 
-      const iframe = document.querySelector(
-        'iframe[src*="meteoblue.com"][src*="/weather/widget/"], iframe[data-src*="meteoblue.com"][data-src*="/weather/widget/"]'
-      );
-
-      if (!iframe) {
-        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-        return;
-      }
-
-      const srcAttr = iframe.getAttribute("src");
-      const dataSrcAttr = iframe.getAttribute("data-src");
-      const current = srcAttr || dataSrcAttr || "";
-      if (!current) {
-        if (tries > 0) setTimeout(() => syncMeteoblueTheme(tries - 1), 200);
-        return;
-      }
-
-      let url;
-      try {
-        url = new URL(current, window.location.href);
-      } catch {
-        return;
-      }
-
-      url.searchParams.set("layout", isDark ? "dark" : "bright");
-      const next = url.toString();
-
-      if (srcAttr !== null && srcAttr !== next) iframe.setAttribute("src", next);
-      if (dataSrcAttr !== null && dataSrcAttr !== next) iframe.setAttribute("data-src", next);
-
-      if (tries === 20) {
-        setTimeout(() => syncMeteoblueTheme(3), 900);
-        setTimeout(() => syncMeteoblueTheme(3), 2500);
-      }
-    } catch (e) {
-      console.error("[festiv20] syncMeteoblueTheme error:", e);
-    }
-  }
 // =========================================
 // WeatherWidget.io via shortcode Notion
 // Shortcode à mettre dans Notion : {{meteo_ounans}}
@@ -1493,25 +1449,38 @@ function setupWeatherWidget() {
   try {
     const SHORTCODE = "{{meteo_ounans}}";
 
-    // 1) Trouver un bloc texte qui contient le shortcode
-    // (Simple.ink/Notion rendent le texte dans différents wrappers selon les pages)
-    const candidates = Array.from(document.querySelectorAll(
-      ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
-    ));
+    const candidates = Array.from(
+      document.querySelectorAll(
+        ".notion-text, .notion-paragraph, .notion-callout, .notion-quote, [data-content-editable-leaf]"
+      )
+    );
 
-    const host = candidates.find(el => (el.textContent || "").includes(SHORTCODE));
+    const host = candidates.find((el) => (el.textContent || "").includes(SHORTCODE));
     if (!host) return;
 
-    // 2) Éviter de ré-injecter si déjà fait
-    if (host.querySelector('.weatherwidget-io')) {
-      // on enlève juste le shortcode si encore visible
-      host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
+    // Éviter double injection
+    if (host.querySelector(".weatherwidget-io")) {
+      // retirer le shortcode si encore présent (dans les text nodes)
+      const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, null);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (n.nodeValue && n.nodeValue.includes(SHORTCODE)) {
+          n.nodeValue = n.nodeValue.replaceAll(SHORTCODE, "").replace(/\s{2,}/g, " ");
+        }
+      }
       return;
     }
 
-    // 3) Injecter l'ancre WeatherWidget à la place du shortcode
-    // On remplace le texte uniquement (pratique si ton bloc contient autre chose)
-    host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
+    // Retirer le shortcode proprement (text nodes)
+    {
+      const walker = document.createTreeWalker(host, NodeFilter.SHOW_TEXT, null);
+      let n;
+      while ((n = walker.nextNode())) {
+        if (n.nodeValue && n.nodeValue.includes(SHORTCODE)) {
+          n.nodeValue = n.nodeValue.replaceAll(SHORTCODE, "").replace(/\s{2,}/g, " ");
+        }
+      }
+    }
 
     const a = document.createElement("a");
     a.className = "weatherwidget-io";
@@ -1527,7 +1496,7 @@ function setupWeatherWidget() {
 
     host.appendChild(a);
 
-    // 4) Charger le script une seule fois
+    // Charger le script une seule fois
     const SCRIPT_ID = "weatherwidget-io-js";
     if (!document.getElementById(SCRIPT_ID)) {
       const s = document.createElement("script");
@@ -1536,15 +1505,11 @@ function setupWeatherWidget() {
       document.head.appendChild(s);
     }
 
-    // 5) Demander un refresh si la lib est déjà là
-    // (weatherwidget.io expose souvent __weatherwidget_init)
-    if (window.__weatherwidget_init) {
-      window.__weatherwidget_init();
-    }
+    // Refresh si déjà présent
+    if (window.__weatherwidget_init) window.__weatherwidget_init();
   } catch (e) {
-  if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
-}
-
+    if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
+  }
 }
 // =========================================
 // GLOBAL STICKER (🧷)
@@ -1754,9 +1719,6 @@ function festivRunNav() {
 
   try {
     applySavedTheme();
-
-    syncMeteoblueTheme();
-    setTimeout(syncMeteoblueTheme, 300);
 
     makeLogoClickable();
     formatDates();
