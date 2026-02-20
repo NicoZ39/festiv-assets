@@ -1545,7 +1545,6 @@ function setupWeatherWidget() {
   if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
 }
 
-}
 // =========================================
 // FESTIV — Global Stickers (🧷)
 // - Opt-in via emoji 🧷 au début du titre H4
@@ -1689,6 +1688,126 @@ function setupFestivGlobalStickers() {
    
 
 // --- 3) applique le bouton actif dans le header ---
+   // =========================================
+// FESTIV — NAV helpers (markers + cache)
+// À coller AVANT festivApplyActiveHeaderLink()
+// Marqueurs à mettre dans Notion (dans un bloc texte) :
+//   {{nav:articles}}  ou  {{nav:evenements}}
+// (tu peux aussi écrire [nav:articles] / [nav:evenements], c'est supporté)
+// =========================================
+
+const FESTIV_NAV = {
+  // marqueurs acceptés (on supporte plusieurs formats)
+  re: /\{\{\s*nav\s*:\s*(articles|evenements)\s*\}\}|\[\s*nav\s*:\s*(articles|evenements)\s*\]/gi,
+
+  // où chercher les marqueurs
+  selector: ".notion-text, .notion-paragraph, .notion-callout-text .notion-text, .notion-quote, [data-content-editable-leaf]",
+
+  // cache par page (évite le bug “reste bloqué”)
+  cacheKey() {
+    const p = (window.location.pathname || "/").toLowerCase();
+    return "festiv-nav-section:" + p;
+  },
+
+  readCache() {
+    try {
+      return sessionStorage.getItem(this.cacheKey()) || null;
+    } catch {
+      try { return localStorage.getItem(this.cacheKey()) || null; } catch { return null; }
+    }
+  },
+
+  writeCache(section) {
+    try {
+      sessionStorage.setItem(this.cacheKey(), section);
+      return;
+    } catch {}
+    try { localStorage.setItem(this.cacheKey(), section); } catch {}
+  },
+
+  // supprime les marqueurs d’un élément, renvoie la section trouvée (ou null)
+  detectAndCleanupInElement(el) {
+    const raw = (el.textContent || "");
+    if (!raw) return null;
+
+    let found = null;
+    // on parse en restant tolérant (articles|evenements)
+    raw.replace(this.re, (_m, a1, a2) => {
+      found = (a1 || a2 || "").toLowerCase();
+      return _m;
+    });
+
+    if (!found) return null;
+
+    // Nettoyage (safe) : on retire le texte marqueur du contenu visible.
+    // On privilégie textContent pour ne pas casser l’HTML/les spans Notion.
+    try {
+      const cleaned = raw.replace(this.re, "").replace(/\s{2,}/g, " ").trim();
+      // Si le bloc ne contenait QUE le marqueur, on vide
+      el.textContent = cleaned;
+    } catch {}
+
+    return found;
+  },
+};
+
+// --- (A) Détecte marqueur + le supprime (renvoie "articles" | "evenements" | null) ---
+function festivDetectAndCleanupNavMarker() {
+  try {
+    const nodes = Array.from(document.querySelectorAll(FESTIV_NAV.selector));
+    for (const el of nodes) {
+      // évite de refaire le taf inutilement
+      if (el.dataset && el.dataset.festivNavMarkerDone === "1") continue;
+
+      const section = FESTIV_NAV.detectAndCleanupInElement(el);
+      el.dataset && (el.dataset.festivNavMarkerDone = "1");
+
+      if (section) {
+        FESTIV_NAV.writeCache(section);
+        return section;
+      }
+    }
+  } catch (e) {
+    console.warn("[festiv20] festivDetectAndCleanupNavMarker error:", e);
+  }
+  return null;
+}
+
+// --- (B) Cache par page ---
+function festivWriteCachedSection(section) {
+  try {
+    if (section === "articles" || section === "evenements") FESTIV_NAV.writeCache(section);
+  } catch {}
+}
+
+function festivReadCachedSection() {
+  try {
+    const v = FESTIV_NAV.readCache();
+    return v === "articles" || v === "evenements" ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+// --- (C) Nettoyage global : enlève les marqueurs partout (si Simple réinjecte) ---
+function festivCleanupNavMarkersEverywhere() {
+  try {
+    const nodes = Array.from(document.querySelectorAll(FESTIV_NAV.selector));
+    nodes.forEach((el) => {
+      const t = (el.textContent || "");
+      if (!t) return;
+      if (!FESTIV_NAV.re.test(t)) return;
+
+      // reset le regex global avant réutilisation
+      FESTIV_NAV.re.lastIndex = 0;
+
+      const cleaned = t.replace(FESTIV_NAV.re, "").replace(/\s{2,}/g, " ").trim();
+      if (cleaned !== t) el.textContent = cleaned;
+    });
+  } catch (e) {
+    console.warn("[festiv20] festivCleanupNavMarkersEverywhere error:", e);
+  }
+}
 function festivApplyActiveHeaderLink() {
   try {
     const links = Array.from(document.querySelectorAll(".custom-header__links__link"));
