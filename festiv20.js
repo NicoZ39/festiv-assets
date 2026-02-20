@@ -1949,6 +1949,20 @@ function festivRunNav() {
     return false;
   }
 
+
+
+   // =========================================
+// DEBUG — expose quelques helpers dans la console
+// =========================================
+if (DEBUG) {
+  window.setupWeatherWidget = setupWeatherWidget;
+  window.festivDetectAndCleanupNavMarker = festivDetectAndCleanupNavMarker;
+  window.festivRunNav = festivRunNav;
+  window.festivApplyActiveHeaderLink = festivApplyActiveHeaderLink;
+}
+
+
+   
   // =========================================
   // Boot
   // =========================================
