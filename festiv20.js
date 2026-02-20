@@ -1521,7 +1521,7 @@ function setupGlobalStickers() {
     const TRIGGER = "🧷";
 
     const titles = document.querySelectorAll(
-      'h4.notion-h.notion-h3 a.notion-h-title'
+      'h1.notion-h a.notion-h-title, h2.notion-h a.notion-h-title, h3.notion-h a.notion-h-title, h4.notion-h a.notion-h-title'
     );
 
     titles.forEach((a) => {
