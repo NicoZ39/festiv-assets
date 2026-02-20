@@ -1063,32 +1063,6 @@ iframe[data-src*="meteoblue.com"] {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
-/* ==================================================
-   HOME • Les prochains événements (collection ciblée)
-   1 carte = 100% / 2 = 2 colonnes / 3 = 3 colonnes, etc.
-================================================== */
-
-/* 1) La grille de cartes : auto responsive */
-.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9
-.notion-gallery-grid{
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-  gap: 32px !important;
-  width: 100% !important;
-}
-
-/* 2) Chaque carte prend toute la largeur de sa cellule */
-.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9
-.notion-collection-card{
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* 3) Neutralise les widths inline éventuels */
-.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9
-.notion-collection-card[style]{
-  width: 100% !important;
-}
 
 
 
@@ -1506,111 +1480,134 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   box-shadow: 0 25px 60px rgba(0,0,0,.18);
 }
 /* =========================================================
-   EVENTS — 🔥 Prochains événements (scopé sur le bloc)
+   FEATURED EVENTS CARDS — skin commun (Home + Page Événements)
+   Objectif : même rendu sur les 2 collections, sans patchs
 ========================================================= */
-.notion-block-d478c59959434057984428b994645dfd{
+
+/* 1) Variables “look” (facile à ajuster) */
+:root{
+  --fe-maxw: 1180px;
+  --fe-gap: 22px;
+
+  --fe-radius: 24px;
+  --fe-border: rgba(0,0,0,.07);
+  --fe-shadow: 0 18px 55px rgba(0,0,0,.12);
+  --fe-shadow-hover: 0 28px 85px rgba(0,0,0,.18);
+  --fe-lift: -4px;
+
+  --fe-cover-h: 205px;     /* desktop */
+  --fe-cover-h-m: 190px;   /* mobile */
+
+  --fe-body-pad: 14px 14px 16px 14px;
+}
+
+/* 2) Cible les 2 collections */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd{
   margin-top: 12px !important;
 }
-/* Header plus net */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-header{
+
+/* Header plus net (optionnel, mais identique) */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-collection-header,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-collection-header{
   margin-bottom: 12px !important;
 }
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-header span.notion-collection-header{
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-collection-header span.notion-collection-header,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-collection-header span.notion-collection-header{
   font-weight: 900 !important;
   letter-spacing: .2px !important;
 }
-/* Grille : plus large + plus aérée */
-.notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
-  max-width: 1180px !important;
+
+/* 3) Grille : centrée, largeur max, respiration */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-gallery-grid,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
+  max-width: var(--fe-maxw) !important;
   margin: 0 auto !important;
-  gap: 22px !important;
+  gap: var(--fe-gap) !important;
+  width: 100% !important;
 }
-/* Cartes premium */
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
-  border-radius: 24px !important;
+
+/* 4) Cartes premium (même style partout) */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 a.notion-collection-card,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
+  border-radius: var(--fe-radius) !important;
   overflow: hidden !important;
-  border: 1px solid rgba(0,0,0,.07) !important;
-  box-shadow: 0 16px 45px rgba(0,0,0,.10) !important;
-  transition: transform .25s ease, box-shadow .25s ease !important;
+  border: 1px solid var(--fe-border) !important;
+  box-shadow: var(--fe-shadow) !important;
+  transform: translateZ(0);
 }
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover{
-  transform: translateY(-5px) !important;
-  box-shadow: 0 26px 70px rgba(0,0,0,.16) !important;
+
+/* Hover (desktop seulement) */
+@media (hover:hover) and (pointer:fine){
+  .notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 a.notion-collection-card,
+  .notion-collection.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
+    transition: transform .25s ease, box-shadow .25s ease !important;
+  }
+
+  .notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 a.notion-collection-card:hover,
+  .notion-collection.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover{
+    transform: translateY(var(--fe-lift)) !important;
+    box-shadow: var(--fe-shadow-hover) !important;
+  }
 }
-/* Cover plus haut (effet affiche) */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
-  height: 220px !important;              /* <- augmente/diminue ici */
+
+/* 5) Cover “affiche” (même hauteur, même crop) */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-collection-card-cover,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
+  height: var(--fe-cover-h) !important;
 }
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover img{
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-collection-card-cover img,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover img{
   height: 100% !important;
   width: 100% !important;
   object-fit: cover !important;
 }
-/* Corps : plus confortable */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-body{
-  padding: 14px 14px 16px 14px !important;
+
+/* 6) Corps / typo */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-collection-card-body,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-body{
+  padding: var(--fe-body-pad) !important;
 }
-/* Titre plus impactant */
-.notion-block-d478c59959434057984428b994645dfd .notion-property-title b{
+
+/* Titre */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-property-title b,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-property-title b{
   font-weight: 900 !important;
   font-size: 1.12rem !important;
   line-height: 1.15 !important;
 }
-/* Date : plus lisible */
-.notion-block-d478c59959434057984428b994645dfd .notion-property-date{
+
+/* Date */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-property-date,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-property-date{
   opacity: .88 !important;
 }
-/* “Voir plus…” : on le transforme en mini bouton */
-.notion-block-d478c59959434057984428b994645dfd .notion-property-text .notion-purple b{
+
+/* “Voir plus…” mini-CTA (si tu gardes ce champ) */
+.notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-property-text .notion-purple b,
+.notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-property-text .notion-purple b{
   display: inline-block !important;
-  padding: 8px 12px !important;
+  padding: 9px 14px !important;
   border-radius: 999px !important;
-  border: 1px solid rgba(0,0,0,.10) !important;
-  background: rgba(0,0,0,.03) !important;
+  border: 1px solid rgba(0,0,0,.14) !important;
+  background: rgba(0,0,0,.04) !important;
 }
-/* Mobile : cover un peu moins haut + cartes full width */
+
+/* 7) Mobile */
 @media (max-width: 720px){
-  .notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
-    height: 190px !important;
+  .notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-collection-card-cover,
+  .notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
+    height: var(--fe-cover-h-m) !important;
   }
-  .notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
+
+  .notion-collection.notion-block-2fb6ae9a98f280b6b093e812b2e982e9 .notion-gallery-grid,
+  .notion-collection.notion-block-d478c59959434057984428b994645dfd .notion-gallery-grid{
     gap: 14px !important;
     padding: 0 10px !important;
   }
 }
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
-  cursor: pointer !important;
-}
-/* =========================================================
-   PATCH — Prochains événements : header + finesse premium
-========================================================= */
-/* Si Simple injecte un <hr> ou séparateur juste après le header */
-.notion-block-d478c59959434057984428b994645dfd hr,
-.notion-block-d478c59959434057984428b994645dfd .notion-divider{
-  display: none !important;
-}
-/* 2) Cover un peu moins haute (plus “affiche” + équilibre avec le texte) */
-.notion-block-d478c59959434057984428b994645dfd .notion-collection-card-cover{
-  height: 205px !important; /* (au lieu de 220) ajuste 190–230 selon ton goût */
-}
-/* 3) Ombres plus “soft premium” */
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card{
-  box-shadow: 0 18px 55px rgba(0,0,0,.12) !important;
-}
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover{
-  transform: translateY(-4px) !important;
-  box-shadow: 0 28px 85px rgba(0,0,0,.18) !important;
-}
-/* 4) Bouton “Voir plus…” plus net / plus CTA */
-.notion-block-d478c59959434057984428b994645dfd .notion-property-text .notion-purple b{
-  background: rgba(0,0,0,.04) !important;
-  border: 1px solid rgba(0,0,0,.14) !important;
-  padding: 9px 14px !important;
-}
-.notion-block-d478c59959434057984428b994645dfd a.notion-collection-card:hover
-.notion-property-text .notion-purple b{
-  background: rgba(0,0,0,.06) !important;
-}
+
+
 /* =========================================================
    EVENTS — Sous-titre : "Découvrez les prochains rendez-vous…"
    Bloc : 30b6ae9a98f2800da27cd6308e1f8fb0
