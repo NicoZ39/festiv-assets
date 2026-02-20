@@ -1753,22 +1753,34 @@ function festivRunNav() {
   // (ignore Disqus)
   // =========================================
   function isDisqusRelatedNode(node) {
-    if (!node || node.nodeType !== 1) return false;
-    const el = node;
+  if (!node || node.nodeType !== 1) return false;
+  const el = node;
 
-    if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
+  // Disqus
+  if (el.closest?.("#disqus_thread, .festiv-disqus-wrap")) return true;
+  if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
 
-    if (el.matches?.('iframe[src*="disqus"], iframe[src*="disqus.com"]')) return true;
-    if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]'))
-      return true;
+  // Recaptcha (Disqus)
+  if (el.matches?.('iframe[src*="recaptcha"], iframe[src*="google.com/recaptcha"], iframe[src*="recaptcha.net"]')) return true;
 
-    if (el.id && el.id.startsWith("dsq-")) return true;
-    if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
+  // ✅ Fillout (évite de relancer runAll pendant l'init)
+  if (el.closest?.(".festiv-fillout")) return true;
+  if (el.matches?.('iframe[src*="fillout"], iframe[src*="server.fillout.com"]')) return true;
+  if (el.querySelector?.('iframe[src*="fillout"], iframe[src*="server.fillout.com"]')) return true;
 
-    if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
+  // ✅ WeatherWidget.io (pareil)
+  if (el.closest?.(".weatherwidget-io")) return true;
+  if (el.matches?.('iframe[src*="weatherwidget"], iframe[src*="weatherwidget.io"]')) return true;
+  if (el.querySelector?.('iframe[src*="weatherwidget"], iframe[src*="weatherwidget.io"]')) return true;
 
-    return false;
-  }
+  // heuristiques
+  if (el.id && el.id.startsWith("dsq-")) return true;
+  if ((el.className || "").toString().toLowerCase().includes("disqus")) return true;
+
+  if (el.querySelector?.('iframe[src*="disqus"], iframe[src*="recaptcha"]')) return true;
+
+  return false;
+}
 
   // =========================================
   // Boot
@@ -1802,7 +1814,7 @@ function festivRunNav() {
       }
 
       clearTimeout(t);
-      t = setTimeout(runAll, 80);
+      t = setTimeout(runAll, 180);
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
