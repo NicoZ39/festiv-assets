@@ -945,7 +945,7 @@
   }
 
  // =========================================
-  // 10) Shortcode [contact-form] => Fillout natif (dynamic resize)
+  // 11) Shortcode [contact-form] => Fillout natif (dynamic resize)
   // =========================================
   function shortcodeContactForm() {
     try {
@@ -1008,7 +1008,7 @@
   }
 
   // =========================================
-  // 11) Shortcode [inscription-form] => Fillout natif (dynamic resize)
+  // 12) Shortcode [inscription-form] => Fillout natif (dynamic resize)
   // =========================================
   function shortcodeInscriptionForm() {
     try {
