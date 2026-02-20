@@ -1107,128 +1107,89 @@
     }
   }
 
-  // -----------------------------------------
-  // Stickers 🧷 (H4)
-  // -----------------------------------------
-  function setupFestivGlobalStickers() {
-    try {
-      const TRIGGER = "🧷";
-      const SELECTOR = "h4.notion-h.notion-h3 a.notion-h-title";
-      const CLASS_STICKER = "festiv-sticker";
-      const CLASS_INVIEW = "festiv-sticker--inview";
+// =========================================
+// GLOBAL STICKER — animation au scroll + désactive clic
+// - Observe les .festiv-sticker et ajoute .festiv-sticker--inview
+// - Retire le href + empêche tout clic
+// =========================================
+function setupGlobalStickerScroll() {
+  try {
+    const stickers = document.querySelectorAll(
+      "h4.notion-h.notion-h3 a.notion-h-title.festiv-sticker"
+    );
+    if (!stickers.length) return;
 
-      const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // 1) Désactive le clic + comportement de lien
+    stickers.forEach((a) => {
+      if (a.dataset.festivNoClick === "1") return;
+      a.dataset.festivNoClick = "1";
 
-      const titles = Array.from(document.querySelectorAll(SELECTOR));
-      if (!titles.length) return;
+      // retire le lien (sinon le curseur / focus "lien" peut rester)
+      a.removeAttribute("href");
+      a.removeAttribute("title");
+      a.setAttribute("aria-disabled", "true");
+      a.setAttribute("role", "text");
 
-      const getRawTriggerText = (a) => {
-        const t1 = (a.textContent || "").replace(/\s+/g, " ").trim();
-        const t2 = (a.getAttribute("title") || "").replace(/\s+/g, " ").trim();
-        return t1 || t2;
-      };
-
-      const hasTrigger = (a) => getRawTriggerText(a).startsWith(TRIGGER);
-
-      const stripTriggerFromFirstTextNode = (el) => {
-        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-        let node;
-        while ((node = walker.nextNode())) {
-          const t = node.nodeValue || "";
-          if (!t) continue;
-
-          const cleaned = t.replace(/\s+/g, " ");
-          const trimmedStart = cleaned.trimStart();
-          if (!trimmedStart.startsWith(TRIGGER)) continue;
-
-          const idx = t.indexOf(TRIGGER);
-          if (idx >= 0) {
-            const before = t.slice(0, idx);
-            let after = t.slice(idx + TRIGGER.length);
-            after = after.replace(/^\s+/, "");
-            node.nodeValue = before + after;
-          }
-          break;
-        }
-      };
-
-      const stripTriggerFromTitleAttr = (a) => {
-        const t = a.getAttribute("title");
-        if (!t) return;
-        const cleaned = t.replace(/\s+/g, " ").trimStart();
-        if (!cleaned.startsWith(TRIGGER)) return;
-        a.setAttribute("title", cleaned.replace(TRIGGER, "").trimStart());
-      };
-
-      const disableLink = (a) => {
-        if (a.dataset.festivNoClick === "1") return;
-        a.dataset.festivNoClick = "1";
-
-        a.removeAttribute("href");
-        a.setAttribute("aria-disabled", "true");
-        a.setAttribute("role", "text");
-        a.setAttribute("tabindex", "-1");
-
-        a.addEventListener(
-          "click",
-          (e) => {
+      // sécurité : empêche tout click/keyboard activation
+      a.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        },
+        true
+      );
+      a.addEventListener(
+        "keydown",
+        (e) => {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             e.stopPropagation();
-            e.stopImmediatePropagation();
-          },
-          true
-        );
+          }
+        },
+        true
+      );
+    });
 
-        a.addEventListener(
-          "keydown",
-          (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-            }
-          },
-          true
-        );
-      };
+    // 2) Animation au scroll (IntersectionObserver)
+    const reduceMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      const stickers = [];
-      titles.forEach((a) => {
-        if (!hasTrigger(a)) return;
+    if (reduceMotion) {
+      // en reduce motion : pas d’anim, mais on peut quand même "révéler" proprement
+      stickers.forEach((a) => a.classList.add("festiv-sticker--inview"));
+      return;
+    }
 
-        if (!a.classList.contains(CLASS_STICKER)) {
-          a.classList.add(CLASS_STICKER);
-          stripTriggerFromFirstTextNode(a);
-          stripTriggerFromTitleAttr(a);
-        }
-
-        disableLink(a);
-        stickers.push(a);
-      });
-
-      if (!stickers.length) return;
-
-      if (reduceMotion) {
-        stickers.forEach((a) => a.classList.add(CLASS_INVIEW));
-        return;
-      }
-
-      const io = new IntersectionObserver(
+    const io =
+      window.__FESTIV_STICKER_IO ||
+      new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             const el = entry.target;
-            if (entry.isIntersecting) el.classList.add(CLASS_INVIEW);
-            else el.classList.remove(CLASS_INVIEW);
+            if (entry.isIntersecting) {
+              el.classList.add("festiv-sticker--inview");
+              // animation une seule fois
+              io.unobserve(el);
+            }
           });
         },
-        { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
+        { root: null, threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
       );
 
-      stickers.forEach((a) => io.observe(a));
-    } catch (e) {
-      if (DEBUG) console.warn("[festiv20] Stickers error:", e);
-    }
+    window.__FESTIV_STICKER_IO = io;
+
+    stickers.forEach((a) => {
+      // évite de ré-observer si déjà joué
+      if (a.classList.contains("festiv-sticker--inview")) return;
+      io.observe(a);
+    });
+  } catch (e) {
+    // silencieux
   }
+}
+
 
   // -----------------------------------------
   // NAV helpers (markers + cache) — GLOBAL
