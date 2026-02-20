@@ -2034,3 +2034,28 @@ html.dark-mode .notion-block-30c6ae9a98f28054884cd267b66e6dca.notion-callout{
   text-decoration: none !important;
   box-shadow: none !important;
 }
+/* =========================================================
+   GLOBAL — Cartes (gallery) : + d’espace interne
+========================================================= */
+
+/* Plus d’air dans le corps de la carte (texte/propriétés) */
+.notion-gallery .notion-collection-card .notion-collection-card-body{
+  padding: 18px 18px 20px 18px !important; /* ↑ ajuste ici */
+}
+
+/* Un peu d’espace entre les lignes/propriétés */
+.notion-gallery .notion-collection-card .notion-collection-card-property{
+  margin-top: 10px !important;
+}
+
+/* (Option) Le titre respire un peu plus */
+.notion-gallery .notion-collection-card .notion-page-title{
+  margin-bottom: 8px !important;
+}
+
+/* (Option) Mobile : légèrement moins pour garder du compact */
+@media (max-width: 720px){
+  .notion-gallery .notion-collection-card .notion-collection-card-body{
+    padding: 16px 14px 18px 14px !important;
+  }
+}
