@@ -1502,6 +1502,7 @@ function setupWeatherWidget() {
     const host = candidates.find((el) => (el.textContent || "").includes(SHORTCODE));
     if (!host) return;
 
+    // Éviter ré-injection
     if (host.querySelector(".weatherwidget-io")) {
       host.innerHTML = host.innerHTML.replace(SHORTCODE, "");
       return;
@@ -1535,7 +1536,7 @@ function setupWeatherWidget() {
   } catch (e) {
     if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
   }
-} // ✅ IMPORTANT : fermeture de la fonction
+} // ✅ IMPORTANT : on ferme bien la fonction
 
 // =========================================
 // FESTIV — Global Stickers (🧷)
