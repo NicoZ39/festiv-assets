@@ -1108,87 +1108,131 @@
   }
 
 // =========================================
-// GLOBAL STICKER — animation au scroll + désactive clic
-// - Observe les .festiv-sticker et ajoute .festiv-sticker--inview
-// - Retire le href + empêche tout clic
+// FESTIV — Global Stickers (🧷)
+// - Opt-in via emoji 🧷 au début du titre H4
+// - Ajoute .festiv-sticker
+// - Retire l’emoji du texte (sans casser le HTML)
+// - Désactive le clic (href supprimé + blocage click/keyboard)
+// - Anime au scroll via IntersectionObserver (1 fois)
 // =========================================
-function setupGlobalStickerScroll() {
+(function setupFestivGlobalStickers() {
   try {
-    const stickers = document.querySelectorAll(
-      "h4.notion-h.notion-h3 a.notion-h-title.festiv-sticker"
-    );
-    if (!stickers.length) return;
+    const TRIGGER = "🧷";
+    const SELECTOR = "h4.notion-h.notion-h3 a.notion-h-title";
+    const CLASS_STICKER = "festiv-sticker";
+    const CLASS_INVIEW = "festiv-sticker--inview";
 
-    // 1) Désactive le clic + comportement de lien
-    stickers.forEach((a) => {
+    const reduceMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const titles = Array.from(document.querySelectorAll(SELECTOR));
+    if (!titles.length) return;
+
+    // --- helpers ---
+    const startsWithTrigger = (el) => {
+      const raw = (el.textContent || "").replace(/\s+/g, " ").trim();
+      return raw.startsWith(TRIGGER);
+    };
+
+    const stripTriggerFromFirstTextNode = (el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      let node;
+      while ((node = walker.nextNode())) {
+        const t = node.nodeValue || "";
+        if (!t) continue;
+
+        // check "visible" start
+        const cleaned = t.replace(/\s+/g, " ");
+        const trimmedStart = cleaned.trimStart();
+        if (!trimmedStart.startsWith(TRIGGER)) continue;
+
+        const idx = t.indexOf(TRIGGER);
+        if (idx >= 0) {
+          const before = t.slice(0, idx);
+          let after = t.slice(idx + TRIGGER.length);
+          after = after.replace(/^\s+/, ""); // retire l’espace après 🧷
+          node.nodeValue = before + after;
+        }
+        break;
+      }
+    };
+
+    const disableLink = (a) => {
       if (a.dataset.festivNoClick === "1") return;
       a.dataset.festivNoClick = "1";
 
-      // retire le lien (sinon le curseur / focus "lien" peut rester)
       a.removeAttribute("href");
       a.removeAttribute("title");
       a.setAttribute("aria-disabled", "true");
       a.setAttribute("role", "text");
+      a.setAttribute("tabindex", "-1");
 
-      // sécurité : empêche tout click/keyboard activation
+      // capture = true pour bloquer tôt
       a.addEventListener(
         "click",
         (e) => {
           e.preventDefault();
           e.stopPropagation();
+          e.stopImmediatePropagation();
         },
         true
       );
+
       a.addEventListener(
         "keydown",
         (e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             e.stopPropagation();
+            e.stopImmediatePropagation();
           }
         },
         true
       );
+    };
+
+    // --- 1) Convertit en stickers (opt-in) ---
+    const stickers = [];
+    titles.forEach((a) => {
+      if (!startsWithTrigger(a)) return;
+
+      if (!a.classList.contains(CLASS_STICKER)) {
+        a.classList.add(CLASS_STICKER);
+        stripTriggerFromFirstTextNode(a);
+      }
+
+      disableLink(a);
+      stickers.push(a);
     });
 
-    // 2) Animation au scroll (IntersectionObserver)
-    const reduceMotion =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!stickers.length) return;
 
+    // --- 2) Animation au scroll ---
     if (reduceMotion) {
-      // en reduce motion : pas d’anim, mais on peut quand même "révéler" proprement
-      stickers.forEach((a) => a.classList.add("festiv-sticker--inview"));
+      stickers.forEach((a) => a.classList.add(CLASS_INVIEW));
       return;
     }
 
-    const io =
-      window.__FESTIV_STICKER_IO ||
-      new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            const el = entry.target;
-            if (entry.isIntersecting) {
-              el.classList.add("festiv-sticker--inview");
-              // animation une seule fois
-              io.unobserve(el);
-            }
-          });
-        },
-        { root: null, threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
-      );
-
-    window.__FESTIV_STICKER_IO = io;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const el = entry.target;
+          el.classList.add(CLASS_INVIEW);
+          io.unobserve(el); // une seule fois
+        }
+      },
+      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
+    );
 
     stickers.forEach((a) => {
-      // évite de ré-observer si déjà joué
-      if (a.classList.contains("festiv-sticker--inview")) return;
-      io.observe(a);
+      if (!a.classList.contains(CLASS_INVIEW)) io.observe(a);
     });
   } catch (e) {
     // silencieux
   }
-}
+})();
 
 
   // -----------------------------------------
