@@ -320,6 +320,7 @@ body .notion-page-cover-wrapper img{
    - lift + shadow + zoom cover
    - badges catégories “magazine”
    - fix ombres coupées (overflow)
+   - CTA "Lire la suite..." aligné en bas
 ========================================================= */
 
 :root{
@@ -335,7 +336,7 @@ body .notion-page-cover-wrapper img{
 .notion-gallery,
 .notion-gallery-view,
 .notion-gallery-grid,
-.notion-gallery-grid > * ,
+.notion-gallery-grid > *,
 .notion-collection,
 .notion-collection-body,
 .notion-collection-content,
@@ -347,15 +348,22 @@ body .notion-page-cover-wrapper img{
 .notion-gallery .notion-gallery-grid{
   padding: 18px 12px 42px !important; /* bottom ↑ pour éviter coupe nette */
   gap: 24px !important;
+  align-items: stretch !important;
 }
 
-/* Carte */
+/* Carte (structure propre = cover + body qui s’étire) */
 .notion-gallery a.notion-collection-card{
   border-radius: var(--card-radius) !important;
-  overflow: hidden !important; /* ok: on coupe l’image aux coins, pas l’ombre (gérée par parents) */
+  overflow: hidden !important;
   background: #fff !important;
   border: 1px solid rgba(0,0,0,.05) !important;
   box-shadow: var(--card-shadow) !important;
+
+  /* ✅ clé : layout colonne pour aligner le CTA en bas */
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+
   transform: translateZ(0);
 }
 
@@ -392,6 +400,13 @@ body .notion-page-cover-wrapper img{
   }
 }
 
+/* Body : colonne + occupe l’espace restant */
+.notion-gallery .notion-collection-card-body{
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+}
+
 /* Titres */
 .notion-gallery .notion-collection-card .notion-page-title{
   font-weight: 800 !important;
@@ -399,6 +414,45 @@ body .notion-page-cover-wrapper img{
   line-height: 1.3 !important;
 }
 
+/* CTA dans les cards : "Lire la suite..." toujours en bas, style bouton */
+.notion-gallery .notion-collection-card .notion-property-text{
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+}
+
+.notion-gallery .notion-collection-card .notion-property-text .notion-purple{
+  margin-top: auto !important;       /* ✅ pousse en bas */
+  align-self: flex-start !important; /* bouton à gauche */
+  display: inline-flex !important;
+}
+
+.notion-gallery .notion-collection-card .notion-property-text .notion-purple a{
+  display: inline-flex !important;
+  padding: 9px 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(0,0,0,.14) !important;
+  background: rgba(0,0,0,.04) !important;
+  text-decoration: none !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+@media (hover:hover) and (pointer:fine){
+  .notion-gallery a.notion-collection-card:hover
+  .notion-property-text .notion-purple a{
+    transform: translateY(-1px);
+    background: rgba(0,0,0,.06) !important;
+    box-shadow: 0 10px 26px rgba(0,0,0,.10) !important;
+  }
+}
+
+/* Dark mode : CTA */
+.dark-mode .notion-gallery .notion-collection-card .notion-property-text .notion-purple a{
+  border: 1px solid rgba(255,255,255,.16) !important;
+  background: rgba(255,255,255,.06) !important;
+  box-shadow: none !important;
+}
 /* =========================================================
    BADGES catégories — “magazine” (global, uniquement dans les cartes)
 ========================================================= */
