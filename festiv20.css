@@ -1655,53 +1655,43 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   opacity: .82 !important;
 }
 /* =========================================================
-   FESTIV — GLOBAL STICKER (🧷)
-   - Opt-in via JS : .festiv-sticker sur H4 title
-   - Animation au scroll : .festiv-sticker--inview
-   - Pas de hover / pas de clic
+   GLOBAL STICKER — opt-in via emoji déclencheur (🧷)
+   Active le style sur tous les H4 dont le titre commence par 🧷
 ========================================================= */
 
-:root{
-  --sticker-bg: rgba(255, 122, 0, .10);
-  --sticker-border: rgba(255, 122, 0, .35);
-  --sticker-shimmer: rgba(255, 140, 0, 0.28);
-  --sticker-radius: 16px;
-  --sticker-pad-y: 10px;
-  --sticker-pad-x: 16px;
-}
-
-/* base */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  gap: 0 !important;
+  gap: 10px !important;
 
-  padding: var(--sticker-pad-y) var(--sticker-pad-x) !important;
-  border-radius: var(--sticker-radius) !important;
+  padding: 10px 16px !important;
+  border-radius: 16px !important;
 
-  background: var(--sticker-bg) !important;
-  border: 1px dashed var(--sticker-border) !important;
+  background: rgba(255, 122, 0, .10) !important;
+  border: 1px dashed rgba(255, 122, 0, .35) !important;
 
   font-weight: 900 !important;
   text-decoration: none !important;
 
+  transform: rotate(-1deg) scale(1) !important;
+  transition:
+    transform .25s cubic-bezier(.2,.8,.2,1),
+    box-shadow .25s ease,
+    filter .25s ease !important;
+
   position: relative !important;
   overflow: hidden !important;
-
-  /* état avant entrée (scroll) */
-  opacity: 0;
-  transform: translateY(10px) rotate(-1deg) scale(.98);
-  filter: saturate(.95);
-  will-change: transform, opacity, filter;
-
-  /* interaction OFF */
-  pointer-events: none !important;
-  cursor: default !important;
-  user-select: none !important;
+  will-change: transform;
 }
 
-/* shimmer overlay (piloté par animation) */
+/* petit “pin” dans le sticker (l’emoji déclencheur est retiré du texte par le JS) */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
+  content: "🧷";
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+/* shimmer */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
   content: "";
   position: absolute;
@@ -1709,47 +1699,41 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   left: -75%;
   width: 50%;
   height: 100%;
+
   background: linear-gradient(
     120deg,
     transparent,
-    var(--sticker-shimmer),
+    rgba(255, 140, 0, 0.28),
     transparent
   );
+
   transform: skewX(-20deg);
+  transition: left .6s ease;
   pointer-events: none;
 }
 
-/* entrée au scroll */
-.notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview{
-  opacity: 1;
-  transform: translateY(0) rotate(-2deg) scale(1);
+/* hover */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker:hover{
+  transform: rotate(-3deg) scale(1.06) !important;
+  box-shadow: 0 18px 55px rgba(0,0,0,.15) !important;
   filter: saturate(1.05);
-  animation:
-    festivStickerPop .55s cubic-bezier(.2,.9,.2,1) both,
-    festivStickerShimmer .9s ease .25s 1 both;
 }
-
-@keyframes festivStickerPop{
-  0%   { opacity: 0; transform: translateY(12px) rotate(-1deg) scale(.96); }
-  60%  { opacity: 1; transform: translateY(0) rotate(-3deg) scale(1.04); }
-  100% { opacity: 1; transform: translateY(0) rotate(-2deg) scale(1); }
-}
-
-@keyframes festivStickerShimmer{
-  0%   { left: -75%; }
-  100% { left: 130%; }
+.notion-h.notion-h3 .notion-h-title.festiv-sticker:hover::after{
+  left: 130%;
 }
 
 /* dark mode */
 html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
-  --sticker-bg: rgba(255, 122, 0, .14);
-  --sticker-border: rgba(255, 122, 0, .30);
+  background: rgba(255, 122, 0, .14) !important;
+  border-color: rgba(255, 122, 0, .30) !important;
 }
 
-/* mobile wrap */
+/* iPhone : wrap propre */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   flex-wrap: wrap !important;
+  justify-content: center !important;
   text-align: center !important;
+
   word-break: normal !important;
   overflow-wrap: normal !important;
   hyphens: none !important;
@@ -1757,23 +1741,34 @@ html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
 
 @media (max-width: 480px){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+    flex-direction: column !important;
+    gap: 8px !important;
     padding: 14px 16px !important;
   }
 }
 
-/* reduce motion */
+/* Respect “reduce motion” */
 @media (prefers-reduced-motion: reduce){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
-    opacity: 1 !important;
+    transition: none !important;
     transform: none !important;
-    filter: none !important;
   }
   .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
     display: none !important;
   }
-  .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview{
-    animation: none !important;
-  }
+}
+/* =========================================================
+   PATCH — GLOBAL STICKER sans icône
+========================================================= */
+
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::before{
+  content: none !important;
+  display: none !important;
+}
+
+/* On enlève l'espace prévu pour l'icône */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
+  gap: 0 !important;
 }
 
 
