@@ -1568,10 +1568,14 @@ function setupFestivGlobalStickers() {
     const titles = Array.from(document.querySelectorAll(SELECTOR));
     if (!titles.length) return;
 
-    const startsWithTrigger = (el) => {
-      const raw = (el.textContent || "").replace(/\s+/g, " ").trim();
-      return raw.startsWith(TRIGGER);
+    const getRawTriggerText = (a) => {
+      // ⚠️ Simple.ink/Bullet mettent souvent 🧷 dans title
+      const t1 = (a.textContent || "").replace(/\s+/g, " ").trim();
+      const t2 = (a.getAttribute("title") || "").replace(/\s+/g, " ").trim();
+      return t1 || t2;
     };
+
+    const hasTrigger = (a) => getRawTriggerText(a).startsWith(TRIGGER);
 
     const stripTriggerFromFirstTextNode = (el) => {
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
@@ -1595,16 +1599,24 @@ function setupFestivGlobalStickers() {
       }
     };
 
+    const stripTriggerFromTitleAttr = (a) => {
+      const t = a.getAttribute("title");
+      if (!t) return;
+      const cleaned = t.replace(/\s+/g, " ").trimStart();
+      if (!cleaned.startsWith(TRIGGER)) return;
+      a.setAttribute("title", cleaned.replace(TRIGGER, "").trimStart());
+    };
+
     const disableLink = (a) => {
       if (a.dataset.festivNoClick === "1") return;
       a.dataset.festivNoClick = "1";
 
       a.removeAttribute("href");
-      a.removeAttribute("title");
       a.setAttribute("aria-disabled", "true");
       a.setAttribute("role", "text");
       a.setAttribute("tabindex", "-1");
 
+      // sécurité : si autre handler existe
       a.addEventListener(
         "click",
         (e) => {
@@ -1628,13 +1640,19 @@ function setupFestivGlobalStickers() {
       );
     };
 
+    // 1) Marque + nettoyage + no-click
     const stickers = [];
     titles.forEach((a) => {
-      if (!startsWithTrigger(a)) return;
+      if (!hasTrigger(a)) return;
 
       if (!a.classList.contains(CLASS_STICKER)) {
         a.classList.add(CLASS_STICKER);
+
+        // enlève 🧷 du texte si jamais il est dedans
         stripTriggerFromFirstTextNode(a);
+
+        // enlève 🧷 du title (ton cas actuel)
+        stripTriggerFromTitleAttr(a);
       }
 
       disableLink(a);
@@ -1643,6 +1661,7 @@ function setupFestivGlobalStickers() {
 
     if (!stickers.length) return;
 
+    // 2) Animation scroll
     if (reduceMotion) {
       stickers.forEach((a) => a.classList.add(CLASS_INVIEW));
       return;
@@ -1664,6 +1683,7 @@ function setupFestivGlobalStickers() {
     if (DEBUG) console.warn("[festiv20] Stickers error:", e);
   }
 }
+
 
 
    
