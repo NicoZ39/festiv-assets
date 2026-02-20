@@ -1655,97 +1655,114 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   opacity: .82 !important;
 }
 /* =========================================================
-   FESTIV — STICKER (scroll reveal)
+   GLOBAL STICKER — base (inchangé ou quasi)
 ========================================================= */
-
-/* Base */
-.notion-h .notion-h-title.festiv-sticker{
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  gap: 0 !important;
 
-  padding: 12px 22px !important;
-  border-radius: 999px !important;
+  padding: 10px 16px !important;
+  border-radius: 16px !important;
 
-  font-weight: 600 !important;
+  background: rgba(255, 122, 0, .10) !important;
+  border: 1px dashed rgba(255, 122, 0, .35) !important;
+
+  font-weight: 900 !important;
   text-decoration: none !important;
 
-  cursor: default !important;
+  position: relative !important;
+  overflow: hidden !important;
+  will-change: transform, opacity, filter;
+
+  /* plus de hover : on prépare une entrée "calme" */
+  opacity: 0;
+  transform: translateY(10px) rotate(-1deg) scale(.98);
+  filter: saturate(.95);
+  transition: none !important;
+
+  /* désactive interaction */
   pointer-events: none !important;
-
-  will-change: opacity, transform, filter;
+  cursor: default !important;
+  user-select: none !important;
 }
 
-/* LIGHT */
-html:not(.dark-mode) .notion-h .notion-h-title.festiv-sticker{
-  background: rgba(255, 122, 0, .08) !important;
-  border: 1px solid rgba(255, 122, 0, .20) !important;
-  color: #C0392B !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+/* shimmer (ne se déclenche plus au hover, mais via animation) */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 140, 0, 0.28),
+    transparent
+  );
+  transform: skewX(-20deg);
+  pointer-events: none;
 }
 
-/* DARK */
-html.dark-mode .notion-h .notion-h-title.festiv-sticker{
-  background: rgba(255, 122, 0, .14) !important;
-  border: 1px solid rgba(255, 122, 0, .30) !important;
-  color: #ffb38a !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+/* =========================================================
+   Déclenchement au scroll (classe ajoutée par IO)
+========================================================= */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview{
+  opacity: 1;
+  transform: rotate(-2deg) scale(1) translateY(0);
+  filter: saturate(1.05);
+  animation:
+    festivStickerPop .55s cubic-bezier(.2,.9,.2,1) both,
+    festivStickerShimmer .9s ease .25s 1 both;
 }
 
-/* caché (avant reveal) */
-.notion-h .notion-h-title.festiv-sticker.festiv-sticker--pre{
-  opacity: 0 !important;
-  transform: translateY(14px) scale(.985) !important;
-  filter: blur(2px);
-}
-
-/* visible */
-.notion-h .notion-h-title.festiv-sticker.festiv-sticker--in{
-  opacity: 1 !important;
-  transform: translateY(0) scale(1) !important;
-  filter: blur(0);
-
-  transition:
-    opacity 520ms ease,
-    transform 520ms cubic-bezier(.2,.9,.2,1),
-    filter 520ms ease;
-}
-
-/* pop léger */
 @keyframes festivStickerPop{
-  0%   { transform: translateY(0) scale(1); }
-  60%  { transform: translateY(-1px) scale(1.02); }
-  100% { transform: translateY(0) scale(1); }
-}
-.notion-h .notion-h-title.festiv-sticker.festiv-sticker--in{
-  animation: festivStickerPop 520ms cubic-bezier(.2,.9,.2,1) 1;
+  0%   { opacity: 0; transform: translateY(12px) rotate(-1deg) scale(.96); }
+  60%  { opacity: 1; transform: translateY(0) rotate(-3deg) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) rotate(-2deg) scale(1); }
 }
 
-/* responsive */
-.notion-h .notion-h-title.festiv-sticker{
+@keyframes festivStickerShimmer{
+  0%   { left: -75%; }
+  100% { left: 130%; }
+}
+
+/* dark mode */
+html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+  background: rgba(255, 122, 0, .14) !important;
+  border-color: rgba(255, 122, 0, .30) !important;
+}
+
+/* iPhone : wrap propre */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker{
   flex-wrap: wrap !important;
+  justify-content: center !important;
   text-align: center !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
 }
+
 @media (max-width: 480px){
-  .notion-h .notion-h-title.festiv-sticker{
-    padding: 14px 18px !important;
-    gap: 6px !important;
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 14px 16px !important;
   }
 }
 
-/* reduce motion */
+/* Respect “reduce motion” */
 @media (prefers-reduced-motion: reduce){
-  .notion-h .notion-h-title.festiv-sticker{
-    transition: none !important;
-    animation: none !important;
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker{
+    opacity: 1;
     transform: none !important;
-    opacity: 1 !important;
-    filter: none !important;
+    transition: none !important;
+  }
+  .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
+    display: none !important;
   }
 }
-
-
-
 
 
 
