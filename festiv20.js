@@ -1500,9 +1500,11 @@ function setupWeatherWidget() {
   }
 }
 // =========================================
-// GLOBAL STICKER (🧷)
-// - Ajoute .festiv-sticker aux H4 dont le titre commence par 🧷
-// - Retire l’emoji déclencheur du texte (mais le CSS le réinjecte en ::before)
+// STICKERS (🧷) — opt-in via emoji déclencheur
+// - Ajoute .festiv-sticker sur les titres dont le texte commence par 🧷
+// - Retire l’emoji du texte (mais le CSS peut le réafficher si tu veux)
+// - Désactive le clic (pas de saut d'ancre)
+// - Anime AU SCROLL (IntersectionObserver) => .festiv-sticker--inview
 // =========================================
 function setupGlobalStickers() {
   try {
@@ -1512,29 +1514,32 @@ function setupGlobalStickers() {
       'h1.notion-h a.notion-h-title, h2.notion-h a.notion-h-title, h3.notion-h a.notion-h-title, h4.notion-h a.notion-h-title'
     );
 
-    titles.forEach((a) => {
-      if (a.classList.contains("festiv-sticker")) return;
+    const stickers = [];
 
+    titles.forEach((a) => {
       const raw = (a.textContent || "").trim();
       if (!raw.startsWith(TRIGGER)) return;
 
+      // déjà traité ?
+      if (a.dataset.festivStickerDone === "1") {
+        // si déjà sticker, on le garde pour l'observer
+        if (a.classList.contains("festiv-sticker")) stickers.push(a);
+        return;
+      }
+      a.dataset.festivStickerDone = "1";
 
       // 1) Marqueur style
       a.classList.add("festiv-sticker");
+      stickers.push(a);
 
-      // 2) Retire le TRIGGER au début dans le 1er text node trouvé
-      // (en gardant le HTML/gras/etc.)
-      const walker = document.createTreeWalker(a, 4, null);
+      // 2) Retire le TRIGGER du texte (dans le 1er text node)
+      const walker = document.createTreeWalker(a, 4, null); // 4 = SHOW_TEXT
       while (walker.nextNode()) {
         const node = walker.currentNode;
-        let t = node.nodeValue;
-        if (!t) continue;
-        // on cherche la première occurrence utile
-        const cleaned = t.replace(/\s+/g, " ");
-        const trimmed = cleaned.trimStart();
+        const t = node?.nodeValue || "";
+        const trimmed = t.replace(/\s+/g, " ").trimStart();
         if (!trimmed.startsWith(TRIGGER)) continue;
 
-        // enlève l’emoji + un espace éventuel juste après
         const idx = t.indexOf(TRIGGER);
         if (idx >= 0) {
           const before = t.slice(0, idx);
@@ -1544,11 +1549,67 @@ function setupGlobalStickers() {
         }
         break;
       }
+
+      // 3) Désactive le clic (capture => avant Notion)
+      if (a.dataset.festivStickerNoClick !== "1") {
+        a.dataset.festivStickerNoClick = "1";
+        a.addEventListener(
+          "click",
+          (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          },
+          true
+        );
+
+        // Optionnel : retire focus clavier
+        a.setAttribute("tabindex", "-1");
+        a.style.cursor = "default";
+      }
     });
+
+    if (!stickers.length) return;
+
+    // Respect reduce motion
+    const reduceMotion =
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion) {
+      stickers.forEach((a) => a.classList.add("festiv-sticker--inview"));
+      return;
+    }
+
+    // IntersectionObserver (1 seule fois)
+    if (!window.__FESTIV_STICKER_IO) {
+      window.__FESTIV_STICKER_IO = new IntersectionObserver(
+        (entries, io) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("festiv-sticker--inview");
+            io.unobserve(entry.target); // 1 seule animation
+          });
+        },
+        {
+          root: null,
+          rootMargin: "0px 0px -18% 0px",
+          threshold: 0.25,
+        }
+      );
+    }
+
+    // Observe les stickers pas encore animés
+    stickers.forEach((a) => {
+      if (a.classList.contains("festiv-sticker--inview")) return;
+      window.__FESTIV_STICKER_IO.observe(a);
+    });
+
   } catch (e) {
     // silencieux
   }
 }
+
 // =========================================================
 // NAV ACTIVE (rouge piment) + marqueurs Notion
 // - Met en actif "Articles" ou "Événements"
