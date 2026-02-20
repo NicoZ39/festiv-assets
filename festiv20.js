@@ -1499,6 +1499,10 @@ function setupWeatherWidget() {
     if (DEBUG) console.warn("[festiv20] WeatherWidget setup error:", e);
   }
 }
+// =========================================
+// STICKERS (🧷) — AU SCROLL (pas hover) + no click
+// Détection robuste : 🧷 dans le TEXTE ou dans l'attribut title
+// =========================================
 function setupGlobalStickers() {
   try {
     const TRIGGER = "🧷";
@@ -1510,45 +1514,42 @@ function setupGlobalStickers() {
     const stickers = [];
 
     titles.forEach((a) => {
-      const raw = (a.textContent || "").trim();
-      if (!raw.startsWith(TRIGGER)) return;
+      const rawText = (a.textContent || "").trim();
+      const rawTitle = (a.getAttribute("title") || "").trim();
 
-      // déjà traité ?
-      if (a.dataset.festivStickerDone === "1") {
-        stickers.push(a);
-        return;
-      }
-      a.dataset.festivStickerDone = "1";
+      const isSticker = rawText.startsWith(TRIGGER) || rawTitle.startsWith(TRIGGER);
+      if (!isSticker) return;
 
-      // Style + ready (anti-flash)
+      // 1) classes (idempotent)
       a.classList.add("festiv-sticker", "festiv-sticker--ready");
       stickers.push(a);
 
-      // Retire TRIGGER dans le texte (1er text node)
-      const walker = document.createTreeWalker(a, 4, null);
-      while (walker.nextNode()) {
-        const node = walker.currentNode;
-        const t = node?.nodeValue || "";
-        const trimmed = t.replace(/\s+/g, " ").trimStart();
-        if (!trimmed.startsWith(TRIGGER)) continue;
+      // 2) Retire TRIGGER du texte SI présent (dans le 1er text node)
+      if (rawText.startsWith(TRIGGER)) {
+        const walker = document.createTreeWalker(a, 4, null); // SHOW_TEXT
+        while (walker.nextNode()) {
+          const node = walker.currentNode;
+          const t = node?.nodeValue || "";
+          const trimmed = t.replace(/\s+/g, " ").trimStart();
+          if (!trimmed.startsWith(TRIGGER)) continue;
 
-        const idx = t.indexOf(TRIGGER);
-        if (idx >= 0) {
-          const before = t.slice(0, idx);
-          let after = t.slice(idx + TRIGGER.length);
-          after = after.replace(/^\s+/, "");
-          node.nodeValue = before + after;
+          const idx = t.indexOf(TRIGGER);
+          if (idx >= 0) {
+            const before = t.slice(0, idx);
+            let after = t.slice(idx + TRIGGER.length);
+            after = after.replace(/^\s+/, "");
+            node.nodeValue = before + after;
+          }
+          break;
         }
-        break;
       }
 
-      // Nettoie aussi l'attribut title si présent (sinon CSS [title^="🧷"] peut recacher)
-      try {
-        const tt = a.getAttribute("title") || "";
-        if (tt.startsWith(TRIGGER)) a.setAttribute("title", tt.replace(TRIGGER, "").trim());
-      } catch {}
+      // 3) Retire TRIGGER du title (sinon le CSS [title^="🧷"] peut recacher)
+      if (rawTitle.startsWith(TRIGGER)) {
+        a.setAttribute("title", rawTitle.replace(TRIGGER, "").trim());
+      }
 
-      // Désactive le clic (capture)
+      // 4) Désactive le clic (capture)
       if (a.dataset.festivStickerNoClick !== "1") {
         a.dataset.festivStickerNoClick = "1";
         a.addEventListener(
@@ -1583,7 +1584,6 @@ function setupGlobalStickers() {
       window.__FESTIV_STICKER_IO = new IntersectionObserver(
         (entries, io) => {
           if (!hasScrolled()) return; // attend le scroll utilisateur
-
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
             entry.target.classList.add("festiv-sticker--inview");
@@ -1601,23 +1601,25 @@ function setupGlobalStickers() {
       io.observe(a);
     });
 
-    // poke au 1er scroll (once) pour déclencher même si déjà visible
+    // poke au 1er scroll (pour déclencher même si déjà visible)
     if (!window.__FESTIV_STICKER_SCROLL_ARMED) {
       window.__FESTIV_STICKER_SCROLL_ARMED = true;
-
-      const armOnce = () => {
-        stickers.forEach((a) => {
-          if (a.classList.contains("festiv-sticker--inview")) return;
-          try { io.unobserve(a); io.observe(a); } catch {}
-        });
-      };
-
-      window.addEventListener("scroll", armOnce, { passive: true, once: true });
+      window.addEventListener(
+        "scroll",
+        () => {
+          stickers.forEach((a) => {
+            if (a.classList.contains("festiv-sticker--inview")) return;
+            try { io.unobserve(a); io.observe(a); } catch {}
+          });
+        },
+        { passive: true, once: true }
+      );
     }
   } catch {
     // silencieux
   }
 }
+
 
 
 
