@@ -1551,10 +1551,10 @@ function setupWeatherWidget() {
 // - Opt-in via emoji 🧷 au début du titre H4
 // - Ajoute .festiv-sticker
 // - Retire l’emoji du texte (sans casser le HTML)
-// - Désactive le clic (href supprimé + blocage click/keyboard)
-// - Anime au scroll via IntersectionObserver (1 fois)
+// - Désactive le clic
+// - Anime au scroll via IntersectionObserver
 // =========================================
-(function setupFestivGlobalStickers() {
+function setupFestivGlobalStickers() {
   try {
     const TRIGGER = "🧷";
     const SELECTOR = "h4.notion-h.notion-h3 a.notion-h-title";
@@ -1568,7 +1568,6 @@ function setupWeatherWidget() {
     const titles = Array.from(document.querySelectorAll(SELECTOR));
     if (!titles.length) return;
 
-    // --- helpers ---
     const startsWithTrigger = (el) => {
       const raw = (el.textContent || "").replace(/\s+/g, " ").trim();
       return raw.startsWith(TRIGGER);
@@ -1581,7 +1580,6 @@ function setupWeatherWidget() {
         const t = node.nodeValue || "";
         if (!t) continue;
 
-        // check "visible" start
         const cleaned = t.replace(/\s+/g, " ");
         const trimmedStart = cleaned.trimStart();
         if (!trimmedStart.startsWith(TRIGGER)) continue;
@@ -1590,7 +1588,7 @@ function setupWeatherWidget() {
         if (idx >= 0) {
           const before = t.slice(0, idx);
           let after = t.slice(idx + TRIGGER.length);
-          after = after.replace(/^\s+/, ""); // retire l’espace après 🧷
+          after = after.replace(/^\s+/, "");
           node.nodeValue = before + after;
         }
         break;
@@ -1607,7 +1605,6 @@ function setupWeatherWidget() {
       a.setAttribute("role", "text");
       a.setAttribute("tabindex", "-1");
 
-      // capture = true pour bloquer tôt
       a.addEventListener(
         "click",
         (e) => {
@@ -1631,7 +1628,6 @@ function setupWeatherWidget() {
       );
     };
 
-    // --- 1) Convertit en stickers (opt-in) ---
     const stickers = [];
     titles.forEach((a) => {
       if (!startsWithTrigger(a)) return;
@@ -1647,7 +1643,6 @@ function setupWeatherWidget() {
 
     if (!stickers.length) return;
 
-    // --- 2) Animation au scroll ---
     if (reduceMotion) {
       stickers.forEach((a) => a.classList.add(CLASS_INVIEW));
       return;
@@ -1655,39 +1650,23 @@ function setupWeatherWidget() {
 
     const io = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
+        entries.forEach((entry) => {
           const el = entry.target;
-          el.classList.add(CLASS_INVIEW);
-          if (entry.isIntersecting) el.classList.add("festiv-sticker--inview");
-else el.classList.remove("festiv-sticker--inview");
-
-        }
+          if (entry.isIntersecting) el.classList.add(CLASS_INVIEW);
+          else el.classList.remove(CLASS_INVIEW);
+        });
       },
       { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
     );
 
-    stickers.forEach((a) => {
-      if (!a.classList.contains(CLASS_INVIEW)) io.observe(a);
-    });
+    stickers.forEach((a) => io.observe(a));
   } catch (e) {
-    // silencieux
+    if (DEBUG) console.warn("[festiv20] Stickers error:", e);
   }
 }
 
-// --- 2) nettoyage global de sécurité (si Simple.ink réinjecte le texte plus tard) ---
-function festivCleanupNavMarkersEverywhere() {
-  try {
-    const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
-    let n;
-    while ((n = walker.nextNode())) {
-      if (!n.nodeValue) continue;
-      if (!re.test(n.nodeValue)) continue;
-      n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
-    }
-  } catch {}
-}
+
+   
 
 // --- 3) applique le bouton actif dans le header ---
 function festivApplyActiveHeaderLink() {
