@@ -1443,7 +1443,7 @@
   // =========================================
   // Meteoblue theme sync
   // =========================================
-/*  function syncMeteoblueTheme(tries = 20) {
+  function syncMeteoblueTheme(tries = 20) {
     try {
       const isDark = document.documentElement.classList.contains("dark-mode");
 
@@ -1484,7 +1484,7 @@
     } catch (e) {
       console.error("[festiv20] syncMeteoblueTheme error:", e);
     }
-  }*/
+  }
 // =========================================
 // WeatherWidget.io via shortcode Notion
 // Shortcode à mettre dans Notion : {{meteo_ounans}}
@@ -1547,201 +1547,132 @@ function setupWeatherWidget() {
 
 }
 // =========================================
-// FESTIV — GLOBAL STICKER (🧷 trigger) — ROBUST
-// - détecte le trigger sur tous les titres Notion (h1..h6)
-// - retire l'emoji du texte
-// - désactive le clic + focus
-// - scroll reveal via IntersectionObserver
-// - se relance via MutationObserver (SPA Simple.ink)
+// FESTIV — Global Stickers (🧷)
+// - Opt-in via emoji 🧷 au début du titre H4
+// - Ajoute .festiv-sticker
+// - Retire l’emoji du texte (sans casser le HTML)
+// - Désactive le clic (href supprimé + blocage click/keyboard)
+// - Anime au scroll via IntersectionObserver (1 fois)
 // =========================================
-
-function setupGlobalStickers() {
+(function setupFestivGlobalStickers() {
   try {
-    const TRIGGERS = ["🧷", "📌"]; // ajoute ici si besoin
-
-    // On cible TOUS les titres notion, peu importe le niveau
-    const titles = document.querySelectorAll("a.notion-h-title");
-
-    const stickers = [];
-
-    titles.forEach((a) => {
-      if (a.classList.contains("festiv-sticker")) return;
-
-      const raw = (a.textContent || "").replace(/\u00A0/g, " ").trim(); // NBSP safe
-      if (!TRIGGERS.some((t) => raw.startsWith(t))) return;
-
-      // classes
-      a.classList.add("festiv-sticker");
-      a.classList.add("festiv-sticker--pre");
-
-      // neutralise focus + a11y
-      a.setAttribute("aria-disabled", "true");
-      a.setAttribute("tabindex", "-1");
-
-      // retire le trigger dans le premier node texte
-      const walker = document.createTreeWalker(a, NodeFilter.SHOW_TEXT, null);
-      let node;
-      while ((node = walker.nextNode())) {
-        let t = node.nodeValue;
-        if (!t) continue;
-
-        const tTrim = t.replace(/\u00A0/g, " ").trimStart();
-        const trig = TRIGGERS.find((x) => tTrim.startsWith(x));
-        if (!trig) continue;
-
-        const idx = t.indexOf(trig);
-        if (idx >= 0) {
-          const before = t.slice(0, idx);
-          let after = t.slice(idx + trig.length);
-          after = after.replace(/^\s+/, "");
-          node.nodeValue = before + after;
-        }
-        break;
-      }
-
-      // désactive clic (capture) — même si CSS rate
-      if (!a.__festivNoClickBound) {
-        a.__festivNoClickBound = true;
-
-        const stop = (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          ev.stopImmediatePropagation();
-          return false;
-        };
-
-        a.addEventListener("click", stop, true);
-        a.addEventListener("pointerdown", stop, true);
-        a.addEventListener(
-          "keydown",
-          (ev) => {
-            if (ev.key === "Enter" || ev.key === " ") stop(ev);
-          },
-          true
-        );
-      }
-
-      stickers.push(a);
-    });
-
-    if (!stickers.length) return;
+    const TRIGGER = "🧷";
+    const SELECTOR = "h4.notion-h.notion-h3 a.notion-h-title";
+    const CLASS_STICKER = "festiv-sticker";
+    const CLASS_INVIEW = "festiv-sticker--inview";
 
     const reduceMotion =
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    const titles = Array.from(document.querySelectorAll(SELECTOR));
+    if (!titles.length) return;
+
+    // --- helpers ---
+    const startsWithTrigger = (el) => {
+      const raw = (el.textContent || "").replace(/\s+/g, " ").trim();
+      return raw.startsWith(TRIGGER);
+    };
+
+    const stripTriggerFromFirstTextNode = (el) => {
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
+      let node;
+      while ((node = walker.nextNode())) {
+        const t = node.nodeValue || "";
+        if (!t) continue;
+
+        // check "visible" start
+        const cleaned = t.replace(/\s+/g, " ");
+        const trimmedStart = cleaned.trimStart();
+        if (!trimmedStart.startsWith(TRIGGER)) continue;
+
+        const idx = t.indexOf(TRIGGER);
+        if (idx >= 0) {
+          const before = t.slice(0, idx);
+          let after = t.slice(idx + TRIGGER.length);
+          after = after.replace(/^\s+/, ""); // retire l’espace après 🧷
+          node.nodeValue = before + after;
+        }
+        break;
+      }
+    };
+
+    const disableLink = (a) => {
+      if (a.dataset.festivNoClick === "1") return;
+      a.dataset.festivNoClick = "1";
+
+      a.removeAttribute("href");
+      a.removeAttribute("title");
+      a.setAttribute("aria-disabled", "true");
+      a.setAttribute("role", "text");
+      a.setAttribute("tabindex", "-1");
+
+      // capture = true pour bloquer tôt
+      a.addEventListener(
+        "click",
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+        },
+        true
+      );
+
+      a.addEventListener(
+        "keydown",
+        (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }
+        },
+        true
+      );
+    };
+
+    // --- 1) Convertit en stickers (opt-in) ---
+    const stickers = [];
+    titles.forEach((a) => {
+      if (!startsWithTrigger(a)) return;
+
+      if (!a.classList.contains(CLASS_STICKER)) {
+        a.classList.add(CLASS_STICKER);
+        stripTriggerFromFirstTextNode(a);
+      }
+
+      disableLink(a);
+      stickers.push(a);
+    });
+
+    if (!stickers.length) return;
+
+    // --- 2) Animation au scroll ---
     if (reduceMotion) {
-      stickers.forEach((el) => {
-        el.classList.remove("festiv-sticker--pre");
-        el.classList.add("festiv-sticker--in");
-      });
+      stickers.forEach((a) => a.classList.add(CLASS_INVIEW));
       return;
     }
 
-    if ("IntersectionObserver" in window) {
-      const io = new IntersectionObserver(
-        (entries, obs) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            const el = entry.target;
-            el.classList.remove("festiv-sticker--pre");
-            el.classList.add("festiv-sticker--in");
-            obs.unobserve(el);
-          });
-        },
-        { threshold: 0.18, rootMargin: "0px 0px -10% 0px" }
-      );
-      stickers.forEach((el) => io.observe(el));
-    } else {
-      stickers.forEach((el) => {
-        el.classList.remove("festiv-sticker--pre");
-        el.classList.add("festiv-sticker--in");
-      });
-    }
-  } catch (e) {}
-}
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const el = entry.target;
+          el.classList.add(CLASS_INVIEW);
+          if (entry.isIntersecting) el.classList.add("festiv-sticker--inview");
+else el.classList.remove("festiv-sticker--inview");
 
-function initGlobalStickers() {
-  try {
-    // 1) run now
-    setupGlobalStickers();
-
-    // 2) SPA / DOM changes
-    if (window.__FESTIV_STICKERS_OBS) return;
-    window.__FESTIV_STICKERS_OBS = true;
-
-    let raf = 0;
-    const mo = new MutationObserver(() => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(setupGlobalStickers);
-    });
-
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-  } catch (e) {}
-}
-
-
-
-// =========================================================
-// NAV ACTIVE (rouge piment) + marqueurs Notion
-// - Met en actif "Articles" ou "Événements"
-// - Supporte les pages enfants via marqueurs : [nav:articles] / [nav:evenements]
-// - Nettoie le texte pour ne jamais afficher les marqueurs
-// - Evite le bug "reste bloqué sur événements" : cache PAR PAGE (pathname)
-// =========================================================
-
-// --- util: key cache par page ---
-function festivNavCacheKey() {
-  const path = (window.location.pathname || "/").toLowerCase().replace(/\/+$/, "") || "/";
-  return "festiv-nav:" + path;
-}
-
-function festivReadCachedSection() {
-  try {
-    const v = sessionStorage.getItem(festivNavCacheKey());
-    if (v === "articles" || v === "evenements") return v;
-  } catch {}
-  return null;
-}
-
-function festivWriteCachedSection(section) {
-  try {
-    sessionStorage.setItem(festivNavCacheKey(), section);
-  } catch {}
-}
-
-// --- 1) detecte un marqueur [nav:...] sur la page + le supprime ---
-function festivDetectAndCleanupNavMarker() {
-  try {
-    // On cherche dans les zones de texte Notion/Simple
-    const candidates = Array.from(
-      document.querySelectorAll(
-        ".notion-text, .notion-paragraph, .notion-callout-text, [data-content-editable-leaf]"
-      )
+        }
+      },
+      { threshold: 0.35, rootMargin: "0px 0px -10% 0px" }
     );
 
-    for (const el of candidates) {
-      const t = (el.textContent || "");
-      const m = t.match(/\[nav:(articles|evenements)\]/i);
-      if (!m) continue;
-
-      const section = m[1].toLowerCase(); // "articles" | "evenements"
-      festivWriteCachedSection(section);
-
-      // nettoyage dans le DOM (text nodes)
-      const re = /\s*\[nav:(articles|evenements)\]\s*/gi;
-      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null);
-      let n;
-      while ((n = walker.nextNode())) {
-        if (!n.nodeValue) continue;
-        if (!re.test(n.nodeValue)) continue;
-        n.nodeValue = n.nodeValue.replace(re, " ").replace(/\s{2,}/g, " ");
-      }
-
-      return section;
-    }
-  } catch {}
-  return null;
+    stickers.forEach((a) => {
+      if (!a.classList.contains(CLASS_INVIEW)) io.observe(a);
+    });
+  } catch (e) {
+    // silencieux
+  }
 }
 
 // --- 2) nettoyage global de sécurité (si Simple.ink réinjecte le texte plus tard) ---
@@ -1863,8 +1794,7 @@ function festivRunNav() {
     bindSystemThemeListener();
     bindCalendarI18nHooks();
     translateNotionCalendar();
-    initGlobalStickers();
-
+    setupFestivGlobalStickers();
 
     // ✅ NAV (remplace setActiveHeaderLink + cleanupNavMarkers)
     festivRunNav();
@@ -1876,7 +1806,7 @@ function festivRunNav() {
 
     shortcodeContactForm();
     shortcodeInscriptionForm();
-    /*setupWeatherWidget();*/
+    setupWeatherWidget();
 
     injectDisqusGuestTip();
     initDisqus(false);
