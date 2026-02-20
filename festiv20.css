@@ -1655,12 +1655,16 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   opacity: .82 !important;
 }
 /* =========================================================
-   GLOBAL STICKER — animation AU SCROLL (sans hover, sans clic)
-   Classes:
-   - .festiv-sticker (état repos)
-   - .festiv-sticker--inview (déclenche l'anim)
+   GLOBAL STICKER — AU SCROLL, sans hover, sans clic
+   Anti-flash : cache les titres "🧷..." tant que le JS n'a pas posé le style
 ========================================================= */
 
+/* 0) Anti-flash (avant JS) : on cache uniquement les ancres dont le title commence par 🧷 */
+a.notion-h-title[title^="🧷"]{
+  visibility: hidden !important;
+}
+
+/* 1) Style sticker (visible seulement quand JS a "ready") */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   display: inline-flex !important;
   align-items: center !important;
@@ -1675,19 +1679,23 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   font-weight: 900 !important;
   text-decoration: none !important;
 
-  /* ✅ état "avant anim" */
-  opacity: 0 !important;
-  transform: translateY(10px) rotate(-1deg) scale(.98) !important;
-
-  /* pas d'effet hover */
-  transition: none !important;
-
   position: relative !important;
   overflow: hidden !important;
-  will-change: transform, opacity;
+  will-change: transform;
+
+  /* pas d'hover */
+  transition: none !important;
+
+  /* par défaut : reste caché tant que JS n'a pas "ready" */
+  visibility: hidden !important;
 }
 
-/* shimmer (se déclenche aussi au moment inview) */
+/* JS => ready : maintenant on montre */
+.notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--ready{
+  visibility: visible !important;
+}
+
+/* shimmer (joué uniquement quand inview) */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
   content: "";
   position: absolute;
@@ -1705,24 +1713,20 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
   pointer-events: none;
 }
 
-/* ✅ Déclenchement au scroll */
+/* 2) Déclenchement au scroll */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview{
-  opacity: 1 !important;
-  transform: translateY(0) rotate(-1deg) scale(1) !important;
   animation: festiv-sticker-pop 650ms cubic-bezier(.2,.8,.2,1) both;
 }
 
-/* shimmer qui traverse une seule fois */
 .notion-h.notion-h3 .notion-h-title.festiv-sticker.festiv-sticker--inview::after{
   animation: festiv-sticker-shimmer 900ms ease forwards;
 }
 
 @keyframes festiv-sticker-pop{
-  0%   { opacity: 0; transform: translateY(10px) rotate(-1deg) scale(.98); }
-  60%  { opacity: 1; transform: translateY(-2px) rotate(-2deg) scale(1.03); }
-  100% { opacity: 1; transform: translateY(0) rotate(-1deg) scale(1); }
+  0%   { transform: translateY(10px) rotate(-1deg) scale(.98); }
+  60%  { transform: translateY(-2px) rotate(-2deg) scale(1.03); }
+  100% { transform: translateY(0) rotate(-1deg) scale(1); }
 }
-
 @keyframes festiv-sticker-shimmer{
   0%   { left: -75%; }
   100% { left: 130%; }
@@ -1743,17 +1747,17 @@ html.dark-mode .notion-h.notion-h3 .notion-h-title.festiv-sticker{
   hyphens: none !important;
 }
 
-/* Respect reduce motion */
+/* reduce motion */
 @media (prefers-reduced-motion: reduce){
   .notion-h.notion-h3 .notion-h-title.festiv-sticker{
-    opacity: 1 !important;
-    transform: none !important;
+    visibility: visible !important;
     animation: none !important;
   }
   .notion-h.notion-h3 .notion-h-title.festiv-sticker::after{
     display: none !important;
   }
 }
+
 
 
 
