@@ -1181,22 +1181,30 @@ function findDisqusAnchor() {
 }
 
 function ensureDisqusWrapAtAnchor() {
-  const anchor = findDisqusAnchor();
-  if (!anchor) return null;
-
+  // 1) si le wrap existe déjà, on le garde
   let wrap = document.querySelector(".festiv-disqus-wrap");
   if (wrap) return wrap;
 
-  wrap = document.createElement("div");
-  wrap.className = "festiv-disqus-wrap";
-  anchor.replaceWith(wrap);
-  return wrap;
+  // 2) sinon, on cherche l'ancre
+  const anchor = findDisqusAnchor();
+  if (!anchor) return null;
+
+  // 3) IMPORTANT : on ne replaceWith() PAS
+  //    -> on convertit le bloc en wrap
+  anchor.classList.add("festiv-disqus-wrap");
+  anchor.dataset.festivDisqusMount = "1";
+
+  // enlève le shortcode tout de suite (plus de flash)
+  anchor.textContent = "";
+
+  return anchor;
 }
 
 function showDisqusConsentPlaceholder() {
   const wrap = ensureDisqusWrapAtAnchor();
   if (!wrap) return;
 
+  // évite doublon
   if (wrap.querySelector(".festiv-disqus-consent")) return;
 
   wrap.innerHTML = `
