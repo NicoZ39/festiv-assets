@@ -1141,63 +1141,63 @@ bindSystemThemeListener();
   // =========================================
   // DISQUS — helpers anti “iframe disparue”
   // =========================================
-  function findDisqusAnchor() {
-  // Cherche un bloc Notion qui contient EXACTEMENT "[comment-form]"
-  const nodes = document.querySelectorAll(
-    ".notion-text, .notion-paragraph, .notion-callout-text .notion-text"
-  );
+  function normalizeMarkerText(s) {
+  return (s || "")
+    .replace(/\u00A0/g, " ")         // nbsp
+    .replace(/[\u200B-\u200D\uFEFF]/g, "") // zero-width
+    .trim();
+}
 
-  for (const el of nodes) {
-    const t = (el.textContent || "").trim();
-    if (t === DISQUS_ANCHOR_TEXT) return el;
+function findDisqusAnchor() {
+  try {
+    const WANT = normalizeMarkerText(DISQUS_ANCHOR_TEXT);
+
+    // 1) Essai “rapide” sur les blocs courants
+    const quick = document.querySelectorAll(
+      ".notion-text, .notion-paragraph, .notion-callout-text, [data-content-editable-leaf]"
+    );
+    for (const el of quick) {
+      const t = normalizeMarkerText(el.textContent);
+      if (t === WANT) return el;
+    }
+
+    // 2) Fallback robuste : scan des text nodes
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      const t = normalizeMarkerText(n.nodeValue);
+      if (t !== WANT) continue;
+
+      // On remonte au bloc “raisonnable” à remplacer
+      const host =
+        n.parentElement?.closest?.(".notion-text, .notion-paragraph, .notion-callout, .notion-callout-text, [data-content-editable-leaf]") ||
+        n.parentElement;
+
+      if (host) return host;
+    }
+  } catch (e) {
+    console.warn("[festiv20] findDisqusAnchor error:", e);
   }
   return null;
 }
 
-function ensureDisqusWrapAtAnchor(anchorEl) {
-  // Si déjà remplacé / déjà présent, on le réutilise
-  if (!anchorEl) return null;
-
-  // Si l’ancre a déjà été remplacée par le wrap
-  if (anchorEl.classList?.contains("festiv-disqus-wrap")) return anchorEl;
-
-  // Si un wrap existe déjà (DOM reconstruit) on le garde
-  let wrap = document.querySelector(".festiv-disqus-wrap");
-  if (wrap) return wrap;
-
-  wrap = document.createElement("div");
-  wrap.className = "festiv-disqus-wrap";
-
-  // ✅ IMPORTANT : on remplace le bloc "[comment-form]" par le wrap
-  anchorEl.replaceWith(wrap);
-
-  return wrap;
-}
-   
-  function findDisqusMarker() {
-    return (
-      [...document.querySelectorAll("h1,h2,h3,h4")].find((h) => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null
-    );
-  }
-
-  function disqusHasIframe() {
-    return !!document.querySelector('#disqus_thread iframe[src*="disqus"]');
-  }
-
-  function ensureDisqusWrapAfter(marker) {
+function ensureDisqusWrapAfter(marker) {
   // ✅ priorité : l’ancre [comment-form]
   const anchor = findDisqusAnchor();
   if (anchor) {
+    // si déjà monté
     let wrap = document.querySelector(".festiv-disqus-wrap");
-    if (!wrap) {
-      wrap = document.createElement("div");
-      wrap.className = "festiv-disqus-wrap";
-      anchor.replaceWith(wrap); // 🔥 on remplace le bloc "[comment-form]"
-    }
+    if (wrap) return wrap;
+
+    wrap = document.createElement("div");
+    wrap.className = "festiv-disqus-wrap";
+
+    // Remplace le bloc qui contient UNIQUEMENT [comment-form]
+    anchor.replaceWith(wrap);
     return wrap;
   }
 
-  // fallback (au cas où une page aurait encore juste le titre)
+  // fallback (ancien système) si jamais tu n’as pas encore mis l’ancre
   let wrap = document.querySelector(".festiv-disqus-wrap");
   if (!wrap && marker) {
     wrap = document.createElement("div");
