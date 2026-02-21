@@ -988,6 +988,8 @@ bindSystemThemeListener();
           s.async = true;
           document.head.appendChild(s);
         }
+         setTimeout(kickFilloutWatchdog, 50);
+         setTimeout(kickFilloutWatchdog, 600);
       }
     } catch (e) {
       console.error("[festiv20] shortcodeContactForm error:", e);
@@ -1051,6 +1053,8 @@ bindSystemThemeListener();
           s.async = true;
           document.head.appendChild(s);
         }
+      setTimeout(kickFilloutWatchdog, 50);
+      setTimeout(kickFilloutWatchdog, 600);
       }
     } catch (e) {
       console.error("[festiv20] shortcodeInscriptionForm error:", e);
@@ -1770,7 +1774,123 @@ function festivRunNav() {
 }
 
 
+// =========================================
+// FILLOUT — watchdog anti "formulaire absent"
+// - Fillout init peut rater quand Simple.ink reconstruit le DOM
+// - On poke en rechargeant le script (cache-bust) si aucune iframe n’apparaît
+// - Fallback final: iframe directe
+// =========================================
+const FILLOUT_SCRIPT_BASE = "https://server.fillout.com/embed/v1/";
 
+function ensureFilloutScript() {
+  try {
+    const already = [...document.scripts].some((s) => (s.src || "").startsWith(FILLOUT_SCRIPT_BASE));
+    if (already) return;
+    const s = document.createElement("script");
+    s.src = FILLOUT_SCRIPT_BASE;
+    s.async = true;
+    document.head.appendChild(s);
+  } catch {}
+}
+
+// “poke” = recharge le script avec un param pour forcer l’exécution à nouveau
+function pokeFilloutScript() {
+  try {
+    const s = document.createElement("script");
+    s.src = FILLOUT_SCRIPT_BASE + "?v=" + Date.now();
+    s.async = true;
+    document.head.appendChild(s);
+  } catch {}
+}
+
+function filloutHasIframeInside(host) {
+  try {
+    return !!host.querySelector('iframe[src*="fillout.com"], iframe[src*="embed.fillout.com"], iframe[src*="server.fillout.com"]');
+  } catch {
+    return false;
+  }
+}
+
+// fallback ultime (si Fillout init ne prend jamais)
+function mountFilloutIframeFallback(host) {
+  try {
+    const id = host.getAttribute("data-fillout-id");
+    if (!id) return;
+
+    // évite double fallback
+    if (host.dataset.festivFilloutFallback === "1") return;
+    host.dataset.festivFilloutFallback = "1";
+
+    const parent = encodeURIComponent(window.location.href.split("#")[0]);
+    const src =
+      `https://embed.fillout.com/t/${encodeURIComponent(id)}` +
+      `?fillout-embed-type=standard` +
+      `&fillout-embed-parent-page=${parent}` +
+      `&fillout-embed-dynamic-resize=true`;
+
+    host.innerHTML = "";
+    host.style.position = "relative";
+    host.style.width = "100%";
+    host.style.minHeight = host.style.minHeight || "520px";
+
+    const iframe = document.createElement("iframe");
+    iframe.src = src;
+    iframe.title = id;
+    iframe.style.border = "0";
+    iframe.style.width = "100%";
+    iframe.style.minHeight = host.style.minHeight || "520px";
+    iframe.allow = "microphone; camera; geolocation";
+
+    host.appendChild(iframe);
+  } catch {}
+}
+
+function kickFilloutWatchdog() {
+  try {
+    // évite de lancer 15 watchdogs en parallèle
+    if (window.__FESTIV_FILLOUT_WATCHDOG_T) clearTimeout(window.__FESTIV_FILLOUT_WATCHDOG_T);
+
+    const hosts = Array.from(document.querySelectorAll(".festiv-fillout[data-fillout-id]"));
+    if (!hosts.length) return;
+
+    ensureFilloutScript();
+
+    const schedule = [150, 600, 1400, 2600, 4200, 6500]; // timings “humains”
+    let step = 0;
+
+    const tick = () => {
+      step++;
+
+      let missing = 0;
+      for (const host of hosts) {
+        // si déjà OK, rien
+        if (filloutHasIframeInside(host)) {
+          host.dataset.festivFilloutOk = "1";
+          continue;
+        }
+        missing++;
+
+        // poke 1 ou 2 fois max
+        const pokes = Number(host.dataset.festivFilloutPokes || "0");
+        if (pokes < 2) {
+          host.dataset.festivFilloutPokes = String(pokes + 1);
+          pokeFilloutScript();
+          continue;
+        }
+
+        // dernier recours si toujours rien après plusieurs passes
+        if (step >= 5) mountFilloutIframeFallback(host);
+      }
+
+      if (missing <= 0) return; // tout est bon
+      if (step >= schedule.length) return;
+
+      window.__FESTIV_FILLOUT_WATCHDOG_T = setTimeout(tick, schedule[step]);
+    };
+
+    window.__FESTIV_FILLOUT_WATCHDOG_T = setTimeout(tick, schedule[0]);
+  } catch {}
+}
 
    
   // =========================================
@@ -1813,6 +1933,9 @@ function festivRunNav() {
 
     shortcodeContactForm();
     shortcodeInscriptionForm();
+    kickFilloutWatchdog();
+    setTimeout(kickFilloutWatchdog, 800);
+    setTimeout(kickFilloutWatchdog, 2500);
     setupWeatherWidget();
 
     injectDisqusGuestTip();
