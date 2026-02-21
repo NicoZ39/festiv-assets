@@ -1254,8 +1254,9 @@ function initDisqus(force = false) {
   try {
     document.documentElement.setAttribute("lang", "fr");
 
-    // ✅ Only mount if the anchor exists
-    if (!findDisqusAnchor()) return;
+    // ✅ Point de montage : wrap déjà créé (placeholder) OU ancre à remplacer
+    const mount = document.querySelector(".festiv-disqus-wrap") || ensureDisqusWrapAtAnchor();
+    if (!mount) return;
 
     // consent
     const consentStatus = getDisqusConsentStatus(); // true/false/null
