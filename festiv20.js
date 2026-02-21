@@ -10,9 +10,10 @@
   const DEBUG = true;
 
   // ====== DISQUS ======
-  const DISQUS_SHORTNAME = "festivounans"; // <- ton shortname
-  const DISQUS_ANCHOR_TEXT = "[comment-form]";
-  const DISQUS_COOKIE_CATS_OK = ["preferences", "functional", "analytics", "statistics", "performance", "marketing"];
+  const DISQUS_SHORTNAME = "festivounans";
+   const DISQUS_MARKER_TEXT = "💬 Commentaires";
+   const DISQUS_ANCHOR_TEXT = "[comment-form]";
+   const DISQUS_COOKIE_CATS_OK = ["preferences", "functional", "analytics", "statistics", "performance", "marketing"];
 
   function log(...args) {
     if (DEBUG) console.log("[festiv20]", ...args);
