@@ -11,7 +11,7 @@
 
   // ====== DISQUS ======
   const DISQUS_SHORTNAME = "festivounans"; // <- ton shortname
-  const DISQUS_MARKER_TEXT = "💬 Commentaires";
+  const DISQUS_ANCHOR_TEXT = "[comment-form]";
   const DISQUS_COOKIE_CATS_OK = ["preferences", "functional", "analytics", "statistics", "performance", "marketing"];
 
   function log(...args) {
@@ -1061,57 +1061,6 @@ bindSystemThemeListener();
     }
   }
 
-
-  // =========================================
-  // DISQUS — mini tip "invité"
-  // =========================================
-  function injectDisqusGuestTip() {
-    try {
-      const marker = findDisqusMarker();
-      if (!marker) return;
-
-      if (marker.dataset.festivDisqusGuestTipDone === "1") return;
-      marker.dataset.festivDisqusGuestTipDone = "1";
-
-      if (!document.getElementById("festiv-disqus-guest-tip-style")) {
-        const style = document.createElement("style");
-        style.id = "festiv-disqus-guest-tip-style";
-        style.textContent = `
-          .festiv-disqus-guest-tip{
-            width: min(980px, calc(100% - 24px));
-            margin: 10px 0 14px 0;
-            padding: 12px 14px;
-            border-radius: 12px;
-            line-height: 1.4;
-            font-size: 14px;
-            background: rgba(255,255,255,0.85);
-            border: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            backdrop-filter: blur(8px);
-          }
-          .dark-mode .festiv-disqus-guest-tip{
-            background: rgba(15,15,15,0.72);
-            border: 1px solid rgba(255,255,255,0.12);
-            box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-          }
-          .festiv-disqus-guest-tip b{font-weight:700;}
-        `;
-        document.head.appendChild(style);
-      }
-
-      const box = document.createElement("div");
-      box.className = "festiv-disqus-guest-tip";
-      box.innerHTML = `
-        <b>Commenter sans créer de compte ?</b>
-        Cliquez dans le champ « Nom », puis cochez l’option « Je préfère poster en tant qu’invité ».
-        Vous pourrez ainsi publier votre commentaire sans vous connecter ni créer de compte.
-      `;
-      marker.insertAdjacentElement("afterend", box);
-    } catch (e) {
-      console.error("[festiv20] injectDisqusGuestTip error:", e);
-    }
-  }
-
   // =========================================
   // DISQUS — patch texte "18+"
   // =========================================
@@ -1192,6 +1141,39 @@ bindSystemThemeListener();
   // =========================================
   // DISQUS — helpers anti “iframe disparue”
   // =========================================
+  function findDisqusAnchor() {
+  // Cherche un bloc Notion qui contient EXACTEMENT "[comment-form]"
+  const nodes = document.querySelectorAll(
+    ".notion-text, .notion-paragraph, .notion-callout-text .notion-text"
+  );
+
+  for (const el of nodes) {
+    const t = (el.textContent || "").trim();
+    if (t === DISQUS_ANCHOR_TEXT) return el;
+  }
+  return null;
+}
+
+function ensureDisqusWrapAtAnchor(anchorEl) {
+  // Si déjà remplacé / déjà présent, on le réutilise
+  if (!anchorEl) return null;
+
+  // Si l’ancre a déjà été remplacée par le wrap
+  if (anchorEl.classList?.contains("festiv-disqus-wrap")) return anchorEl;
+
+  // Si un wrap existe déjà (DOM reconstruit) on le garde
+  let wrap = document.querySelector(".festiv-disqus-wrap");
+  if (wrap) return wrap;
+
+  wrap = document.createElement("div");
+  wrap.className = "festiv-disqus-wrap";
+
+  // ✅ IMPORTANT : on remplace le bloc "[comment-form]" par le wrap
+  anchorEl.replaceWith(wrap);
+
+  return wrap;
+}
+   
   function findDisqusMarker() {
     return (
       [...document.querySelectorAll("h1,h2,h3,h4")].find((h) => (h.textContent || "").trim() === DISQUS_MARKER_TEXT) || null
@@ -1203,14 +1185,27 @@ bindSystemThemeListener();
   }
 
   function ensureDisqusWrapAfter(marker) {
+  // ✅ priorité : l’ancre [comment-form]
+  const anchor = findDisqusAnchor();
+  if (anchor) {
     let wrap = document.querySelector(".festiv-disqus-wrap");
     if (!wrap) {
       wrap = document.createElement("div");
       wrap.className = "festiv-disqus-wrap";
-      marker.insertAdjacentElement("afterend", wrap);
+      anchor.replaceWith(wrap); // 🔥 on remplace le bloc "[comment-form]"
     }
     return wrap;
   }
+
+  // fallback (au cas où une page aurait encore juste le titre)
+  let wrap = document.querySelector(".festiv-disqus-wrap");
+  if (!wrap && marker) {
+    wrap = document.createElement("div");
+    wrap.className = "festiv-disqus-wrap";
+    marker.insertAdjacentElement("afterend", wrap);
+  }
+  return wrap;
+}
 
   function showDisqusConsentPlaceholder(marker) {
     const wrap = ensureDisqusWrapAfter(marker);
@@ -1269,7 +1264,12 @@ bindSystemThemeListener();
 
       // 1) marqueur
       const marker = findDisqusMarker();
-      if (!marker) return;
+      const anchor = findDisqusAnchor();
+
+// On n'affiche Disqus QUE si l'ancre existe
+      if (!anchor) return;
+
+// (marker reste optionnel : utile pour le “guest tip”)
 
       // 2) consent
       const consentStatus = getDisqusConsentStatus(); // true/false/null
@@ -1938,7 +1938,6 @@ function kickFilloutWatchdog() {
     setTimeout(kickFilloutWatchdog, 2500);
     setupWeatherWidget();
 
-    injectDisqusGuestTip();
     initDisqus(false);
   } finally {
     window.__FESTIV_RUNALL_LOCK = false;
