@@ -1507,9 +1507,14 @@ blockquote.notion-quote.notion-block-1ca6ae9a98f280e0a190e4526ecc3cb4 > b{
    ============================== */
 
 .notion-block-3096ae9a98f2800a9276cf163d3970c9.notion-quote,
-.notion-block-30b6ae9a98f280c98bc9df20cf7217e5.notion-quote,
-.notion-block-2ff6ae9a98f280b0966ae3628e3aaeff.notion-quote{
+.notion-block-30b6ae9a98f280c98bc9df20cf7217e5.notion-quote{
   margin: clamp(260px, 28vw, 520px) auto !important;
+}
+/* ==============================
+   ESPACEMENT MANIFESTES PARTENAIRES
+   ============================== */
+.notion-block-2ff6ae9a98f280b0966ae3628e3aaeff.notion-quote{
+  margin: clamp(80px, 10vw, 160px) auto !important;
 }
 /* =========================================================
    FIX DARK MODE — fond des vignettes (gallery cards)
