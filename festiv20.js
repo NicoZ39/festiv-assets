@@ -1807,7 +1807,6 @@ function fixFloatingButtonsIOS() {
     console.warn("[festiv20] fixFloatingButtonsIOS error:", e);
   }
 }
-
    
 // =========================================
 // FILLOUT — watchdog anti "formulaire absent"
