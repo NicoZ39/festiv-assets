@@ -1761,7 +1761,54 @@ function festivRunNav() {
   festivCleanupNavMarkersEverywhere();
 }
 
+// =========================================
+// iOS — Fix floating buttons (CookieHub + BackToTop)
+// - Remonte CookieHub dans <body> (évite fixed cassé par wrappers)
+// - Verrouille positions avec styles inline
+// =========================================
+function fixFloatingButtonsIOS() {
+  try {
+    const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (!isiOS) return;
 
+    // 1) CookieHub icon
+    const chIcon = document.querySelector(".ch2-icon");
+    if (chIcon) {
+      // remonte dans body si nécessaire
+      if (chIcon.parentElement !== document.body) {
+        document.body.appendChild(chIcon);
+      }
+
+      // force styles stables
+      chIcon.style.position = "fixed";
+      chIcon.style.left = "14px";
+      chIcon.style.right = "auto";
+      chIcon.style.top = "auto";
+      chIcon.style.bottom = "calc(14px + env(safe-area-inset-bottom))";
+      chIcon.style.zIndex = "2147483647";
+      chIcon.style.transform = "translate3d(0,0,0)";
+      chIcon.style.webkitTransform = "translate3d(0,0,0)";
+      chIcon.style.willChange = "transform";
+    }
+
+    // 2) Back-to-top (créé par ton script)
+    const btt = document.querySelector(".festiv-backtotop");
+    if (btt) {
+      btt.style.position = "fixed";
+      btt.style.right = "14px";
+      btt.style.bottom = "calc(14px + env(safe-area-inset-bottom))";
+      btt.style.transform = "translate3d(0,0,0)";
+      btt.style.webkitTransform = "translate3d(0,0,0)";
+      btt.style.willChange = "transform";
+      btt.style.zIndex = "2147483647";
+    }
+
+  } catch (e) {
+    console.warn("[festiv20] fixFloatingButtonsIOS error:", e);
+  }
+}
+
+   
 // =========================================
 // FILLOUT — watchdog anti "formulaire absent"
 // - Fillout init peut rater quand Simple.ink reconstruit le DOM
@@ -1906,6 +1953,7 @@ function kickFilloutWatchdog() {
     setupFaqAnimation();
     localizeSearchUI();
     setupBackToTop();
+    fixFloatingButtonsIOS();
 
     bindCalendarI18nHooks();
     translateNotionCalendar();
