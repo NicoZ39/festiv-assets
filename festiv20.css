@@ -2131,3 +2131,41 @@ iframe[src^="https://tempest.services.disqus.com/ads-iframe/"] {
   min-height: 0 !important;
   visibility: hidden !important;
 }
+/* =========================================================
+   iOS Safari — FIX boutons flottants “qui montent puis se bloquent”
+   Cause fréquente : fixed cassé par un ancestor transform/filter
+========================================================= */
+@supports (-webkit-touch-callout: none) {
+
+  /* 1) Renforce le “fixed” (GPU layer) */
+  .festiv-backtotop,
+  #festiv-theme-toggle,
+  .ch2-icon {
+    position: fixed !important;
+    transform: translate3d(0,0,0) !important;
+    -webkit-transform: translate3d(0,0,0) !important;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+  }
+
+  /* 2) iPhone safe-area (évite d’être trop bas / sous la barre) */
+  .festiv-backtotop{
+    right: 14px !important;
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+  }
+
+  #festiv-theme-toggle{
+    right: 12px !important;
+    top: calc(76px + env(safe-area-inset-top)) !important;
+  }
+
+  /* CookieHub : on force une position stable */
+  .ch2-icon{
+    left: 14px !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    z-index: 2147483647 !important;
+  }
+}
