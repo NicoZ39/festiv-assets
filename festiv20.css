@@ -83,12 +83,8 @@ html.festiv-theme-ready body { opacity: 1; transition: opacity 120ms ease; }
 .notion-button::before{ display: none !important; }
 
 /* =========================================================
-   2) Masquages (badges / liens)
+   2) Masquages (liens)
 ========================================================= */
-.notion-block-fd1e69b90e7e43e0a4a94f0f1cb0f724 .notion-title-container,
-a.styles_badgerLink__YnR_g{
-  display: none !important;
-}
 
 a.notion-block-1046ae9a98f280d39023f3ba28cfc7c9,
 a.notion-block-19f3c0c80f76450e926ba49e49f4bceb,
